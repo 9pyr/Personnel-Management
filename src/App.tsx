@@ -12,7 +12,7 @@ function App() {
           count is {count}
         </button>
         <p>
-          Edit <code>src/App.tsx</code> and save to test HMR test pull request
+            Edit <code>src/App.tsx</code> and save to test HMR test pull request
         </p>
       </div>
       <p className="read-the-docs">
