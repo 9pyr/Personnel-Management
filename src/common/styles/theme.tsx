@@ -5,13 +5,18 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: cyan[200],
+      main: cyan[600],
     },
     secondary: {
       main: cyan[900],
     },
     error: {
       main: red.A400,
+    },
+  },
+  typography: {
+    button: {
+      textTransform: 'none',
     },
   },
 })

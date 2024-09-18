@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material'
+import { Box, Button, Grid2, Stack } from '@mui/material'
 
 import Tabs from 'common/components/Tabs'
 
@@ -20,7 +20,12 @@ const LeavePageList = () => {
   return (
     <Box>
       <Stack spacing={2}>
-        <Box>Leave</Box>
+        <Grid2 container>
+          <Grid2 size={6}>Leave</Grid2>
+          <Grid2 size={6} className="flex justify-end">
+            <Button variant="contained">Add</Button>
+          </Grid2>
+        </Grid2>
         <Box>
           <Tabs items={TABS} />
         </Box>

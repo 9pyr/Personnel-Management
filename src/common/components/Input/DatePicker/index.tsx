@@ -5,6 +5,7 @@ import {
 } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 
+import dayjs from 'dayjs'
 import { Controller, useFormContext } from 'react-hook-form'
 
 interface DatePickerInputProps extends BaseDatePickerProps<any> {
@@ -14,21 +15,27 @@ interface DatePickerInputProps extends BaseDatePickerProps<any> {
 
 const DatePickerInput = ({ name, label, ...props }: DatePickerInputProps) => {
   const { control } = useFormContext()
+
   return (
     <Controller
       control={control}
       name={name}
-      render={({ field }) => (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <BaseDatePicker
-            label={label}
-            {...field}
-            {...props}
-            format="DD-MM-YYYY"
-            className="w-full"
-          />
-        </LocalizationProvider>
-      )}
+      render={({ field }) => {
+        const { value, onChange } = field
+        return (
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <BaseDatePicker
+              label={label}
+              {...field}
+              value={dayjs(value)}
+              onChange={value => onChange(dayjs(value).toDate())}
+              {...props}
+              format="DD-MM-YYYY"
+              className="w-full"
+            />
+          </LocalizationProvider>
+        )
+      }}
     />
   )
 }

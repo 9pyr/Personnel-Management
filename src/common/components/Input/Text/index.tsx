@@ -9,6 +9,7 @@ interface TextInputProps extends Omit<OutlinedTextFieldProps, 'variant'> {
 
 const TextInput = ({ name, label, ...props }: TextInputProps) => {
   const { control } = useFormContext()
+
   return (
     <Controller
       control={control}

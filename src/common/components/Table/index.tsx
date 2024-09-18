@@ -6,6 +6,8 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 
+import { TableBodyTableRowSx } from './styles'
+
 interface TableProps {
   columns: {
     label: string
@@ -32,8 +34,9 @@ const Table = ({ columns, data, rowClick }: TableProps) => {
           {data.map((row, index) => (
             <TableRow
               key={`table-body-row:${index}`}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              sx={TableBodyTableRowSx}
               onClick={() => rowClick?.()}
+              hover
             >
               {columns.map(({ source }) => (
                 <TableCell key={`table-body-row-cell:${index}`} className="cursor-pointer">

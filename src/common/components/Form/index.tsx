@@ -1,11 +1,11 @@
-import { FieldValues, FormProvider, SubmitHandler, useForm } from 'react-hook-form'
+import { FieldValues, FormProvider, SubmitHandler, UseFormProps, useForm } from 'react-hook-form'
 
-interface FormProps {
+interface FormProps extends UseFormProps<FieldValues, any> {
   onSubmit: SubmitHandler<FieldValues>
 }
 
-const Form = ({ children, onSubmit }: React.PropsWithChildren<FormProps>) => {
-  const methods = useForm()
+const Form = ({ children, onSubmit, ...props }: React.PropsWithChildren<FormProps>) => {
+  const methods = useForm(props)
 
   return (
     <FormProvider {...methods}>
