@@ -1,20 +1,22 @@
-import Layout from 'common/components/layout/Layout'
-import DashboardPage from 'modules/dashboard/page'
-import { createBrowserRouter } from 'react-router-dom'
+import DashboardIcon from '@mui/icons-material/Dashboard'
+import SailingIcon from '@mui/icons-material/Sailing'
 
-export const router = createBrowserRouter([
+import DashboardPage from 'modules/dashboard/page'
+import LeavePage from 'modules/leave/page'
+import { RouteObject } from 'react-router-dom'
+
+export const menuItems: ({ name: string; icon: JSX.Element } & RouteObject)[] = [
   {
-    path: '/',
-    element: <Layout />,
-    children: [
-      {
-        index: true,
-        element: <DashboardPage />,
-      },
-      {
-        path: '/about',
-        element: <div>About</div>,
-      },
-    ],
+    // default path is slash
+    name: 'Dashboard',
+    icon: <DashboardIcon />,
+    element: <DashboardPage />,
+    index: true,
   },
-])
+  {
+    path: '/leave',
+    name: 'Leave',
+    icon: <SailingIcon />,
+    element: <LeavePage />,
+  },
+]

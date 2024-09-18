@@ -8,7 +8,7 @@ const Layout = () => {
   return (
     <Box sx={{ display: 'flex' }}>
       <SideMenu />
-      <Box component="main" className="max-w-[1024px] w-full">
+      <Box component="main" className="max-w-[1024px] w-full pt-4 px-4">
         <Outlet />
       </Box>
     </Box>

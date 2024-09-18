@@ -1,18 +1,24 @@
-import '@fontsource/roboto/300.css'
-import '@fontsource/roboto/400.css'
-import '@fontsource/roboto/500.css'
-import '@fontsource/roboto/700.css'
 import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 
 import { StrictMode } from 'react'
 
+import Layout from 'common/components/Layout'
+import 'common/styles/index.css'
 import { createRoot } from 'react-dom/client'
-import { RouterProvider } from 'react-router-dom'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { menuItems } from 'routes'
 
 import theme from '../common/styles/theme'
-import { router } from '../routes'
-import './index.css'
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Layout />,
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+    children: menuItems.map(({ name, icon, ...props }) => props),
+  },
+])
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

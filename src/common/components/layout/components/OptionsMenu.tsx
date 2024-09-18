@@ -1,16 +1,15 @@
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded'
-import Divider, { dividerClasses } from '@mui/material/Divider'
-import { listClasses } from '@mui/material/List'
+import Divider from '@mui/material/Divider'
 import ListItemIcon, { listItemIconClasses } from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Menu from '@mui/material/Menu'
 import MuiMenuItem from '@mui/material/MenuItem'
-import { paperClasses } from '@mui/material/Paper'
 import { styled } from '@mui/material/styles'
 
-import * as React from 'react'
+import React, { useState } from 'react'
 
+import { OptionsMenuMenuSx } from '../styles'
 import MenuButton from './MenuButton'
 
 const MenuItem = styled(MuiMenuItem)({
@@ -18,7 +17,7 @@ const MenuItem = styled(MuiMenuItem)({
 })
 
 export default function OptionsMenu() {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -39,17 +38,7 @@ export default function OptionsMenu() {
         onClick={handleClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-        sx={{
-          [`& .${listClasses.root}`]: {
-            padding: '4px',
-          },
-          [`& .${paperClasses.root}`]: {
-            padding: 0,
-          },
-          [`& .${dividerClasses.root}`]: {
-            margin: '4px -4px',
-          },
-        }}
+        sx={OptionsMenuMenuSx}
       >
         <MenuItem onClick={handleClose}>Profile</MenuItem>
         <MenuItem onClick={handleClose}>My account</MenuItem>
