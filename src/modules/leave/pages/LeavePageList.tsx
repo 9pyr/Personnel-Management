@@ -2,8 +2,8 @@ import { Box, Stack } from '@mui/material'
 
 import Tabs from 'common/components/Tabs'
 
-import Approved from './components/Approved'
-import Inprogress from './components/Inprogress'
+import Approved from '../components/Approved'
+import Inprogress from '../components/Inprogress'
 
 const TABS = [
   {
@@ -16,7 +16,7 @@ const TABS = [
   },
 ]
 
-const LeavePage = () => {
+const LeavePageList = () => {
   return (
     <Box>
       <Stack spacing={2}>
@@ -29,4 +29,4 @@ const LeavePage = () => {
   )
 }
 
-export default LeavePage
+export default LeavePageList

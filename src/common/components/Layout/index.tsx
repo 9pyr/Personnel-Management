@@ -6,12 +6,17 @@ import SideMenu from './components/SideMenu'
 
 const Layout = () => {
   return (
-    <Box sx={{ display: 'flex' }}>
+    <div className="flex">
       <SideMenu />
-      <Box component="main" className="max-w-[1024px] w-full pt-4 px-4">
-        <Outlet />
-      </Box>
-    </Box>
+      <div className="w-full">
+        <Box
+          component="main"
+          className="flex justify-content-center max-w-[1024px] w-full pt-4 px-4"
+        >
+          <Outlet />
+        </Box>
+      </div>
+    </div>
   )
 }
 

@@ -2,7 +2,8 @@ import DashboardIcon from '@mui/icons-material/Dashboard'
 import SailingIcon from '@mui/icons-material/Sailing'
 
 import DashboardPage from 'modules/dashboard/page'
-import LeavePage from 'modules/leave/page'
+import LeavePageForm from 'modules/leave/pages/LeavePageForm'
+import LeavePageList from 'modules/leave/pages/LeavePageList'
 import { RouteObject } from 'react-router-dom'
 
 export const menuItems: ({ name: string; icon: JSX.Element } & RouteObject)[] = [
@@ -17,6 +18,15 @@ export const menuItems: ({ name: string; icon: JSX.Element } & RouteObject)[] = 
     path: '/leave',
     name: 'Leave',
     icon: <SailingIcon />,
-    element: <LeavePage />,
+    children: [
+      {
+        index: true,
+        element: <LeavePageList />,
+      },
+      {
+        path: ':id/edit',
+        element: <LeavePageForm />,
+      },
+    ],
   },
 ]

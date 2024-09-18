@@ -5,6 +5,7 @@ import { StrictMode } from 'react'
 
 import Layout from 'common/components/Layout'
 import 'common/styles/index.css'
+import { SnackbarProvider } from 'notistack'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { menuItems } from 'routes'
@@ -23,8 +24,10 @@ export const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <RouterProvider router={router} />
+      <SnackbarProvider maxSnack={4} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+      </SnackbarProvider>
     </ThemeProvider>
   </StrictMode>,
 )

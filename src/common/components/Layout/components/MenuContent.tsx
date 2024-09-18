@@ -8,11 +8,8 @@ import Stack from '@mui/material/Stack'
 import { NavLink, useLocation } from 'react-router-dom'
 import { menuItems } from 'routes'
 
-import { MenuContentListItemSx } from '../styles'
-
 export default function MenuContent() {
   const location = useLocation()
-
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
       <List dense>
@@ -21,11 +18,11 @@ export default function MenuContent() {
 
           return (
             <ListItem
-              key={`menu-item:${index}`}
-              to={path}
+              key={index}
               component={NavLink}
-              sx={MenuContentListItemSx}
+              to={path}
               disablePadding
+              sx={{ display: 'block' }}
             >
               <ListItemButton selected={location.pathname === path}>
                 <ListItemIcon>{icon}</ListItemIcon>
