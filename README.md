@@ -1,3 +1,9 @@
+# Set up
+
+### project using
+
+- node version 18 (lts/hydrogen)
+
 # Development
 
 install packages
@@ -12,4 +18,4 @@ run dev
 yarn dev
 ```
 
-run port `3000`
+go to <http://localhost:3000/>
