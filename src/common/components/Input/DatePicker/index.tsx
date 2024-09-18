@@ -7,12 +7,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 
 import { Controller, useFormContext } from 'react-hook-form'
 
-interface DatePickerProps extends BaseDatePickerProps<any> {
+interface DatePickerInputProps extends BaseDatePickerProps<any> {
   name: string
   label: string
 }
 
-const DatePicker = ({ name, label, ...props }: DatePickerProps) => {
+const DatePickerInput = ({ name, label, ...props }: DatePickerInputProps) => {
   const { control } = useFormContext()
   return (
     <Controller
@@ -33,4 +33,4 @@ const DatePicker = ({ name, label, ...props }: DatePickerProps) => {
   )
 }
 
-export default DatePicker
+export default DatePickerInput

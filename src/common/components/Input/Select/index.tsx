@@ -5,13 +5,13 @@ import BaseSelect from '@mui/material/Select'
 
 import { Controller, useFormContext } from 'react-hook-form'
 
-interface SelectProps {
+interface SelectInputProps {
   name: string
   label: string
   options: { value: any; label: string }[]
 }
 
-export default function Select({ name, label, options }: SelectProps) {
+const SelectInput = ({ name, label, options }: SelectInputProps) => {
   const { control } = useFormContext()
 
   return (
@@ -39,3 +39,5 @@ export default function Select({ name, label, options }: SelectProps) {
     />
   )
 }
+
+export default SelectInput

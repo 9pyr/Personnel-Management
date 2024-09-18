@@ -2,12 +2,12 @@ import { FilledTextFieldProps, TextField } from '@mui/material'
 
 import { Controller, useFormContext } from 'react-hook-form'
 
-interface InputProps extends Omit<FilledTextFieldProps, 'variant'> {
+interface TextInputProps extends Omit<FilledTextFieldProps, 'variant'> {
   name: string
   label: string
 }
 
-const Input = ({ name, label, ...props }: InputProps) => {
+const TextInput = ({ name, label, ...props }: TextInputProps) => {
   const { control } = useFormContext()
   return (
     <Controller
@@ -20,4 +20,4 @@ const Input = ({ name, label, ...props }: InputProps) => {
   )
 }
 
-export default Input
+export default TextInput

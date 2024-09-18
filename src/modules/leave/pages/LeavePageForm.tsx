@@ -1,9 +1,9 @@
 import { Button, Grid2 } from '@mui/material'
 
-import DatePicker from 'common/components/DatePicker'
 import Form from 'common/components/Form'
-import Input from 'common/components/Input'
-import Select from 'common/components/Select'
+import DatePicker from 'common/components/Input/DatePicker'
+import Select from 'common/components/Input/Select'
+import TextInput from 'common/components/Input/Text'
 import { useSnackbar } from 'notistack'
 import { useNavigate } from 'react-router-dom'
 
@@ -40,7 +40,7 @@ const LeavePageForm = () => {
           />
         </Grid2>
         <Grid2 size={12}>
-          <Input name="desc" label="description" minRows={4} multiline />
+          <TextInput name="desc" label="description" minRows={4} multiline />
         </Grid2>
         <Grid2 size={6}>
           <DatePicker name="from" label="from" />
