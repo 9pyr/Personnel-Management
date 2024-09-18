@@ -1,8 +1,8 @@
-import { FilledTextFieldProps, TextField } from '@mui/material'
+import { OutlinedTextFieldProps, TextField } from '@mui/material'
 
 import { Controller, useFormContext } from 'react-hook-form'
 
-interface TextInputProps extends Omit<FilledTextFieldProps, 'variant'> {
+interface TextInputProps extends Omit<OutlinedTextFieldProps, 'variant'> {
   name: string
   label: string
 }
@@ -14,7 +14,7 @@ const TextInput = ({ name, label, ...props }: TextInputProps) => {
       control={control}
       name={name}
       render={({ field }) => (
-        <TextField label={label} {...field} {...props} variant="filled" fullWidth />
+        <TextField label={label} {...field} {...props} variant="outlined" fullWidth />
       )}
     />
   )

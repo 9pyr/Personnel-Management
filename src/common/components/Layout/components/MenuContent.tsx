@@ -5,6 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
 
+import { startsWith } from 'lodash'
 import { NavLink, useLocation } from 'react-router-dom'
 import { menuItems } from 'routes'
 
@@ -24,7 +25,13 @@ export default function MenuContent() {
               disablePadding
               sx={{ display: 'block' }}
             >
-              <ListItemButton selected={location.pathname === path}>
+              <ListItemButton
+                selected={
+                  startsWith(location.pathname, path) &&
+                  (location.pathname[path.length] === '/' ||
+                    location.pathname.length === path.length)
+                }
+              >
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText primary={name} />
               </ListItemButton>

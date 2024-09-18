@@ -22,7 +22,7 @@ const SelectInput = ({ name, label, options }: SelectInputProps) => {
         <FormControl fullWidth>
           <InputLabel id={`select:${name}`}>{label}</InputLabel>
           <BaseSelect
-            variant="filled"
+            variant="outlined"
             labelId={`select:${name}`}
             id={`select:${name}`}
             label={label}
