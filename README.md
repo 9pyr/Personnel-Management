@@ -1,9 +1,15 @@
 # Development
 
-install
-`yarn`
+install packages
+
+```sh
+yarn
+```
 
 run dev
-`yarn dev`
 
-port 3000
+```sh
+yarn dev
+```
+
+run port `3000`
