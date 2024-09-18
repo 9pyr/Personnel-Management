@@ -1,16 +1,17 @@
-import { Outlet } from "react-router-dom"
-import Navbar from "./Navbar"
+import Box from '@mui/material/Box'
+
+import { Outlet } from 'react-router-dom'
+
+import SideMenu from './components/SideMenu'
 
 const Layout = () => {
   return (
-    <div>
-      <Navbar />
-      <div className="flex justify-center">
-        <main className="max-w-[1024px] w-full">
-          <Outlet />
-        </main>
-      </div>
-    </div>
+    <Box sx={{ display: 'flex' }}>
+      <SideMenu />
+      <Box component="main" className="max-w-[1024px] w-full">
+        <Outlet />
+      </Box>
+    </Box>
   )
 }
 
