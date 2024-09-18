@@ -3,7 +3,7 @@ import { ThemeProvider } from '@mui/material/styles'
 
 import { StrictMode } from 'react'
 
-import Layout from 'common/components/Layout'
+import Layout from 'common/components/Layout2'
 import 'common/styles/index.css'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
