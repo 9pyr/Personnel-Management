@@ -11,6 +11,9 @@ import { menuItems } from 'routes'
 
 export default function MenuContent() {
   const location = useLocation()
+
+  const pathname = location.pathname
+
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
       <List dense>
@@ -27,9 +30,8 @@ export default function MenuContent() {
             >
               <ListItemButton
                 selected={
-                  startsWith(location.pathname, path) &&
-                  (location.pathname[path.length] === '/' ||
-                    location.pathname.length === path.length)
+                  startsWith(pathname, path) &&
+                  (pathname[path.length] === '/' || pathname.length === path.length)
                 }
               >
                 <ListItemIcon>{icon}</ListItemIcon>
