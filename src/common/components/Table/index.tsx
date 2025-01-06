@@ -6,6 +6,8 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 
+import dayjs from 'dayjs'
+
 import { TableBodyTableRowSx } from './styles'
 
 interface TableProps {
@@ -16,7 +18,7 @@ interface TableProps {
   data: {
     [key: string]: string | number | null | undefined | boolean
   }[]
-  rowClick: () => void
+  rowClick: (id: string | number | null | undefined | boolean) => void
 }
 
 const Table = ({ columns, data, rowClick }: TableProps) => {
@@ -35,12 +37,14 @@ const Table = ({ columns, data, rowClick }: TableProps) => {
             <TableRow
               key={`table-body-row:${index}`}
               sx={TableBodyTableRowSx}
-              onClick={() => rowClick?.()}
+              onClick={() => rowClick?.(row?.id)}
               hover
             >
               {columns.map(({ source }) => (
                 <TableCell key={`table-body-row-cell:${index}`} className="cursor-pointer">
-                  {row[source]}
+                  {typeof row[source] !== 'boolean' && dayjs(row[source]).isValid()
+                    ? dayjs(row[source]).format('DD-MM-YYYY')
+                    : row[source]}
                 </TableCell>
               ))}
             </TableRow>

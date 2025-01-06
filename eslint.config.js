@@ -28,6 +28,8 @@ export default tseslint.config(
       'no-unused-vars': 'off',
       'no-duplicate-imports': 'error',
       '@typescript-eslint/no-explicit-any': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
 )

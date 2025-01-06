@@ -1,6 +1,7 @@
 import { Box, Button, Grid2, Stack } from '@mui/material'
 
 import Tabs from 'common/components/Tabs'
+import { nextStateLeave } from 'core/apis/leave'
 
 import Approved from '../components/Approved'
 import Inprogress from '../components/Inprogress'
@@ -23,7 +24,14 @@ const LeavePageList = () => {
         <Grid2 container>
           <Grid2 size={6}>Leave</Grid2>
           <Grid2 size={6} className="flex justify-end">
-            <Button variant="contained">Add</Button>
+            <Button
+              variant="contained"
+              onClick={async () => {
+                await nextStateLeave('baf7e614-cf63-4f9b-b763-dc3efa5377c8')
+              }}
+            >
+              Add
+            </Button>
           </Grid2>
         </Grid2>
         <Box>

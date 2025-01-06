@@ -28,7 +28,7 @@ const DatePickerInput = ({ name, label, ...props }: DatePickerInputProps) => {
               label={label}
               {...field}
               value={dayjs(value)}
-              onChange={value => onChange(dayjs(value).toDate())}
+              onChange={value => onChange(dayjs(value).toISOString())}
               {...props}
               format="DD-MM-YYYY"
               className="w-full"

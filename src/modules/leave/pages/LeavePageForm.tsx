@@ -4,9 +4,10 @@ import Form from 'common/components/Form'
 import DatePicker from 'common/components/Input/DatePicker'
 import Select from 'common/components/Input/Select'
 import TextInput from 'common/components/Input/Text'
-import { getLeaveById } from 'core/apis/leave/inde'
+import { getLeaveById, updateLeaveById } from 'core/apis/leave'
+import { Leave } from 'core/apis/leave/types'
 import { useSnackbar } from 'notistack'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import { leaveFields, leaveReason } from '../constants'
 import { LEAVE_REASON_LABEL } from '../mapper'
@@ -16,13 +17,22 @@ const LeavePageForm = () => {
 
   const { enqueueSnackbar } = useSnackbar()
 
+  const { id } = useParams()
+
+  if (!id) {
+    return <>404</>
+  }
+
   return (
     <Form
-      onSubmit={values => {
-        console.log(values)
+      onSubmit={async values => {
+        await updateLeaveById(values as Leave)
         enqueueSnackbar('Submit', { variant: 'success' })
       }}
-      defaultValues={getLeaveById()}
+      defaultValues={async () => {
+        const data = await getLeaveById(id)
+        return data
+      }}
     >
       <Grid2 container spacing={2}>
         <Grid2 size={8}>
@@ -45,10 +55,10 @@ const LeavePageForm = () => {
           <TextInput name={leaveFields.description} label="Description" minRows={4} multiline />
         </Grid2>
         <Grid2 size={6}>
-          <DatePicker name={leaveFields.dateFrom} label="From" />
+          <DatePicker name={leaveFields.startDate} label="From" />
         </Grid2>
         <Grid2 size={6}>
-          <DatePicker name={leaveFields.dateTo} label="To" />
+          <DatePicker name={leaveFields.endDate} label="To" />
         </Grid2>
         <Grid2 container size={12}>
           <Button variant="contained" type="submit">
