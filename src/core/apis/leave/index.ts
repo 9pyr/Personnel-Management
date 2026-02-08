@@ -12,8 +12,20 @@ const leaveListSchema = z
   .union([z.array(leaveSchema), z.null(), z.undefined()])
   .transform((v): Leave[] => v ?? [])
 
-export const getListLeave = async (): Promise<Leave[]> => {
-  const { data } = await apiCaller.get<unknown>('/leaves')
+export interface GetListLeaveParams {
+  from?: string
+  to?: string
+  userId?: string
+}
+
+export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]> => {
+  const search = new URLSearchParams()
+  if (params?.from) search.set('from', params.from)
+  if (params?.to) search.set('to', params.to)
+  if (params?.userId) search.set('user_id', params.userId)
+  const qs = search.toString()
+  const url = qs ? `/leaves?${qs}` : '/leaves'
+  const { data } = await apiCaller.get<unknown>(url)
   return parseResponse(data, leaveListSchema)
 }
 

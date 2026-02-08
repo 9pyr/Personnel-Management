@@ -7,17 +7,28 @@ import SideMenu from './components/SideMenu'
 
 const Layout = () => {
   return (
-    <div className="flex">
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       <NotificationListener />
       <SideMenu />
-      <div className="flex justify-center w-full">
-        <Box component="main" className="flex justify-center max-w-[2048px] w-full pt-4 px-4">
-          <div className="w-full">
+      <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+        <Box
+          component="main"
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            maxWidth: 2048,
+            width: '100%',
+            pt: 2,
+            px: 2,
+            minHeight: '100vh',
+          }}
+        >
+          <Box sx={{ width: '100%' }}>
             <Outlet />
-          </div>
+          </Box>
         </Box>
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }
 

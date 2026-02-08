@@ -7,6 +7,7 @@ export const notificationSchema = z.object({
   title: z.string(),
   body: z.string(),
   relatedId: z.string().uuid().nullable().optional(),
+  commentId: z.string().uuid().nullable().optional(),
   readAt: z.string().nullable().optional(),
   createdAt: z.string(),
 })

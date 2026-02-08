@@ -13,6 +13,7 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import { useSnackbar } from 'notistack'
 
@@ -120,7 +121,7 @@ function CommentBlock({
   }
 
   return (
-    <Box sx={{ ml: depth > 0 ? 3 : 0, mb: 1.5 }}>
+    <Box data-comment-id={node.id} sx={{ ml: depth > 0 ? 3 : 0, mb: 1.5 }}>
       <Stack direction="row" alignItems="flex-start" spacing={1}>
         <Avatar sx={{ width: 28, height: 28, fontSize: '0.875rem' }}>
           {node.authorName?.charAt(0) ?? '?'}
@@ -412,10 +413,18 @@ function FeedCard({
   )
 }
 
+export interface FeedHighlightState {
+  highlightPostId?: string
+  highlightCommentId?: string
+}
+
 const FeedPage = () => {
   const { enqueueSnackbar } = useSnackbar()
   const user = useRecoilValue(authUserState)
+  const location = useLocation()
+  const navigate = useNavigate()
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const highlightState = location.state as FeedHighlightState | null | undefined
 
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -503,6 +512,39 @@ const FeedPage = () => {
     observer.observe(el)
     return () => observer.disconnect()
   }, [hasMore, loadMore, loading, posts.length])
+
+  useEffect(() => {
+    const postId = highlightState?.highlightPostId
+    if (!postId || !posts.some(p => p.id === postId)) return
+    loadComments(postId)
+  }, [highlightState?.highlightPostId, posts, loadComments])
+
+  useEffect(() => {
+    const postId = highlightState?.highlightPostId
+    const commentId = highlightState?.highlightCommentId
+    if (!postId) return
+    const postInList = posts.some(p => p.id === postId)
+    const commentsLoaded = postInList && postId in commentsByPostId
+    if (!postInList || !commentsLoaded) return
+
+    const scrollToTarget = () => {
+      if (commentId) {
+        const el = document.querySelector(`[data-comment-id="${commentId}"]`)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          ;(el as HTMLElement).style.setProperty('background', 'var(--mui-palette-action-selected)', 'important')
+          setTimeout(() => (el as HTMLElement).style.removeProperty('background'), 2000)
+        }
+      } else {
+        const el = document.querySelector(`[data-post-id="${postId}"]`)
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      navigate('/feed', { replace: true, state: {} })
+    }
+
+    const t = setTimeout(scrollToTarget, 300)
+    return () => clearTimeout(t)
+  }, [highlightState?.highlightPostId, highlightState?.highlightCommentId, posts, commentsByPostId, navigate])
 
   const handleSubmit = async () => {
     const trimmed = content.trim()
@@ -644,9 +686,9 @@ const FeedPage = () => {
         ) : (
           <Stack spacing={2}>
             {posts.map(post => (
-              <FeedCardWithComments
-                key={post.id}
-                post={post}
+              <Box key={post.id} data-post-id={post.id}>
+                <FeedCardWithComments
+                  post={post}
                 comments={commentsByPostId[post.id] ?? []}
                 currentUserId={user?.id}
                 loadComments={loadComments}
@@ -661,7 +703,8 @@ const FeedPage = () => {
                 onAddComment={payload => handleAddComment(post.id, payload)}
                 onUpdateComment={(id, content) => handleUpdateComment(post.id, id, content)}
                 onDeleteComment={id => handleDeleteComment(post.id, id)}
-              />
+                />
+              </Box>
             ))}
             <Box ref={sentinelRef} sx={{ height: 1, minHeight: 1 }} aria-hidden="true" />
             {loadingMore && (

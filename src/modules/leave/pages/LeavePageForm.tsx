@@ -1,4 +1,4 @@
-import { Button, Grid2, Stack, Typography } from '@mui/material'
+import { Button, Card, CardContent, Grid2, Stack, Typography } from '@mui/material'
 
 import { useEffect, useState } from 'react'
 
@@ -146,70 +146,74 @@ const LeavePageForm = () => {
   }
 
   return (
-    <Form
-      key={`leave-form-${id ?? 'new'}`}
-      defaultValues={formDefaults}
-      onSubmit={handleSubmit}
-    >
-      <Grid2 container spacing={2}>
-        <Grid2 size={8}>
-          <Select
-            name={leaveFields.leaveTypeId}
-            label="ประเภทการลา"
-            options={leaveTypeOptions}
-            disabled={isReadOnly}
-          />
-        </Grid2>
-        <Grid2 size={12}>
-          <TextInput
-            name={leaveFields.description}
-            label="รายละเอียด"
-            minRows={4}
-            multiline
-            disabled={isReadOnly}
-          />
-        </Grid2>
-        <Grid2 size={6}>
-          <DatePicker name={leaveFields.startDate} label="จากวันที่" disabled={isReadOnly} />
-        </Grid2>
-        <Grid2 size={6}>
-          <DatePicker name={leaveFields.endDate} label="ถึงวันที่" disabled={isReadOnly} />
-        </Grid2>
-        <Grid2 size={12}>
-          <Stack direction="row" spacing={1} flexWrap="wrap">
-            {!isReadOnly && (
-              <Button variant="contained" type="submit">
-                บันทึก
-              </Button>
-            )}
-            {(leaveStatus === 'PENDING' || leaveStatus === 'APPROVED') && !isNew && (
-              <CancelLeaveButton
-                leaveId={id}
-                leaveEndDate={leaveEndDate}
-                cancelling={cancelling}
-                onCancel={async (leaveIdToCancel) => {
-                  setCancelling(true)
-                  try {
-                    await cancelLeave(leaveIdToCancel)
-                    enqueueSnackbar('ยกเลิกคำขอลาแล้ว', { variant: 'success' })
-                    window.dispatchEvent(new CustomEvent('leave-list-refresh'))
-                    navigate('/leave', { replace: true })
-                  } catch {
-                    enqueueSnackbar('ยกเลิกไม่สำเร็จ', { variant: 'error' })
-                  }
-                }}
-                onDone={() => setCancelling(false)}
+    <Card variant="outlined">
+      <CardContent>
+        <Form
+          key={`leave-form-${id ?? 'new'}`}
+          defaultValues={formDefaults}
+          onSubmit={handleSubmit}
+        >
+          <Grid2 container spacing={2}>
+            <Grid2 size={8}>
+              <Select
+                name={leaveFields.leaveTypeId}
+                label="ประเภทการลา"
+                options={leaveTypeOptions}
+                disabled={isReadOnly}
               />
-            )}
-            <Button variant="outlined" type="button" onClick={() => navigate('/leave')}>
-              {isReadOnly || (leaveStatus !== 'PENDING' && leaveStatus !== null)
-                ? 'กลับ'
-                : 'ยกเลิก'}
-            </Button>
-          </Stack>
-        </Grid2>
-      </Grid2>
-    </Form>
+            </Grid2>
+            <Grid2 size={12}>
+              <TextInput
+                name={leaveFields.description}
+                label="รายละเอียด"
+                minRows={4}
+                multiline
+                disabled={isReadOnly}
+              />
+            </Grid2>
+            <Grid2 size={6}>
+              <DatePicker name={leaveFields.startDate} label="จากวันที่" disabled={isReadOnly} />
+            </Grid2>
+            <Grid2 size={6}>
+              <DatePicker name={leaveFields.endDate} label="ถึงวันที่" disabled={isReadOnly} />
+            </Grid2>
+            <Grid2 size={12}>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                {!isReadOnly && (
+                  <Button variant="contained" type="submit">
+                    บันทึก
+                  </Button>
+                )}
+                {(leaveStatus === 'PENDING' || leaveStatus === 'APPROVED') && !isNew && (
+                  <CancelLeaveButton
+                    leaveId={id}
+                    leaveEndDate={leaveEndDate}
+                    cancelling={cancelling}
+                    onCancel={async (leaveIdToCancel) => {
+                      setCancelling(true)
+                      try {
+                        await cancelLeave(leaveIdToCancel)
+                        enqueueSnackbar('ยกเลิกคำขอลาแล้ว', { variant: 'success' })
+                        window.dispatchEvent(new CustomEvent('leave-list-refresh'))
+                        navigate('/leave', { replace: true })
+                      } catch {
+                        enqueueSnackbar('ยกเลิกไม่สำเร็จ', { variant: 'error' })
+                      }
+                    }}
+                    onDone={() => setCancelling(false)}
+                  />
+                )}
+                <Button variant="outlined" type="button" onClick={() => navigate('/leave')}>
+                  {isReadOnly || (leaveStatus !== 'PENDING' && leaveStatus !== null)
+                    ? 'กลับ'
+                    : 'ยกเลิก'}
+                </Button>
+              </Stack>
+            </Grid2>
+          </Grid2>
+        </Form>
+      </CardContent>
+    </Card>
   )
 }
 

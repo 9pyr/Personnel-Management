@@ -21,12 +21,12 @@ const LoginPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        bgcolor: 'grey.100',
+        bgcolor: 'background.default',
       }}
     >
-      <Card sx={{ minWidth: 360 }}>
+      <Card sx={{ minWidth: 360, overflow: 'visible' }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom align="center">
+          <Typography variant="h5" gutterBottom align="center" color="primary" fontWeight={600}>
             ระบบจัดการบุคคล
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} align="center">

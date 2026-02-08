@@ -1,11 +1,13 @@
 import ArticleIcon from '@mui/icons-material/Article'
 import AssignmentIcon from '@mui/icons-material/Assignment'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import PeopleIcon from '@mui/icons-material/People'
 import PersonIcon from '@mui/icons-material/Person'
 import SailingIcon from '@mui/icons-material/Sailing'
 
 import type { Role } from 'core/apis/auth/types'
+import CalendarPage from 'modules/calendar/pages/CalendarPage'
 import DashboardPage from 'modules/dashboard/page'
 import FeedPage from 'modules/feed/pages/FeedPage'
 import LeavePageForm from 'modules/leave/pages/LeavePageForm'
@@ -43,6 +45,12 @@ export const menuItems: ({ name: string; icon: JSX.Element; roles?: Role[] } & R
       { path: 'new', element: <LeavePageForm /> },
       { path: ':id/edit', element: <LeavePageForm /> },
     ],
+  },
+  {
+    path: '/calendar',
+    name: 'ปฏิทินการลา',
+    icon: <CalendarMonthIcon />,
+    element: <CalendarPage />,
   },
   {
     path: '/leave-types',

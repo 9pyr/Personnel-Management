@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const uuidLike = z.string().min(1).optional()
 
-export const leaveSchema = z.object({
+const leaveSchemaBase = z.object({
   id: uuidLike,
   description: z.string(),
   startDate: z.string(),
@@ -12,18 +12,26 @@ export const leaveSchema = z.object({
   status: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByName: z.string().optional(),
+  created_by_name: z.string().optional(),
 })
+
+export const leaveSchema = leaveSchemaBase.transform(o => ({
+  ...o,
+  createdByName: o.createdByName ?? (o as { created_by_name?: string }).created_by_name,
+}))
 
 export type Leave = z.infer<typeof leaveSchema>
 
-export const leaveCreatePayloadSchema = leaveSchema.omit({
+export const leaveCreatePayloadSchema = leaveSchemaBase.omit({
   id: true,
   status: true,
   createdByUserId: true,
+  createdByName: true,
+  created_by_name: true,
 }).extend({ leaveTypeId: z.string().min(1, 'กรุณาเลือกประเภทการลา') })
 export type LeaveCreatePayload = z.infer<typeof leaveCreatePayloadSchema>
 
-export const leaveUpdatePayloadSchema = leaveSchema.extend({
+export const leaveUpdatePayloadSchema = leaveSchemaBase.extend({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
 })

@@ -71,16 +71,28 @@ export default function NotificationButton() {
   const handleClose = () => setAnchorEl(null)
 
   const handleMarkRead = useCallback(
-    async (id: string, relatedId: string | null | undefined) => {
+    async (n: Notification) => {
       try {
-        await markNotificationRead(id)
+        await markNotificationRead(n.id)
         setUnreadCount(prev => Math.max(0, prev - 1))
         setItems(prev =>
-          prev.map(n => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n))
+          prev.map(item => (item.id === n.id ? { ...item, readAt: new Date().toISOString() } : item))
         )
-        if (relatedId) {
-          handleClose()
-          navigate(`/leave`)
+        handleClose()
+
+        const isFeedComment =
+          n.type === 'FEED_COMMENT' || n.type === 'FEED_COMMENT_REPLY'
+        if (isFeedComment && n.relatedId) {
+          navigate('/feed', {
+            state: {
+              highlightPostId: n.relatedId,
+              highlightCommentId: n.commentId ?? undefined,
+            },
+          })
+          return
+        }
+        if (n.relatedId && !isFeedComment) {
+          navigate('/leave')
         }
       } catch {
         // ignore
@@ -141,7 +153,7 @@ export default function NotificationButton() {
             items.map(n => (
               <ListItemButton
                 key={n.id}
-                onClick={() => handleMarkRead(n.id, n.relatedId)}
+                onClick={() => handleMarkRead(n)}
                 sx={{
                   bgcolor: n.readAt ? undefined : 'action.hover',
                   borderLeft: n.readAt ? undefined : '3px solid',
