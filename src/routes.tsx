@@ -53,7 +53,7 @@ export const menuItems: ({ name: string; icon: ReactElement; roles?: Role[] } & 
   },
   {
     path: '/calendar',
-    name: 'ปฏิทินการลา',
+    name: 'ปฏิทิน',
     icon: <Calendar className={iconClass} />,
     element: <CalendarPage />,
   },

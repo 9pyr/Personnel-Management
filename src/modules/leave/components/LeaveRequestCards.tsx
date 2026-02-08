@@ -1,5 +1,8 @@
 import dayjs from 'dayjs'
+import 'dayjs/locale/th'
 import { toast } from 'sonner'
+
+dayjs.locale('th')
 
 import { nextStateLeave, rejectStateLeave } from 'core/apis/leave'
 import type { Leave } from 'core/apis/leave/types'
@@ -56,7 +59,7 @@ function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
                 ขอลาโดย {leave.createdByName ?? '-'}
               </p>
               <p className="text-sm text-muted-foreground">
-                {dayjs(leave.startDate).format('DD/MM/YYYY')} – {dayjs(leave.endDate).format('DD/MM/YYYY')}
+                {dayjs(leave.startDate).format('D MMMM YYYY')} – {dayjs(leave.endDate).format('D MMMM YYYY')}
               </p>
               <p className="mt-1 text-sm">{leave.description || '-'}</p>
               <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">

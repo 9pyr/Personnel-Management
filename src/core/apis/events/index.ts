@@ -12,6 +12,20 @@ export interface GetEventsParams {
   userId?: string
 }
 
+function normalizeEvent(raw: Record<string, unknown>): Event {
+  const date = (typeof raw.date === 'string' && raw.date.trim().slice(0, 10)) || ''
+  return {
+    id: typeof raw.id === 'string' ? raw.id : undefined,
+    date,
+    title: (typeof raw.title === 'string' && raw.title.trim()) || '',
+    userId: (raw.userId as string) ?? (raw.user_id as string),
+    userName: (raw.userName as string) ?? (raw.user_name as string),
+    startTime: (raw.startTime as string) ?? (raw.start_time as string) ?? '',
+    endTime: (raw.endTime as string) ?? (raw.end_time as string),
+    eventType: (raw.eventType as string) ?? (raw.event_type as string),
+  }
+}
+
 export async function getEvents(params?: GetEventsParams): Promise<Event[]> {
   const search = new URLSearchParams()
   if (params?.from) search.set('from', params.from)
@@ -20,7 +34,18 @@ export async function getEvents(params?: GetEventsParams): Promise<Event[]> {
   const qs = search.toString()
   const url = qs ? `/events?${qs}` : '/events'
   const { data } = await apiCaller.get<object>(url)
-  return eventListSchema.parse(data)
+  const raw = Array.isArray(data) ? data : (data as { data?: unknown })?.data
+  const list = Array.isArray(raw) ? raw : []
+  const result: Event[] = []
+  for (const item of list) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+    try {
+      result.push(eventSchema.parse(item))
+    } catch {
+      result.push(normalizeEvent(item as Record<string, unknown>))
+    }
+  }
+  return result
 }
 
 export async function getEventById(id: string): Promise<Event> {

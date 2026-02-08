@@ -2,12 +2,13 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import _ from 'lodash'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { createEvent, EVENT_TYPE_LABELS, getEvents, type GetEventsParams } from 'core/apis/events'
 import type { Event } from 'core/apis/events/schemas'
+import { getHolidays, createHoliday, type CompanyHoliday } from 'core/apis/holidays'
 import { getListLeave, type GetListLeaveParams } from 'core/apis/leave'
 import type { Leave } from 'core/apis/leave/types'
 import { getListUsers } from 'core/apis/auth'
@@ -15,8 +16,14 @@ import type { User } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent } from '@/components/ui/card'
 import { DatePickerSingle } from '@/components/ui/date-picker'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { TimePicker } from '@/components/ui/time-picker'
 import {
   Dialog,
@@ -50,6 +57,33 @@ function formatMonthTitle(year: number, month: number): string {
   return dayjs(new Date(year, month - 1, 1)).format('MMMM YYYY')
 }
 
+/** ข้อความสำหรับ hover วันนั้น: วันหยุด, ใครลาบ้าง ถึงวันไหน, งานอะไรบ้าง */
+function buildDayHoverText(
+  dayHolidays: CompanyHoliday[],
+  leaveItems: { leave: Leave; date: string }[],
+  dayEvents: Event[]
+): string {
+  const holidayLines = dayHolidays.map(h => h.name).filter(Boolean)
+  const seen = new Set<string>()
+  const leaveLines: string[] = []
+  for (const { leave } of leaveItems) {
+    const id = leave.id ?? ''
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+    const name = leave.createdByName?.trim() || '—'
+    const endStr = leave.endDate ? dayjs(leave.endDate.slice(0, 10)).format('D MMM') : '—'
+    leaveLines.push(`${name} ถึง ${endStr}`)
+  }
+  const eventLines = dayEvents.map(
+    e => `${e.startTime ?? ''} ${e.title ?? ''}${e.userName ? ` (${e.userName})` : ''}`.trim()
+  )
+  const parts: string[] = []
+  if (holidayLines.length > 0) parts.push(`วันหยุด: ${holidayLines.join(' · ')}`)
+  if (leaveLines.length > 0) parts.push(`การลา: ${leaveLines.join(' · ')}`)
+  if (eventLines.length > 0) parts.push(`งาน: ${eventLines.join(' · ')}`)
+  return parts.join('\n')
+}
+
 export default function CalendarPage() {
   const navigate = useNavigate()
   const user = useContext(AuthContext)
@@ -60,6 +94,7 @@ export default function CalendarPage() {
   const [users, setUsers] = useState<User[]>([])
   const [leaves, setLeaves] = useState<Leave[]>([])
   const [events, setEvents] = useState<Event[]>([])
+  const [holidays, setHolidays] = useState<CompanyHoliday[]>([])
   const [loading, setLoading] = useState(false)
   const [eventDialogOpen, setEventDialogOpen] = useState(false)
   const [eventForm, setEventForm] = useState({
@@ -70,14 +105,33 @@ export default function CalendarPage() {
     eventType: 'OTHER',
   })
   const [eventSubmitting, setEventSubmitting] = useState(false)
+  const [holidayDialogOpen, setHolidayDialogOpen] = useState(false)
+  const [holidayForm, setHolidayForm] = useState({ date: dayjs().format('YYYY-MM-DD'), name: '' })
+  const [holidaySubmitting, setHolidaySubmitting] = useState(false)
 
   const { from, to } = getMonthRange(year, month)
+  const today = dayjs().format('YYYY-MM-DD')
   const displayLeaves = leaves.filter(
     l => (l.status ?? '') !== LEAVE_STATUS.CANCELLED
   )
   const byDate = leavesByDate(displayLeaves)
   const eventsByDay = eventsByDate(events)
-  const today = dayjs().format('YYYY-MM-DD')
+  const holidaysByDay = eventsByDate(holidays)
+
+  /** แต่ละ leave ในเดือนนี้ อยู่วันที่ไหนบ้าง (เรียงวัน) ใช้ทำแถบทาบต่อกัน */
+  const leaveDatesMap = useMemo(() => {
+    const map = new Map<string, string[]>()
+    for (const [date, items] of byDate) {
+      for (const { leave } of items) {
+        const id = leave.id ?? ''
+        if (!id) continue
+        if (!map.has(id)) map.set(id, [])
+        map.get(id)!.push(date)
+      }
+    }
+    for (const arr of map.values()) arr.sort()
+    return map
+  }, [byDate])
 
   const canListUsers = user?.role === 'ADMIN' || user?.role === 'PEOPLE'
   const fetchUsers = useCallback(async () => {
@@ -97,7 +151,13 @@ export default function CalendarPage() {
     async (params: GetListLeaveParams) => {
       setLoading(true)
       try {
-        const list = await getListLeave(params)
+        let list = await getListLeave(params)
+        if (list.length === 0 && params.from && params.to) {
+          const all = await getListLeave({ userId: params.userId })
+          list = all.filter(
+            l => l.startDate <= params.to! && l.endDate >= params.from!
+          )
+        }
         setLeaves(list)
       } catch {
         toast.error('โหลดข้อมูลการลาไม่สำเร็จ')
@@ -112,7 +172,13 @@ export default function CalendarPage() {
   const fetchEvents = useCallback(
     async (params: GetEventsParams) => {
       try {
-        const list = await getEvents(params)
+        let list = await getEvents(params)
+        if (list.length === 0 && params.from && params.to) {
+          const all = await getEvents({ userId: params.userId })
+          list = all.filter(
+            e => (e.date ?? '').slice(0, 10) >= params.from! && (e.date ?? '').slice(0, 10) <= params.to!
+          )
+        }
         setEvents(list)
       } catch {
         toast.error('โหลดข้อมูลงาน/เหตุการณ์ไม่สำเร็จ')
@@ -122,26 +188,31 @@ export default function CalendarPage() {
     []
   )
 
+  const fetchHolidays = useCallback(async (params: { from: string; to: string }) => {
+    try {
+      const list = await getHolidays(params)
+      setHolidays(list)
+    } catch {
+      setHolidays([])
+    }
+  }, [])
+
   useEffect(() => {
     void fetchUsers()
   }, [fetchUsers])
 
   const apiUserId = filterUserId === '' || filterUserId === FILTER_ALL ? undefined : filterUserId
   useEffect(() => {
-    void fetchLeaves({
-      from,
-      to,
-      userId: apiUserId,
-    })
-  }, [from, to, apiUserId, fetchLeaves])
+    void fetchLeaves({ from, to, userId: apiUserId })
+  }, [year, month, from, to, apiUserId, fetchLeaves])
 
   useEffect(() => {
-    void fetchEvents({
-      from,
-      to,
-      userId: apiUserId,
-    })
-  }, [from, to, apiUserId, fetchEvents])
+    void fetchEvents({ from, to, userId: apiUserId })
+  }, [year, month, from, to, apiUserId, fetchEvents])
+
+  useEffect(() => {
+    void fetchHolidays({ from, to })
+  }, [year, month, from, to, fetchHolidays])
 
   const goPrevMonth = () => {
     if (month === 1) {
@@ -160,6 +231,15 @@ export default function CalendarPage() {
       setMonth(previousMonth => previousMonth + 1)
     }
   }
+
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false)
+  const handleMonthSelect = (date: Date | undefined) => {
+    if (!date) return
+    setYear(dayjs(date).year())
+    setMonth(dayjs(date).month() + 1)
+    setMonthPickerOpen(false)
+  }
+  const calendarMonthValue = new Date(year, month - 1, 1)
 
   const firstDay = new Date(year, month - 1, 1)
   const lastDay = new Date(year, month, 0)
@@ -182,8 +262,6 @@ export default function CalendarPage() {
     calendarRows.push(row)
   }
 
-  const todayLeaves = byDate.get(today) ?? []
-  const todayEvents = eventsByDay.get(today) ?? []
   const pendingInList = leaves.filter(leave => (leave.status ?? '') === LEAVE_STATUS.PENDING)
 
   const selectValue = filterUserId === '' ? FILTER_ALL : filterUserId
@@ -192,6 +270,7 @@ export default function CalendarPage() {
   }
 
   const canAddEvent = Boolean(user?.id && (filterUserId === '' || filterUserId === user.id))
+  const canAddHoliday = user?.role === 'PEOPLE' || user?.role === 'ADMIN'
   const handleOpenEventDialog = () => {
     setEventForm({
       date: today,
@@ -227,62 +306,44 @@ export default function CalendarPage() {
     }
   }
 
+  const handleOpenHolidayDialog = () => {
+    setHolidayForm({ date: today, name: '' })
+    setHolidayDialogOpen(true)
+  }
+  const handleCreateHoliday = async () => {
+    if (!holidayForm.name.trim()) {
+      toast.warning('กรุณากรอกชื่อวันหยุด')
+      return
+    }
+    setHolidaySubmitting(true)
+    try {
+      await createHoliday({ date: holidayForm.date, name: holidayForm.name.trim() })
+      toast.success('เพิ่มวันหยุดแล้ว')
+      setHolidayDialogOpen(false)
+      void fetchHolidays({ from, to })
+    } catch {
+      toast.error('เพิ่มวันหยุดไม่สำเร็จ')
+    } finally {
+      setHolidaySubmitting(false)
+    }
+  }
+
   return (
     <div>
       <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">ปฏิทินการลา</h2>
+        <h2 className="text-xl font-semibold">ปฏิทิน</h2>
+        <p className="text-sm text-muted-foreground">
+          แสดงว่าวันไหน ใครทำอะไร อยู่ที่ไหน ตามที่ทุกคนลงไว้ (การลา · งาน/เหตุการณ์ · วันหยุด)
+        </p>
 
-        <Card className="border bg-card">
-          <CardContent className="pt-6">
-            <p className="mb-2 text-sm font-semibold text-muted-foreground">
-              งานวันนี้ · {dayjs().format('D MMMM YYYY')}
-            </p>
-            {todayLeaves.length > 0 || todayEvents.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                {todayLeaves.length > 0 && (
-                  <>
-                    <p className="text-xs text-muted-foreground">การลา</p>
-                    {todayLeaves.map(({ leave }) => {
-                      const name = leave.createdByName ?? '—'
-                      const isMe = user?.id && leave.createdByUserId === user.id
-                      return (
-                        <p key={leave.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-                          <span>{name}</span>
-                          {isMe && <span className="text-primary">(คุณ)</span>}
-                          <LeaveStatusBadge statusKey={leave.status} className="shrink-0" />
-                        </p>
-                      )
-                    })}
-                  </>
-                )}
-                {todayEvents.length > 0 && (
-                  <>
-                    <p className="text-xs text-muted-foreground">งาน / เหตุการณ์</p>
-                    {todayEvents.map(event => (
-                      <p key={event.id} className="text-sm">
-                        {event.startTime}
-                        {event.endTime ? `–${event.endTime}` : ''} {event.title}
-                        {event.userName && (
-                          <span className="ml-1 text-muted-foreground">({event.userName})</span>
-                        )}
-                      </p>
-                    ))}
-                  </>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">วันนี้ไม่มีรายการลาหรืองาน</p>
-            )}
-            {!_.isEmpty(pendingInList) && (
-              <p
-                className="mt-3 cursor-pointer text-sm text-primary"
-                onClick={() => navigate('/leave')}
-              >
-                คำขอลารอการดำเนินการ {pendingInList.length} รายการ →
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        {!_.isEmpty(pendingInList) && (
+          <p
+            className="cursor-pointer text-sm text-primary"
+            onClick={() => navigate('/leave')}
+          >
+            คำขอลารอการดำเนินการ {pendingInList.length} รายการ →
+          </p>
+        )}
 
         <Card className="border bg-card">
           <CardContent className="pt-6">
@@ -297,9 +358,23 @@ export default function CalendarPage() {
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
-                <span className="min-w-[180px] text-center text-lg font-semibold">
-                  {formatMonthTitle(year, month)}
-                </span>
+                <Popover open={monthPickerOpen} onOpenChange={setMonthPickerOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="min-w-[180px] rounded px-2 py-1 text-center text-lg font-semibold hover:bg-accent/50"
+                      aria-label="เลือกเดือน"
+                    >
+                      {formatMonthTitle(year, month)}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="center">
+                    <Calendar
+                      selected={calendarMonthValue}
+                      onSelect={handleMonthSelect}
+                    />
+                  </PopoverContent>
+                </Popover>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -310,12 +385,13 @@ export default function CalendarPage() {
                   <ChevronRight className="h-5 w-5" />
                 </Button>
               </div>
+              <span className="text-sm text-muted-foreground">แสดง:</span>
               <Select value={selectValue} onValueChange={handleFilterChange}>
-                <SelectTrigger className="min-w-[200px]">
-                  <SelectValue placeholder="ดูการลาของ" />
+                <SelectTrigger className="min-w-[200px]" aria-label="กรองการลาและงานตามผู้ใช้">
+                  <SelectValue placeholder="ทั้งหมด" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={FILTER_ALL}>ทั้งหมด</SelectItem>
+                  <SelectItem value={FILTER_ALL}>ทั้งหมด (ทุกคน)</SelectItem>
                   {user?.id && <SelectItem value={user.id}>ตัวฉัน</SelectItem>}
                   {users.map(u => (
                     <SelectItem key={u.id} value={u.id}>
@@ -326,16 +402,36 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
               {canAddEvent && (
-                <Button size="sm" onClick={handleOpenEventDialog}>
+                <Button size="sm" variant="outline" onClick={handleOpenEventDialog}>
                   <Plus className="mr-1 h-4 w-4" />
                   เพิ่มงาน
                 </Button>
               )}
+              {canAddHoliday && (
+                <Button size="sm" onClick={handleOpenHolidayDialog}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  เพิ่มวันหยุด
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                onClick={() => {
+                  void fetchLeaves({ from, to, userId: apiUserId })
+                  void fetchEvents({ from, to, userId: apiUserId })
+                  void fetchHolidays({ from, to })
+                }}
+              >
+                {loading ? 'กำลังโหลด...' : 'โหลดใหม่'}
+              </Button>
             </div>
 
             {loading ? (
               <p className="text-muted-foreground">กำลังโหลด...</p>
             ) : (
+              <>
               <div className="overflow-x-auto">
                 <table className="w-full table-fixed border-collapse">
                   <thead>
@@ -343,7 +439,7 @@ export default function CalendarPage() {
                       {WEEKDAY_LABELS.map((label, i) => (
                         <th
                           key={i}
-                          className="w-[14.28%] border border-border bg-muted/50 p-1.5 text-left text-xs font-semibold"
+                          className="w-[14.28%] border border-border bg-muted/60 px-2 py-2 text-left text-xs font-semibold text-foreground"
                         >
                           {label}
                         </th>
@@ -362,41 +458,73 @@ export default function CalendarPage() {
                               />
                             )
                           }
-                          const leaveItems = byDate.get(date) ?? []
+                          const rawLeaveItems = byDate.get(date) ?? []
                           const dayEvents = eventsByDay.get(date) ?? []
+                          const dayHolidays = holidaysByDay.get(date) ?? []
+                          const leaveItems = rawLeaveItems.filter(
+                            (item, i, arr) =>
+                              arr.findIndex(x => (x.leave.id ?? '') === (item.leave.id ?? '')) === i
+                          )
                           const isToday = date === today
-                          return (
+                          const totalCount = leaveItems.length + dayEvents.length + dayHolidays.length
+                          const hoverText =
+                            totalCount > 0 ? buildDayHoverText(dayHolidays, leaveItems, dayEvents) : ''
+                            return (
                             <td
                               key={ci}
-                              className={`min-h-[80px] align-top p-1 ${isToday ? 'bg-accent/50' : ''}`}
+                              className={`min-h-[90px] align-top overflow-visible p-2 ${isToday ? 'bg-accent/50 ring-1 ring-accent' : ''}`}
+                              title={hoverText}
                             >
-                              <span className="text-xs text-muted-foreground">
+                              <span className="block text-lg font-semibold tabular-nums text-foreground">
                                 {dayjs(date).date()}
                               </span>
-                              <div className="mt-1 flex flex-col gap-0.5">
-                                {leaveItems.slice(0, 2).map(({ leave: L }) => (
+                              <div className="mt-1 min-h-[72px] flex flex-col gap-1.5">
+                                {totalCount === 0 ? (
+                                  <p className="py-1 text-[11px] italic text-muted-foreground">ไม่มีรายการ</p>
+                                ) : null}
+                                {dayHolidays.length > 0 && dayHolidays.map(h => (
                                   <span
-                                    key={`l-${L.id}`}
-                                    className={`block truncate px-1 text-xs ${(L.status ?? '') === LEAVE_STATUS.PENDING ? 'bg-amber-500 text-white' : 'bg-primary text-primary-foreground'}`}
-                                    title={`${L.createdByName ?? ''} ${getLeaveStatusLabel(L.status) ? `(${getLeaveStatusLabel(L.status)})` : ''}`}
+                                    key={h.id ?? h.date}
+                                    className="block w-full min-h-[26px] rounded border border-rose-700 bg-rose-600 px-2 py-1.5 text-xs font-medium leading-snug text-white"
+                                    title={h.name}
                                   >
-                                    {(L.createdByName ?? '').slice(0, 8)}
+                                    {h.name ?? 'วันหยุด'}
                                   </span>
                                 ))}
-                                {dayEvents.slice(0, 2).map(event => (
-                                  <span
-                                    key={`e-${event.id}`}
-                                    className="block truncate px-1 text-xs bg-secondary text-secondary-foreground"
-                                    title={`${event.startTime}${event.endTime ? `-${event.endTime}` : ''} ${event.title} ${event.userName ? `(${event.userName})` : ''}`}
-                                  >
-                                    {event.startTime} {(event.title ?? '').slice(0, 6)}
-                                  </span>
-                                ))}
-                                {leaveItems.length + dayEvents.length > 4 && (
-                                  <span className="text-xs text-muted-foreground">
-                                    +{leaveItems.length + dayEvents.length - 4}
-                                  </span>
-                                )}
+                                {leaveItems.length > 0 && leaveItems.map(({ leave: L, date: cellDate }) => {
+                                  const name = (L.createdByName ?? (L as Record<string, unknown>).created_by_name as string)?.trim() || '—'
+                                  const isPending = (L.status ?? '') === LEAVE_STATUS.PENDING
+                                  const dates = leaveDatesMap.get(L.id ?? '') ?? [cellDate]
+                                  const isFirst = dates[0] === cellDate
+                                  const isLast = dates[dates.length - 1] === cellDate
+                                  const isMiddle = !isFirst && !isLast
+                                  const rounded = isFirst && isLast ? 'rounded-md' : isFirst ? 'rounded-l-md' : isLast ? 'rounded-r-md' : 'rounded-none'
+                                  const stretch = isMiddle ? '-mx-2' : ''
+                                  return (
+                                    <span
+                                      key={`l-${L.id}-${cellDate}`}
+                                      className={`block min-h-[26px] w-full min-w-0 border px-2 py-1.5 text-xs font-medium leading-snug text-white ${rounded} ${stretch} ${isPending ? 'border-amber-700 bg-amber-500' : 'border-slate-700 bg-slate-600'} ${isFirst ? '' : ''} ${isMiddle ? 'flex items-center justify-center' : ''}`}
+                                      title={`${name} · ${getLeaveStatusLabel(L.status)}${dates.length > 1 ? ` (${dates.length} วัน)` : ''}`}
+                                    >
+                                      {isFirst ? `${name} หยุด` : '\u00A0'}
+                                    </span>
+                                  )
+                                })}
+                                {dayEvents.length > 0 && dayEvents.map(event => {
+                                  const who = (event.userName ?? (event as Record<string, unknown>).user_name as string)?.trim() || '—'
+                                  const what = (event.title ?? '').trim()
+                                  const timeStr = [event.startTime, event.endTime].filter(Boolean).join('–')
+                                  const label = `${who} ทำงาน`
+                                  return (
+                                    <span
+                                      key={`e-${event.id}`}
+                                      className="block min-h-[26px] w-full rounded-md border border-blue-700 bg-blue-600 px-2 py-1.5 text-xs font-medium leading-snug text-white"
+                                      title={[what && `งาน: ${what}`, timeStr && `เวลา: ${timeStr}`].filter(Boolean).join(' · ') || label}
+                                    >
+                                      {label}
+                                    </span>
+                                  )
+                                })}
                               </div>
                             </td>
                           )
@@ -406,6 +534,12 @@ export default function CalendarPage() {
                   </tbody>
                 </table>
               </div>
+              {!loading && displayLeaves.length === 0 && events.length === 0 && holidays.length === 0 && (
+                <p className="mt-4 text-center text-sm text-muted-foreground">
+                  เดือนนี้ยังไม่มีใครลงกิจกรรม
+                </p>
+              )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -478,6 +612,42 @@ export default function CalendarPage() {
             </Button>
             <Button onClick={handleCreateEvent} disabled={eventSubmitting}>
               {eventSubmitting ? 'กำลังบันทึก...' : 'เพิ่มงาน'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={holidayDialogOpen} onOpenChange={setHolidayDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>เพิ่มวันหยุดบริษัท</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>วันที่</Label>
+              <DatePickerSingle
+                value={holidayForm.date ? new Date(holidayForm.date) : undefined}
+                onChange={d =>
+                  setHolidayForm(f => ({ ...f, date: d ? dayjs(d).format('YYYY-MM-DD') : '' }))
+                }
+                placeholder="เลือกวันที่"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>ชื่อวันหยุด</Label>
+              <Input
+                value={holidayForm.name}
+                onChange={e => setHolidayForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="เช่น วันปีใหม่, วันสงกรานต์"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHolidayDialogOpen(false)}>
+              ยกเลิก
+            </Button>
+            <Button onClick={handleCreateHoliday} disabled={holidaySubmitting}>
+              {holidaySubmitting ? 'กำลังบันทึก...' : 'เพิ่มวันหยุด'}
             </Button>
           </DialogFooter>
         </DialogContent>

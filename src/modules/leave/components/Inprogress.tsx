@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -72,8 +71,8 @@ const Inprogress = () => {
   const tableData = myLeaves.map(leave => ({
     id: leave.id,
     createdByName: leave.createdByName ?? '-',
-    [leaveFields.startDate]: leave.startDate ? dayjs(leave.startDate).format('DD/MM/YYYY') : '-',
-    [leaveFields.endDate]: leave.endDate ? dayjs(leave.endDate).format('DD/MM/YYYY') : '-',
+    [leaveFields.startDate]: leave.startDate ?? '-',
+    [leaveFields.endDate]: leave.endDate ?? '-',
     [leaveFields.description]: (leave.description?.trim() ?? '') ? leave.description : '-',
     [leaveFields.status]: leave.status ?? '-',
   }))

@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import { logger } from '../logger'
 import { clearAuthStorage, getStoredToken } from '../stores/auth'
 
 import { keysToCamelCase, keysToSnakeCase } from './caseTransform'
@@ -35,6 +36,11 @@ apiCaller.interceptors.response.use(
     if (err.response?.data != null && typeof err.response.data === 'object') {
       err.response.data = keysToCamelCase(err.response.data)
     }
+    logger.error('API error', err, {
+      method: err.config?.method,
+      url: err.config?.url,
+      status: err.response?.status,
+    })
     return Promise.reject(err)
   }
 )

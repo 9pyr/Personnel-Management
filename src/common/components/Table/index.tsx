@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import 'dayjs/locale/th'
 import * as React from 'react'
 
 import {
@@ -9,6 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+
+dayjs.locale('th')
 
 type TableCellValue =
   | string
@@ -27,10 +30,18 @@ function isDateLike(val: TableCellValue): val is string | number | Date {
   return typeof val === 'string' || typeof val === 'number' || val instanceof Date
 }
 
+/** แปลงเป็น วัน เดือน ปี (ไทย) เช่น 9 กุมภาพันธ์ 2026 */
+function formatDateDayMonthYear(val: string | number | Date): string {
+  const s = typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val) ? val.slice(0, 10) : val
+  const d = dayjs(s)
+  if (!d.isValid()) return String(val)
+  return d.locale('th').format('D MMMM YYYY')
+}
+
 function toReactNode(val: TableCellValue): React.ReactNode {
   if (val === null || val === undefined) return val
-  if (typeof val === 'boolean' || typeof val === 'object' && '$$typeof' in val) return val
-  if (isDateLike(val) && dayjs(val).isValid()) return dayjs(val).format('DD-MM-YYYY')
+  if (typeof val === 'boolean' || (typeof val === 'object' && '$$typeof' in val)) return val
+  if (isDateLike(val) && dayjs(val).isValid()) return formatDateDayMonthYear(val)
   return val
 }
 
