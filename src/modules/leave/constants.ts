@@ -4,9 +4,10 @@ export enum leaveReason {
 }
 
 export enum leaveFields {
+  leaveTypeId = 'leaveTypeId',
   reason = 'reason',
-  startDate = 'start_date',
-  endDate = 'end_date',
+  startDate = 'startDate',
+  endDate = 'endDate',
   description = 'description',
   status = 'status',
 }

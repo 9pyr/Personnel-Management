@@ -8,6 +8,9 @@ import MuiMenuItem from '@mui/material/MenuItem'
 import { styled } from '@mui/material/styles'
 
 import React, { useState } from 'react'
+import { useSetRecoilState } from 'recoil'
+
+import { authTokenState, authUserState, clearAuthStorage } from 'core/stores/auth'
 
 import { OptionsMenuMenuSx } from '../styles'
 import MenuButton from './MenuButton'
@@ -18,13 +21,26 @@ const MenuItem = styled(MuiMenuItem)({
 
 export default function OptionsMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const setToken = useSetRecoilState(authTokenState)
+  const setUser = useSetRecoilState(authUserState)
   const open = Boolean(anchorEl)
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
   }
+
   const handleClose = () => {
     setAnchorEl(null)
   }
+
+  const handleLogout = () => {
+    clearAuthStorage()
+    setToken(null)
+    setUser(null)
+    handleClose()
+    window.location.href = '/login'
+  }
+
   return (
     <React.Fragment>
       <MenuButton aria-label="Open menu" onClick={handleClick} sx={{ borderColor: 'transparent' }}>
@@ -40,14 +56,10 @@ export default function OptionsMenu() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         sx={OptionsMenuMenuSx}
       >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <Divider />
-        <MenuItem onClick={handleClose}>Add another account</MenuItem>
-        <MenuItem onClick={handleClose}>Settings</MenuItem>
+        <MenuItem onClick={handleClose}>บัญชีของฉัน</MenuItem>
         <Divider />
         <MenuItem
-          onClick={handleClose}
+          onClick={handleLogout}
           sx={{
             [`& .${listItemIconClasses.root}`]: {
               ml: 'auto',
@@ -55,7 +67,7 @@ export default function OptionsMenu() {
             },
           }}
         >
-          <ListItemText>Logout</ListItemText>
+          <ListItemText>ออกจากระบบ</ListItemText>
           <ListItemIcon>
             <LogoutRoundedIcon fontSize="small" />
           </ListItemIcon>

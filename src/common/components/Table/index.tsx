@@ -10,14 +10,15 @@ import dayjs from 'dayjs'
 
 import { TableBodyTableRowSx } from './styles'
 
+interface TableColumn {
+  label: string
+  source?: string
+  render?: (row: Record<string, unknown>) => React.ReactNode
+}
+
 interface TableProps {
-  columns: {
-    label: string
-    source: string
-  }[]
-  data: {
-    [key: string]: string | number | null | undefined | boolean
-  }[]
+  columns: TableColumn[]
+  data: Record<string, unknown>[]
   rowClick: (id: string | number | null | undefined | boolean) => void
 }
 
@@ -40,11 +41,17 @@ const Table = ({ columns, data, rowClick }: TableProps) => {
               onClick={() => rowClick?.(row?.id)}
               hover
             >
-              {columns.map(({ source }) => (
-                <TableCell key={`table-body-row-cell:${index}`} className="cursor-pointer">
-                  {typeof row[source] !== 'boolean' && dayjs(row[source]).isValid()
-                    ? dayjs(row[source]).format('DD-MM-YYYY')
-                    : row[source]}
+              {columns.map((col, colIndex) => (
+                <TableCell
+                  key={`table-body-row-cell:${index}-${colIndex}`}
+                  className={col.render ? '' : 'cursor-pointer'}
+                  onClick={col.render ? e => e.stopPropagation() : undefined}
+                >
+                  {col.render
+                    ? col.render(row)
+                    : typeof row[col.source!] !== 'boolean' && dayjs(row[col.source!]).isValid()
+                      ? dayjs(row[col.source!]).format('DD-MM-YYYY')
+                      : (row[col.source!] as React.ReactNode)}
                 </TableCell>
               ))}
             </TableRow>

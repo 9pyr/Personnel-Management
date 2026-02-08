@@ -28,10 +28,17 @@ const DatePickerInput = ({ name, label, ...props }: DatePickerInputProps) => {
               label={label}
               {...field}
               value={dayjs(value)}
-              onChange={value => onChange(dayjs(value).toISOString())}
+              onChange={val => onChange(dayjs(val).toISOString())}
               {...props}
               format="DD-MM-YYYY"
               className="w-full"
+              slotProps={{
+                ...props.slotProps,
+                textField: {
+                  ...props.slotProps?.textField,
+                  InputLabelProps: { shrink: true, ...props.slotProps?.textField?.InputLabelProps },
+                },
+              }}
             />
           </LocalizationProvider>
         )

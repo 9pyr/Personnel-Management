@@ -1,0 +1,269 @@
+import EditIcon from '@mui/icons-material/Edit'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Stack,
+} from '@mui/material'
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useRecoilValue } from 'recoil'
+
+import Form from 'common/components/Form'
+import Select, { type SelectOptionGroup } from 'common/components/Input/Select'
+import TextInput from 'common/components/Input/Text'
+import Table from 'common/components/Table'
+import { createUser, getListUsers, updateUser } from 'core/apis/auth'
+import type { CreateUserRequest, Role, User } from 'core/apis/auth/types'
+import { authUserState } from 'core/stores/auth'
+import { useSnackbar } from 'notistack'
+
+const ROLE_OPTIONS: { label: string; value: Role }[] = [
+  { label: 'Admin', value: 'ADMIN' },
+  { label: 'การบุคคล (HR)', value: 'PEOPLE' },
+  { label: 'Manager', value: 'MANAGER' },
+  { label: 'Staff', value: 'STAFF' },
+]
+
+const DEPARTMENT_OPTIONS = [
+  { label: '-- ไม่ระบุ --', value: '' },
+  { label: 'ฝ่ายบริหาร', value: 'ฝ่ายบริหาร' },
+  { label: 'ฝ่ายบุคคล', value: 'ฝ่ายบุคคล' },
+  { label: 'ฝ่ายการพยาบาล', value: 'ฝ่ายการพยาบาล' },
+  { label: 'ฝ่ายการแพทย์', value: 'ฝ่ายการแพทย์' },
+  { label: 'ฝ่ายบัญชี', value: 'ฝ่ายบัญชี' },
+]
+
+const DEPARTMENT_ORDER = ['ฝ่ายบริหาร', 'ฝ่ายบุคคล', 'ฝ่ายการพยาบาล', 'ฝ่ายการแพทย์', 'ฝ่ายบัญชี']
+
+function buildApproverOptionGroups(
+  users: User[],
+  excludeUserId?: string
+): SelectOptionGroup[] {
+  const filtered = excludeUserId ? users.filter(u => u.id !== excludeUserId) : users
+  const noAssign = [{ groupLabel: 'ไม่ระบุ', options: [{ value: '', label: '-- ไม่ระบุ --' }] }]
+  const byDept = DEPARTMENT_ORDER.map(dept => ({
+    groupLabel: dept,
+    options: filtered
+      .filter(u => (u.department ?? '') === dept)
+      .map(u => ({ value: u.id, label: `${u.name} (${u.email}) — ${u.role}` })),
+  })).filter(g => g.options.length > 0)
+  const others = filtered.filter(
+    u => !u.department || !DEPARTMENT_ORDER.includes(u.department)
+  )
+  const otherGroup =
+    others.length > 0
+      ? [
+          {
+            groupLabel: 'อื่นๆ',
+            options: others.map(u => ({
+              value: u.id,
+              label: `${u.name} (${u.email}) — ${u.role}`,
+            })),
+          },
+        ]
+      : []
+  return [...noAssign, ...byDept, ...otherGroup]
+}
+
+const getColumns = (onEditApprover: (row: Record<string, unknown>) => void) => [
+  { label: 'ชื่อ', source: 'name' },
+  { label: 'อีเมล', source: 'email' },
+  { label: 'บทบาท', source: 'role' },
+  {
+    label: 'แผนก/ฝ่าย',
+    render: (row: Record<string, string | number | null | undefined>) =>
+      row.department ? String(row.department) : '-',
+  },
+  {
+    label: 'ผู้มีสิทธิอนุมัติ',
+    render: (row: Record<string, string | number | null | undefined | boolean>) =>
+      row.managerId ? row.manager_name ?? row.managerId : '-',
+  },
+  {
+    label: 'จัดการ',
+    render: (row: Record<string, unknown>) => (
+      <IconButton
+        size="small"
+        aria-label="แก้ไขผู้มีสิทธิอนุมัติ"
+        onClick={e => {
+          e.stopPropagation()
+          onEditApprover(row)
+        }}
+      >
+        <EditIcon fontSize="small" />
+      </IconButton>
+    ),
+  },
+]
+
+const UserListPage = () => {
+  const navigate = useNavigate()
+  const { enqueueSnackbar } = useSnackbar()
+  const currentUser = useRecoilValue(authUserState)
+  const [users, setUsers] = useState<User[]>([])
+  const [open, setOpen] = useState(false)
+  const [editUser, setEditUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const list = await getListUsers()
+      setUsers(list)
+    } catch {
+      enqueueSnackbar('โหลดรายชื่อผู้ใช้ไม่สำเร็จ', { variant: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }, [enqueueSnackbar])
+
+  useEffect(() => {
+    const allowed = currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE'
+    if (!allowed) {
+      navigate('/', { replace: true })
+      return
+    }
+    void fetchUsers()
+  }, [currentUser?.role, navigate, fetchUsers])
+
+  const allowed = currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE'
+  if (!allowed) {
+    return null
+  }
+
+  const tableData = users.map(u => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    role: u.role,
+    department: u.department ?? '',
+    managerId: u.managerId ?? '',
+    manager_name: users.find(m => m.id === u.managerId)?.name,
+  }))
+
+  return (
+    <Box>
+      <Stack spacing={2}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <strong>จัดการผู้ใช้</strong>
+          <Button variant="contained" onClick={() => setOpen(true)}>
+            เพิ่มผู้ใช้
+          </Button>
+        </Stack>
+        {!loading && (
+          <Table
+            columns={getColumns(row =>
+              setEditUser(users.find(u => u.id === row.id) ?? null)
+            )}
+            data={tableData}
+            rowClick={() => {}}
+          />
+        )}
+      </Stack>
+
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <Form
+          defaultValues={{
+            email: '',
+            password: '',
+            name: '',
+            role: 'STAFF' as Role,
+            department: '',
+            managerId: '',
+          }}
+          onSubmit={async values => {
+            const payload: CreateUserRequest = {
+              email: values.email as string,
+              password: values.password as string,
+              name: values.name as string,
+              role: values.role as Role,
+              department: (values.department as string) || undefined,
+            }
+            if (values.role === 'STAFF' && values.managerId) {
+              payload.managerId = values.managerId as string
+            }
+            await createUser(payload)
+            enqueueSnackbar('เพิ่มผู้ใช้สำเร็จ', { variant: 'success' })
+            setOpen(false)
+            void fetchUsers()
+          }}
+        >
+          <DialogTitle>เพิ่มผู้ใช้ใหม่</DialogTitle>
+          <DialogContent>
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <TextInput name="email" label="อีเมล" type="email" required />
+              <TextInput name="password" label="รหัสผ่าน" type="password" required />
+              <TextInput name="name" label="ชื่อ" required />
+              <Select name="role" label="บทบาท" options={ROLE_OPTIONS} />
+              <Select name="department" label="แผนก/ฝ่าย" options={DEPARTMENT_OPTIONS} />
+              <Select
+                name="managerId"
+                label="ผู้มีสิทธิอนุมัติ (สำหรับ Staff)"
+                options={[]}
+                optionGroups={buildApproverOptionGroups(users)}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)}>ยกเลิก</Button>
+            <Button type="submit" variant="contained">
+              บันทึก
+            </Button>
+          </DialogActions>
+        </Form>
+      </Dialog>
+
+      <Dialog open={!!editUser} onClose={() => setEditUser(null)} maxWidth="sm" fullWidth>
+        <DialogTitle>แก้ไขผู้ใช้</DialogTitle>
+        {editUser && (
+          <Form
+            key={editUser.id}
+            defaultValues={{
+              role: editUser.role,
+              department: editUser.department ?? '',
+              managerId: editUser.managerId ?? '',
+            }}
+            onSubmit={async values => {
+              await updateUser(editUser.id, {
+                role: values.role as Role,
+                department: values.department as string,
+                managerId: values.managerId === '' ? '' : (values.managerId as string),
+              })
+              enqueueSnackbar('บันทึกแล้ว', { variant: 'success' })
+              setEditUser(null)
+              void fetchUsers()
+            }}
+          >
+            <DialogContent>
+              <Stack spacing={2} sx={{ pt: 1 }}>
+                <Box>
+                  <strong>{editUser.name}</strong> — {editUser.email}
+                </Box>
+                <Select name="role" label="บทบาท" options={ROLE_OPTIONS} />
+                <Select name="department" label="แผนก/ฝ่าย" options={DEPARTMENT_OPTIONS} />
+                <Select
+                  name="managerId"
+                  label="ผู้มีสิทธิอนุมัติ (สำหรับ Staff)"
+                  options={[]}
+                  optionGroups={buildApproverOptionGroups(users, editUser.id)}
+                />
+              </Stack>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditUser(null)}>ยกเลิก</Button>
+              <Button type="submit" variant="contained">
+                บันทึก
+              </Button>
+            </DialogActions>
+          </Form>
+        )}
+      </Dialog>
+    </Box>
+  )
+}
+
+export default UserListPage

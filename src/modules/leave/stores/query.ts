@@ -4,7 +4,6 @@ import { selector } from 'recoil'
 export const leaveListState = selector({
   key: 'leaveListState',
   get: async () => {
-    const { data } = await getListLeave()
-    return data
+    return getListLeave()
   },
 })

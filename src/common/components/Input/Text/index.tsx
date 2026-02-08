@@ -15,7 +15,16 @@ const TextInput = ({ name, label, ...props }: TextInputProps) => {
       control={control}
       name={name}
       render={({ field }) => (
-        <TextField label={label} {...field} {...props} variant="outlined" fullWidth />
+        <TextField
+          label={label}
+          {...field}
+          {...props}
+          variant="outlined"
+          fullWidth
+          InputLabelProps={{
+            ...props.InputLabelProps,
+          }}
+        />
       )}
     />
   )
