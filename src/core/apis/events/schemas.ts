@@ -16,8 +16,8 @@ const eventSchemaRaw = z.object({
   title: z.string(),
   event_type: z.string().optional(),
   eventType: z.string().optional(),
-}).transform(o => {
-  const raw = o as {
+}).transform(object => {
+  const raw = object as {
     user_name?: string
     user_id?: string
     start_time?: string
@@ -25,12 +25,12 @@ const eventSchemaRaw = z.object({
     event_type?: string
   }
   return {
-    ...o,
-    userId: (o as { userId?: string }).userId ?? raw.user_id,
-    userName: (o as { userName?: string }).userName ?? raw.user_name,
-    startTime: (o as { startTime?: string }).startTime ?? raw.start_time ?? '',
-    endTime: (o as { endTime?: string }).endTime ?? raw.end_time,
-    eventType: (o as { eventType?: string }).eventType ?? raw.event_type,
+    ...object,
+    userId: (object as { userId?: string }).userId ?? raw.user_id,
+    userName: (object as { userName?: string }).userName ?? raw.user_name,
+    startTime: (object as { startTime?: string }).startTime ?? raw.start_time ?? '',
+    endTime: (object as { endTime?: string }).endTime ?? raw.end_time,
+    eventType: (object as { eventType?: string }).eventType ?? raw.event_type,
   }
 })
 

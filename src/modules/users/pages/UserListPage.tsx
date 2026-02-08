@@ -1,17 +1,20 @@
 import { Pencil } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
 import Select, { type SelectOptionGroup } from 'common/components/Input/Select'
 import TextInput from 'common/components/Input/Text'
-import Table from 'common/components/Table'
+import Table, { type TableRowData } from 'common/components/Table'
 import { createUser, getListUsers, updateUser } from 'core/apis/auth'
-import type { CreateUserRequest, Role, User } from 'core/apis/auth/types'
-import { authUserState } from 'core/stores/auth'
+import {
+  createUserRequestSchema,
+  updateUserRequestSchema,
+} from 'core/apis/auth/schemas'
+import type { Role, User } from 'core/apis/auth/types'
+import { AuthContext } from 'core/contexts/AuthContext'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -44,25 +47,27 @@ function buildApproverOptionGroups(
   users: User[],
   excludeUserId?: string
 ): SelectOptionGroup[] {
-  const filtered = excludeUserId ? users.filter(u => u.id !== excludeUserId) : users
+  const filtered = excludeUserId
+    ? users.filter(user => user.id !== excludeUserId)
+    : users
   const noAssign = [{ groupLabel: 'ไม่ระบุ', options: [{ value: '', label: '-- ไม่ระบุ --' }] }]
-  const byDept = DEPARTMENT_ORDER.map(dept => ({
-    groupLabel: dept,
+  const byDept = DEPARTMENT_ORDER.map(department => ({
+    groupLabel: department,
     options: filtered
-      .filter(u => (u.department ?? '') === dept)
-      .map(u => ({ value: u.id, label: `${u.name} (${u.email}) — ${u.role}` })),
-  })).filter(g => g.options.length > 0)
+      .filter(user => (user.department ?? '') === department)
+      .map(user => ({ value: user.id, label: `${user.name} (${user.email}) — ${user.role}` })),
+  })).filter(group => group.options.length > 0)
   const others = filtered.filter(
-    u => !u.department || !DEPARTMENT_ORDER.includes(u.department)
+    user => !user.department || !DEPARTMENT_ORDER.includes(user.department)
   )
   const otherGroup =
     others.length > 0
       ? [
           {
             groupLabel: 'อื่นๆ',
-            options: others.map(u => ({
-              value: u.id,
-              label: `${u.name} (${u.email}) — ${u.role}`,
+            options: others.map(user => ({
+              value: user.id,
+              label: `${user.name} (${user.email}) — ${user.role}`,
             })),
           },
         ]
@@ -70,9 +75,9 @@ function buildApproverOptionGroups(
   return [...noAssign, ...byDept, ...otherGroup]
 }
 
-type TableColumnDef = { label: string; source?: string; render?: (row: Record<string, unknown>) => ReactNode }
+type TableColumnDef = { label: string; source?: string; render?: (row: TableRowData) => ReactNode }
 
-const getColumns = (onEditApprover: (row: Record<string, unknown>) => void): TableColumnDef[] => [
+const getColumns = (onEditApprover: (row: TableRowData) => void): TableColumnDef[] => [
   { label: 'ชื่อ', source: 'name' },
   { label: 'อีเมล', source: 'email' },
   { label: 'บทบาท', source: 'role' },
@@ -94,8 +99,8 @@ const getColumns = (onEditApprover: (row: Record<string, unknown>) => void): Tab
         size="icon"
         className="h-8 w-8"
         aria-label="แก้ไขผู้มีสิทธิอนุมัติ"
-        onClick={e => {
-          e.stopPropagation()
+        onClick={event => {
+          event.stopPropagation()
           onEditApprover(row)
         }}
       >
@@ -107,7 +112,7 @@ const getColumns = (onEditApprover: (row: Record<string, unknown>) => void): Tab
 
 const UserListPage = () => {
   const navigate = useNavigate()
-  const currentUser = useRecoilValue(authUserState)
+  const currentUser = useContext(AuthContext)
   const [users, setUsers] = useState<User[]>([])
   const [open, setOpen] = useState(false)
   const [editUser, setEditUser] = useState<User | null>(null)
@@ -138,14 +143,14 @@ const UserListPage = () => {
     return null
   }
 
-  const tableData = users.map(u => ({
-    id: u.id,
-    name: u.name,
-    email: u.email,
-    role: u.role,
-    department: u.department ?? '',
-    managerId: u.managerId ?? '',
-    manager_name: users.find(m => m.id === u.managerId)?.name,
+  const tableData = users.map(user => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    department: user.department ?? '',
+    managerId: user.managerId ?? '',
+    manager_name: users.find(manager => manager.id === user.managerId)?.name,
   }))
 
   return (
@@ -158,7 +163,7 @@ const UserListPage = () => {
         {!loading && (
           <Table
             columns={getColumns(row =>
-              setEditUser(users.find(u => u.id === row.id) ?? null)
+              setEditUser(users.find(user => user.id === row.id) ?? null)
             )}
             data={tableData}
             rowClick={() => {}}
@@ -176,22 +181,24 @@ const UserListPage = () => {
               email: '',
               password: '',
               name: '',
-              role: 'STAFF' as Role,
+              role: 'STAFF',
               department: '',
               managerId: '',
             }}
             onSubmit={async values => {
-              const payload: CreateUserRequest = {
-                email: values.email as string,
-                password: values.password as string,
-                name: values.name as string,
-                role: values.role as Role,
-                department: (values.department as string) || undefined,
+              const parsed = createUserRequestSchema.safeParse({
+                email: values.email,
+                password: values.password,
+                name: values.name,
+                role: values.role,
+                department: values.department || undefined,
+                managerId: values.role === 'STAFF' && values.managerId ? values.managerId : undefined,
+              })
+              if (!parsed.success) {
+                toast.error(parsed.error.errors.map(e => e.message).join(', '))
+                return
               }
-              if (values.role === 'STAFF' && values.managerId) {
-                payload.managerId = values.managerId as string
-              }
-              await createUser(payload)
+              await createUser(parsed.data)
               toast.success('เพิ่มผู้ใช้สำเร็จ')
               setOpen(false)
               void fetchUsers()
@@ -234,11 +241,16 @@ const UserListPage = () => {
                 managerId: editUser.managerId ?? '',
               }}
               onSubmit={async values => {
-                await updateUser(editUser.id, {
-                  role: values.role as Role,
-                  department: values.department as string,
-                  managerId: values.managerId === '' ? '' : (values.managerId as string),
+                const parsed = updateUserRequestSchema.safeParse({
+                  role: values.role,
+                  department: values.department,
+                  managerId: values.managerId === '' ? undefined : values.managerId,
                 })
+                if (!parsed.success) {
+                  toast.error(parsed.error.errors.map(e => e.message).join(', '))
+                  return
+                }
+                await updateUser(editUser.id, parsed.data)
                 toast.success('บันทึกแล้ว')
                 setEditUser(null)
                 void fetchUsers()

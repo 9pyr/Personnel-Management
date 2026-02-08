@@ -17,8 +17,8 @@ dayjs.locale('th')
 
 function findAnnualBalance(balances: LeaveBalanceItem[]): LeaveBalanceItem | null {
   return (
-    balances.find(b => b.code === 'ANNUAL_LEAVE') ??
-    balances.find(b => b.maxDaysPerYear > 0) ??
+    balances.find(balance => balance.code === 'ANNUAL_LEAVE') ??
+    balances.find(balance => balance.maxDaysPerYear > 0) ??
     balances[0] ??
     null
   )

@@ -19,18 +19,18 @@ export async function getEvents(params?: GetEventsParams): Promise<Event[]> {
   if (params?.userId) search.set('user_id', params.userId)
   const qs = search.toString()
   const url = qs ? `/events?${qs}` : '/events'
-  const { data } = await apiCaller.get<unknown>(url)
+  const { data } = await apiCaller.get<object>(url)
   return eventListSchema.parse(data)
 }
 
 export async function getEventById(id: string): Promise<Event> {
-  const { data } = await apiCaller.get<unknown>(`/events/${id}`)
+  const { data } = await apiCaller.get<object>(`/events/${id}`)
   return eventSchema.parse(data)
 }
 
 export async function createEvent(payload: EventCreatePayload): Promise<Event> {
   const body = eventCreatePayloadSchema.parse(payload)
-  const { data } = await apiCaller.post<unknown>('/events', {
+  const { data } = await apiCaller.post<object>('/events', {
     date: body.date,
     start_time: body.startTime,
     end_time: body.endTime,
@@ -42,13 +42,13 @@ export async function createEvent(payload: EventCreatePayload): Promise<Event> {
 
 export async function updateEvent(id: string, payload: EventUpdatePayload): Promise<Event> {
   const body = eventUpdatePayloadSchema.parse(payload)
-  const send: Record<string, unknown> = {}
+  const send: Record<string, string | number | boolean> = {}
   if (body.date != null) send.date = body.date
   if (body.startTime != null) send.start_time = body.startTime
   if (body.endTime != null) send.end_time = body.endTime
   if (body.title != null) send.title = body.title
   if (body.eventType != null) send.event_type = body.eventType
-  const { data } = await apiCaller.put<unknown>(`/events/${id}`, send)
+  const { data } = await apiCaller.put<object>(`/events/${id}`, send)
   return eventSchema.parse(data)
 }
 

@@ -18,12 +18,16 @@ export interface WSMessage {
   replyToUserName?: string
 }
 
+function isWSMessage(payload: object): payload is WSMessage {
+  return payload != null && typeof payload === 'object' && 'type' in payload
+}
+
 const getWsUrl = (): string => {
   const base = apiCaller.defaults.baseURL ?? ''
   return base.replace(/^http/, 'ws') + '/ws'
 }
 
-export function useWebSocket(onMessage: (msg: WSMessage) => void) {
+export function useWebSocket(onMessage: (message: WSMessage) => void) {
   const [connected, setConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -46,8 +50,9 @@ export function useWebSocket(onMessage: (msg: WSMessage) => void) {
     ws.onerror = () => {}
     ws.onmessage = (event: MessageEvent) => {
       try {
-        const msg = JSON.parse(event.data as string) as WSMessage
-        onMessageRef.current(msg)
+        if (typeof event.data !== 'string') return
+        const parsed: object = JSON.parse(event.data)
+        if (isWSMessage(parsed)) onMessageRef.current(parsed)
       } catch {
         // ignore invalid JSON
       }

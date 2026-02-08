@@ -44,9 +44,9 @@ export default function NotificationButton() {
 
   const fetchList = useCallback(async () => {
     try {
-      const res = await getNotifications()
-      setItems(res.items)
-      setUnreadCount(res.unreadCount)
+      const response = await getNotifications()
+      setItems(response.items)
+      setUnreadCount(response.unreadCount)
     } catch {
       setItems([])
       setUnreadCount(0)
@@ -66,7 +66,7 @@ export default function NotificationButton() {
   }
 
   const handleMarkRead = useCallback(
-    async (n: Notification) => {
+    async (notification: Notification) => {
       try {
         await markNotificationRead(n.id)
         setUnreadCount(prev => Math.max(0, prev - 1))
@@ -100,7 +100,12 @@ export default function NotificationButton() {
     try {
       await markAllNotificationsRead()
       setUnreadCount(0)
-      setItems(prev => prev.map(n => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })))
+      setItems(prev =>
+        prev.map(notification => ({
+          ...notification,
+          readAt: notification.readAt ?? new Date().toISOString(),
+        }))
+      )
     } catch {
       // ignore
     } finally {
@@ -136,19 +141,19 @@ export default function NotificationButton() {
             </div>
           ) : (
             <div className="flex flex-col">
-              {items.map(n => (
+              {items.map(notification => (
                 <button
-                  key={n.id}
+                  key={notification.id}
                   type="button"
-                  onClick={() => handleMarkRead(n)}
+                  onClick={() => handleMarkRead(notification)}
                   className={`flex w-full flex-col gap-0.5 border-b border-border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent ${
-                    !n.readAt ? 'border-l-4 border-l-primary bg-accent/50' : ''
+                    !notification.readAt ? 'border-l-4 border-l-primary bg-accent/50' : ''
                   }`}
                 >
-                  <span className={n.readAt ? 'font-normal' : 'font-semibold'}>{n.title}</span>
-                  <span className="text-muted-foreground">{n.body}</span>
+                  <span className={notification.readAt ? 'font-normal' : 'font-semibold'}>{notification.title}</span>
+                  <span className="text-muted-foreground">{notification.body}</span>
                   <span className="text-xs text-muted-foreground">
-                    {formatNotificationTime(n.createdAt)}
+                    {formatNotificationTime(notification.createdAt)}
                   </span>
                 </button>
               ))}

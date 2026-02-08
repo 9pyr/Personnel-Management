@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
@@ -10,12 +9,27 @@ import TextInput from 'common/components/Input/Text'
 import { cancelLeave, createLeave, getLeaveById, updateLeaveById } from 'core/apis/leave'
 import { getListLeaveTypes } from 'core/apis/leave/leaveTypes'
 import type { Leave } from 'core/apis/leave/types'
-import { authUserState } from 'core/stores/auth'
+import { AuthContext } from 'core/contexts/AuthContext'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
-import { leaveFields } from '../constants'
+import { leaveFields, LEAVE_STATUS } from '../constants'
+
+type LeaveFormDefaults = Partial<Leave> & {
+  leaveTypeId: string
+  description: string
+  startDate: string
+  endDate: string
+}
 
 interface LeaveTypeOption {
   label: string
@@ -26,30 +40,26 @@ interface CancelLeaveButtonProps {
   leaveId: string | undefined
   leaveEndDate: string | null
   cancelling: boolean
-  onCancel: (id: string) => Promise<void>
-  onDone: () => void
+  onOpenConfirm: () => void
 }
 
 function CancelLeaveButton({
   leaveId,
   leaveEndDate,
   cancelling,
-  onCancel,
-  onDone,
+  onOpenConfirm,
 }: CancelLeaveButtonProps) {
   const today = new Date().toISOString().slice(0, 10)
   const endDateStr = leaveEndDate ? String(leaveEndDate).slice(0, 10) : ''
   const canCancel = Boolean(endDateStr && endDateStr >= today)
   if (!leaveId) return null
-  const handleClick = () => {
-    void onCancel(leaveId).finally(onDone)
-  }
   return (
     <Button
+      type="button"
       variant="outline"
       disabled={cancelling || !canCancel}
       title={!canCancel && leaveEndDate ? 'ยกเลิกได้เฉพาะก่อนถึงวันที่สิ้นสุดการลา' : undefined}
-      onClick={handleClick}
+      onClick={onOpenConfirm}
       className="border-destructive text-destructive hover:bg-destructive/10"
     >
       ยกเลิกคำขอ
@@ -59,23 +69,24 @@ function CancelLeaveButton({
 
 const LeavePageForm = () => {
   const navigate = useNavigate()
-  const currentUser = useRecoilValue(authUserState)
+  const currentUser = useContext(AuthContext)
   const { pathname } = useLocation()
-  const { id } = useParams()
+  const { id: leaveId } = useParams()
   const isNew = pathname.endsWith('/new')
   const [leaveTypeOptions, setLeaveTypeOptions] = useState<LeaveTypeOption[]>([])
-  const [formDefaults, setFormDefaults] = useState<Record<string, unknown> | null>(null)
+  const [formDefaults, setFormDefaults] = useState<LeaveFormDefaults | null>(null)
   const [isReadOnly, setIsReadOnly] = useState(false)
   const [leaveStatus, setLeaveStatus] = useState<string | null>(null)
   const [leaveEndDate, setLeaveEndDate] = useState<string | null>(null)
   const [cancelling, setCancelling] = useState(false)
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       const types = await getListLeaveTypes()
       if (cancelled) return
-      setLeaveTypeOptions(types.map(t => ({ label: t.name, value: t.id })))
+      setLeaveTypeOptions(types.map(leaveType => ({ label: leaveType.name, value: leaveType.id })))
       if (isNew) {
         setFormDefaults({
           [leaveFields.leaveTypeId]: types[0]?.id ?? '',
@@ -85,7 +96,7 @@ const LeavePageForm = () => {
         })
         return
       }
-      if (!id) {
+      if (!leaveId) {
         setFormDefaults({
           [leaveFields.leaveTypeId]: types[0]?.id ?? '',
           [leaveFields.description]: '',
@@ -94,17 +105,19 @@ const LeavePageForm = () => {
         })
         return
       }
-      const data = await getLeaveById(id)
+      const data = await getLeaveById(leaveId)
       if (cancelled) return
       const notOwner = data.createdByUserId != null && data.createdByUserId !== currentUser?.id
       const approvedOrRejected =
-        data.status === 'APPROVED' || data.status === 'REJECTED' || data.status === 'CANCELLED'
+        data.status === LEAVE_STATUS.APPROVED ||
+        data.status === LEAVE_STATUS.REJECTED ||
+        data.status === LEAVE_STATUS.CANCELLED
       setIsReadOnly(notOwner || approvedOrRejected)
       setLeaveStatus(data.status ?? null)
       setLeaveEndDate(data.endDate ?? null)
       const typeId =
         data.leaveTypeId ??
-        (data.reason ? types.find(t => t.code === data.reason)?.id : undefined) ??
+        (data.reason ? types.find(leaveType => leaveType.code === data.reason)?.id : undefined) ??
         types[0]?.id ??
         ''
       setFormDefaults({
@@ -116,17 +129,18 @@ const LeavePageForm = () => {
     return () => {
       cancelled = true
     }
-  }, [id, isNew, currentUser?.id])
+  }, [leaveId, isNew, currentUser?.id])
 
-  const handleSubmit = async (values: Record<string, unknown>) => {
+  const handleSubmit = async (values: LeaveFormDefaults) => {
     const startDate = String(values.startDate ?? '')
     const endDate = String(values.endDate ?? '')
     const payload: Leave = {
-      ...values,
+      id: values.id,
+      leaveTypeId: values.leaveTypeId ?? '',
+      description: String(values.description ?? ''),
       startDate,
       endDate,
-      description: String(values.description ?? ''),
-    } as Leave
+    }
     if (isNew) {
       if (!startDate || !endDate) {
         toast.warning('กรุณาระบุจากวันที่และถึงวันที่')
@@ -149,7 +163,7 @@ const LeavePageForm = () => {
     <Card className="border">
       <CardContent className="pt-6">
         <Form
-          key={`leave-form-${id ?? 'new'}`}
+          key={`leave-form-${leaveId ?? 'new'}`}
           defaultValues={formDefaults}
           onSubmit={handleSubmit}
         >
@@ -181,27 +195,59 @@ const LeavePageForm = () => {
               {!isReadOnly && (
                 <Button type="submit">บันทึก</Button>
               )}
-              {(leaveStatus === 'PENDING' || leaveStatus === 'APPROVED') && !isNew && (
-                <CancelLeaveButton
-                  leaveId={id}
-                  leaveEndDate={leaveEndDate}
-                  cancelling={cancelling}
-                  onCancel={async (leaveIdToCancel) => {
-                    setCancelling(true)
-                    try {
-                      await cancelLeave(leaveIdToCancel)
-                      toast.success('ยกเลิกคำขอลาแล้ว')
-                      window.dispatchEvent(new CustomEvent('leave-list-refresh'))
-                      navigate('/leave', { replace: true })
-                    } catch {
-                      toast.error('ยกเลิกไม่สำเร็จ')
-                    }
-                  }}
-                  onDone={() => setCancelling(false)}
-                />
+              {(leaveStatus === LEAVE_STATUS.PENDING || leaveStatus === LEAVE_STATUS.APPROVED) && !isNew && (
+                <>
+                  <CancelLeaveButton
+                    leaveId={leaveId}
+                    leaveEndDate={leaveEndDate}
+                    cancelling={cancelling}
+                    onOpenConfirm={() => setConfirmCancelOpen(true)}
+                  />
+                  <Dialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+                    <DialogContent showClose={true}>
+                      <DialogHeader>
+                        <DialogTitle>ยืนยันการยกเลิกคำขอลา</DialogTitle>
+                        <DialogDescription>
+                          คุณต้องการยกเลิกคำขอลานี้ใช่หรือไม่ การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setConfirmCancelOpen(false)}
+                        >
+                          ไม่ ยกเลิก
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          disabled={cancelling}
+                          onClick={async () => {
+                            if (!leaveId) return
+                            setCancelling(true)
+                            try {
+                              await cancelLeave(leaveId)
+                              toast.success('ยกเลิกคำขอลาแล้ว')
+                              setConfirmCancelOpen(false)
+                              window.dispatchEvent(new CustomEvent('leave-list-refresh'))
+                              navigate('/leave', { replace: true })
+                            } catch {
+                              toast.error('ยกเลิกไม่สำเร็จ')
+                            } finally {
+                              setCancelling(false)
+                            }
+                          }}
+                        >
+                          {cancelling ? 'กำลังดำเนินการ...' : 'ยืนยันยกเลิก'}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
               <Button variant="outline" type="button" onClick={() => navigate('/leave')}>
-                {isReadOnly || (leaveStatus !== 'PENDING' && leaveStatus !== null)
+                {isReadOnly || (leaveStatus !== LEAVE_STATUS.PENDING && leaveStatus !== null)
                   ? 'กลับ'
                   : 'ยกเลิก'}
               </Button>

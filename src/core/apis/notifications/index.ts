@@ -4,7 +4,7 @@ import { notificationsListResponseSchema } from './schemas'
 import type { NotificationsListResponse } from './types'
 
 export async function getNotifications(): Promise<NotificationsListResponse> {
-  const { data } = await apiCaller.get<unknown>('/notifications')
+  const { data } = await apiCaller.get<object>('/notifications')
   return notificationsListResponseSchema.parse(data)
 }
 

@@ -5,11 +5,11 @@ import type { Leave } from 'core/apis/leave/types'
  */
 function datesBetween(start: string, end: string): string[] {
   const out: string[] = []
-  const d = new Date(start)
+  const currentDate = new Date(start)
   const endDate = new Date(end)
-  while (d <= endDate) {
-    out.push(d.toISOString().slice(0, 10))
-    d.setDate(d.getDate() + 1)
+  while (currentDate <= endDate) {
+    out.push(currentDate.toISOString().slice(0, 10))
+    currentDate.setDate(currentDate.getDate() + 1)
   }
   return out
 }
@@ -38,23 +38,29 @@ export function leavesByDate(leaves: Leave[]): Map<string, LeaveOnDate[]> {
 }
 
 export function getMonthRange(year: number, month: number): { from: string; to: string } {
-  const d = new Date(year, month - 1, 1)
-  const from = d.toISOString().slice(0, 10)
-  d.setMonth(d.getMonth() + 1)
-  d.setDate(0)
-  const to = d.toISOString().slice(0, 10)
+  const date = new Date(year, month - 1, 1)
+  const from = date.toISOString().slice(0, 10)
+  date.setMonth(date.getMonth() + 1)
+  date.setDate(0)
+  const to = date.toISOString().slice(0, 10)
   return { from, to }
 }
 
 export function eventsByDate<T extends { date: string }>(events: T[]): Map<string, T[]> {
   const map = new Map<string, T[]>()
-  for (const ev of events) {
-    const d = ev.date?.slice(0, 10)
-    if (!d) continue
-    const list = map.get(d) ?? []
-    list.push(ev)
-    map.set(d, list)
+  for (const event of events) {
+    const dateKey = event.date?.slice(0, 10)
+    if (!dateKey) continue
+    const list = map.get(dateKey) ?? []
+    list.push(event)
+    map.set(dateKey, list)
   }
-  map.forEach(list => list.sort((a, b) => String((a as { startTime?: string }).startTime).localeCompare(String((b as { startTime?: string }).startTime))))
+  map.forEach(list =>
+    list.sort((first, second) =>
+      String((first as { startTime?: string }).startTime).localeCompare(
+        String((second as { startTime?: string }).startTime)
+      )
+    )
+  )
   return map
 }

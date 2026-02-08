@@ -1,10 +1,9 @@
 import { Trash2 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 import { toast } from 'sonner'
 
-import Table from 'common/components/Table'
+import Table, { type TableRowData } from 'common/components/Table'
 import {
   createLeaveType,
   deleteLeaveType,
@@ -12,7 +11,7 @@ import {
   updateLeaveType,
   type LeaveType,
 } from 'core/apis/leave/leaveTypes'
-import { authUserState } from 'core/stores/auth'
+import { AuthContext } from 'core/contexts/AuthContext'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -25,20 +24,28 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+interface ErrWithResponse {
+  response?: { data?: object }
+}
+
+function isErrWithResponse(x: object): x is ErrWithResponse {
+  return 'response' in x
+}
+
 const COLUMNS = [
   { label: 'รหัส', source: 'code' },
   { label: 'ชื่อประเภท', source: 'name' },
   { label: 'จำนวนวัน/ปี', source: 'maxDaysPerYearLabel' },
   {
     label: 'การดำเนินการ',
-    render: (row: Record<string, unknown>) => (
+    render: (row: TableRowData & { _onDelete?: () => void }) => (
       <Button
         variant="ghost"
         size="icon"
         className="h-8 w-8 text-destructive hover:text-destructive"
         onClick={e => {
           e.stopPropagation()
-          ;(row._onDelete as () => void)?.()
+          typeof row._onDelete === 'function' && row._onDelete()
         }}
         aria-label="ลบ"
       >
@@ -50,7 +57,7 @@ const COLUMNS = [
 
 const LeaveTypesPage = () => {
   const navigate = useNavigate()
-  const user = useRecoilValue(authUserState)
+  const user = useContext(AuthContext)
   const [types, setTypes] = useState<LeaveType[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -119,15 +126,18 @@ const LeaveTypesPage = () => {
       }
       setOpen(false)
       void loadTypes()
-    } catch (e: unknown) {
-      const msg = e && typeof e === 'object' && 'response' in e && (e.response as { data?: unknown })?.data
-      toast.error(msg ? String(msg) : 'ดำเนินการไม่สำเร็จ')
+    } catch (error) {
+      let errorData: object | null = null
+      if (error != null && typeof error === 'object' && isErrWithResponse(error)) {
+        errorData = error.response?.data ?? null
+      }
+      toast.error(errorData != null ? String(errorData) : 'ดำเนินการไม่สำเร็จ')
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (leaveTypeId: string) => {
     try {
-      await deleteLeaveType(id)
+      await deleteLeaveType(leaveTypeId)
       toast.success('ลบแล้ว')
       void loadTypes()
     } catch {
@@ -137,12 +147,12 @@ const LeaveTypesPage = () => {
 
   if (!canManage) return null
 
-  const tableData = types.map(t => ({
-    id: t.id,
-    code: t.code,
-    name: t.name,
-    maxDaysPerYearLabel: (t.maxDaysPerYear ?? 0) > 0 ? `${t.maxDaysPerYear} วัน/ปี` : 'ไม่จำกัด',
-    _onDelete: () => handleDelete(t.id),
+  const tableData = types.map(leaveType => ({
+    id: leaveType.id,
+    code: leaveType.code,
+    name: leaveType.name,
+    maxDaysPerYearLabel: (leaveType.maxDaysPerYear ?? 0) > 0 ? `${leaveType.maxDaysPerYear} วัน/ปี` : 'ไม่จำกัด',
+    _onDelete: () => handleDelete(leaveType.id),
   }))
 
   return (
@@ -156,9 +166,9 @@ const LeaveTypesPage = () => {
           <Table
             columns={COLUMNS}
             data={tableData}
-            rowClick={id => {
-              const t = id ? types.find(x => x.id === id) : undefined
-              if (t) handleOpenEdit(t)
+            rowClick={rowId => {
+              const foundType = rowId ? types.find(typeItem => typeItem.id === rowId) : undefined
+              if (foundType) handleOpenEdit(foundType)
             }}
           />
         )}

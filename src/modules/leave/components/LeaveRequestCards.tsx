@@ -4,6 +4,8 @@ import { toast } from 'sonner'
 import { nextStateLeave, rejectStateLeave } from 'core/apis/leave'
 import type { Leave } from 'core/apis/leave/types'
 
+import LeaveStatusBadge from './LeaveStatusBadge'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 
@@ -57,8 +59,9 @@ function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
                 {dayjs(leave.startDate).format('DD/MM/YYYY')} – {dayjs(leave.endDate).format('DD/MM/YYYY')}
               </p>
               <p className="mt-1 text-sm">{leave.description || '-'}</p>
-              <p className="mt-2 block text-xs text-muted-foreground">
-                สถานะ: {leave.status}
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>สถานะ:</span>
+                <LeaveStatusBadge statusKey={leave.status} />
               </p>
             </CardContent>
             <CardFooter className="flex gap-2">

@@ -59,9 +59,9 @@ export function TimePicker({
   const [minute, setMinute] = React.useState(parsed.minute)
 
   React.useEffect(() => {
-    const p = parseTime(value)
-    setHour(p.hour)
-    setMinute(p.minute)
+    const parsedTime = parseTime(value)
+    setHour(parsedTime.hour)
+    setMinute(parsedTime.minute)
   }, [value])
 
   const stepMinutes = Math.max(1, Math.round(step / 60))
@@ -72,14 +72,14 @@ export function TimePicker({
 
   const displayLabel = value ? formatTime(parsed.hour, parsed.minute) : placeholder
 
-  const handleSelect = (h: number, m: number) => {
-    setHour(h)
-    setMinute(m)
+  const handleSelect = (hourValue: number, minuteValue: number) => {
+    setHour(hourValue)
+    setMinute(minuteValue)
     onChange?.(formatTime(h, m))
   }
 
-  const handleHourClick = (h: number) => handleSelect(h, minute)
-  const handleMinuteClick = (m: number) => handleSelect(hour, m)
+  const handleHourClick = (hourValue: number) => handleSelect(hourValue, minute)
+  const handleMinuteClick = (minuteValue: number) => handleSelect(hour, minuteValue)
 
   const hourScrollRef = React.useRef<HTMLDivElement>(null)
   const minuteScrollRef = React.useRef<HTMLDivElement>(null)
@@ -87,33 +87,33 @@ export function TimePicker({
   React.useEffect(() => {
     if (!open) return
     const cleanupRef = { current: () => {} }
-    const wheelHandler = (e: WheelEvent, el: HTMLDivElement) => {
-      const { scrollTop, scrollHeight, clientHeight } = el
-      const canScrollUp = scrollTop > 0 && e.deltaY < 0
+    const wheelHandler = (wheelEvent: WheelEvent, scrollElement: HTMLDivElement) => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollElement
+      const canScrollUp = scrollTop > 0 && wheelEvent.deltaY < 0
       const canScrollDown =
-        scrollTop < scrollHeight - clientHeight && e.deltaY > 0
+        scrollTop < scrollHeight - clientHeight && wheelEvent.deltaY > 0
       if (canScrollUp || canScrollDown) {
-        e.preventDefault()
-        el.scrollTop += e.deltaY
+        wheelEvent.preventDefault()
+        scrollElement.scrollTop += wheelEvent.deltaY
       }
     }
     let cancelled = false
-    const id = window.setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       if (cancelled) return
-      const h = hourScrollRef.current
-      const m = minuteScrollRef.current
-      const boundH = (e: WheelEvent) => h && wheelHandler(e, h)
-      const boundM = (e: WheelEvent) => m && wheelHandler(e, m)
-      h?.addEventListener('wheel', boundH, { passive: false })
-      m?.addEventListener('wheel', boundM, { passive: false })
+      const hourElement = hourScrollRef.current
+      const minuteElement = minuteScrollRef.current
+      const boundHour = (wheelEvent: WheelEvent) => hourElement && wheelHandler(wheelEvent, hourElement)
+      const boundMinute = (wheelEvent: WheelEvent) => minuteElement && wheelHandler(wheelEvent, minuteElement)
+      hourElement?.addEventListener('wheel', boundHour, { passive: false })
+      minuteElement?.addEventListener('wheel', boundMinute, { passive: false })
       cleanupRef.current = () => {
-        h?.removeEventListener('wheel', boundH)
-        m?.removeEventListener('wheel', boundM)
+        hourElement?.removeEventListener('wheel', boundHour)
+        minuteElement?.removeEventListener('wheel', boundMinute)
       }
     }, 0)
     return () => {
       cancelled = true
-      window.clearTimeout(id)
+      window.clearTimeout(timeoutId)
       cleanupRef.current()
     }
   }, [open])
@@ -151,17 +151,17 @@ export function TimePicker({
               className="h-[200px] w-14 overflow-y-auto overflow-x-hidden rounded-md border border-input bg-background"
             >
               <div className="p-1">
-                {HOUR_OPTIONS.map(h => (
+                {HOUR_OPTIONS.map(hourOption => (
                   <button
-                    key={h}
+                    key={hourOption}
                     type="button"
-                    onClick={() => handleHourClick(h)}
+                    onClick={() => handleHourClick(hourOption)}
                     className={cn(
                       PICKER_ITEM_CLASS,
-                      hour === h && PICKER_ITEM_SELECTED
+                      hour === hourOption && PICKER_ITEM_SELECTED
                     )}
                   >
-                    {String(h).padStart(2, '0')}
+                    {String(hourOption).padStart(2, '0')}
                   </button>
                 ))}
               </div>
@@ -171,17 +171,17 @@ export function TimePicker({
               className="h-[200px] w-14 overflow-y-auto overflow-x-hidden rounded-md border border-input bg-background"
             >
               <div className="p-1">
-                {minuteOptions.map(m => (
+                {minuteOptions.map(minuteOption => (
                   <button
-                    key={m}
+                    key={minuteOption}
                     type="button"
-                    onClick={() => handleMinuteClick(m)}
+                    onClick={() => handleMinuteClick(minuteOption)}
                     className={cn(
                       PICKER_ITEM_CLASS,
-                      minute === m && PICKER_ITEM_SELECTED
+                      minute === minuteOption && PICKER_ITEM_SELECTED
                     )}
                   >
-                    {String(m).padStart(2, '0')}
+                    {String(minuteOption).padStart(2, '0')}
                   </button>
                 ))}
               </div>

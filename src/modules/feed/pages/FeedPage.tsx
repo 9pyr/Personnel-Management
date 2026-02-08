@@ -3,9 +3,8 @@ import 'dayjs/locale/th'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Pencil, Trash2 } from 'lucide-react'
 import _ from 'lodash'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 import { toast } from 'sonner'
 
 import {
@@ -19,7 +18,7 @@ import {
   updatePost,
 } from 'core/apis/feed'
 import type { FeedComment, FeedPost } from 'core/apis/feed/types'
-import { authUserState } from 'core/stores/auth'
+import { AuthContext } from 'core/contexts/AuthContext'
 import { FEED_COMMENT_EVENT, type FeedCommentEventDetail } from '../feedRealtime'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -33,11 +32,11 @@ dayjs.locale('th')
 const FEED_PAGE_SIZE = 20
 
 function formatPostTime(iso: string): string {
-  const d = dayjs(iso)
-  const diffDays = dayjs().diff(d, 'day')
-  if (diffDays === 0) return d.fromNow()
-  if (diffDays < 7) return d.fromNow()
-  return d.format('D MMM YYYY, HH:mm')
+  const date = dayjs(iso)
+  const diffDays = dayjs().diff(date, 'day')
+  if (diffDays === 0) return date.fromNow()
+  if (diffDays < 7) return date.fromNow()
+  return date.format('D MMM YYYY, HH:mm')
 }
 
 export interface CommentTreeNode extends FeedComment {
@@ -46,14 +45,14 @@ export interface CommentTreeNode extends FeedComment {
 
 function buildCommentTree(comments: FeedComment[]): CommentTreeNode[] {
   const byId = new Map<string, CommentTreeNode>()
-  comments.forEach(c => {
-    byId.set(c.id, { ...c, replies: [] })
+  comments.forEach(comment => {
+    byId.set(comment.id, { ...comment, replies: [] })
   })
   const roots: CommentTreeNode[] = []
-  comments.forEach(c => {
-    const node = byId.get(c.id)
+  comments.forEach(comment => {
+    const node = byId.get(comment.id)
     if (!node) return
-    const parentId = c.parentId ?? undefined
+    const parentId = comment.parentId ?? undefined
     if (_.isNil(parentId) || !byId.has(parentId)) {
       roots.push(node)
     } else {
@@ -61,8 +60,16 @@ function buildCommentTree(comments: FeedComment[]): CommentTreeNode[] {
       if (parent) parent.replies.push(node)
     }
   })
-  roots.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-  byId.forEach(n => n.replies.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()))
+  roots.sort(
+    (first, second) =>
+      new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+  )
+  byId.forEach(node => {
+    node.replies.sort(
+      (first, second) =>
+        new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+    )
+  })
   return roots
 }
 
@@ -379,12 +386,28 @@ export interface FeedHighlightState {
   highlightCommentId?: string
 }
 
+function isFeedHighlightState(
+  state: object | null | undefined
+): state is FeedHighlightState {
+  return (
+    state != null &&
+    typeof state === 'object' &&
+    ('highlightPostId' in state || 'highlightCommentId' in state)
+  )
+}
+
+function isFeedCommentEventDetail(detail: object): detail is FeedCommentEventDetail {
+  return 'postId' in detail && 'comment' in detail
+}
+
 const FeedPage = () => {
-  const user = useRecoilValue(authUserState)
+  const user = useContext(AuthContext)
   const location = useLocation()
   const navigate = useNavigate()
   const sentinelRef = useRef<HTMLDivElement>(null)
-  const highlightState = location.state as FeedHighlightState | null | undefined
+  const highlightState = isFeedHighlightState(location.state)
+    ? location.state
+    : undefined
 
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -408,8 +431,14 @@ const FeedPage = () => {
     }
   }, [])
 
-  const sortPostsNewestFirst = useCallback((items: FeedPost[]) =>
-    [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [])
+  const sortPostsNewestFirst = useCallback(
+    (items: FeedPost[]) =>
+      [...items].sort(
+        (first, second) =>
+          new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+      ),
+    []
+  )
 
   const loadInitial = useCallback(async () => {
     setLoading(true)
@@ -443,13 +472,17 @@ const FeedPage = () => {
   }, [loadInitial])
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      const { postId, comment } = (e as CustomEvent<FeedCommentEventDetail>).detail
+    const handler = (event: Event) => {
+      if (!(event instanceof CustomEvent) || !event.detail || typeof event.detail !== 'object')
+        return
+      const detail = event.detail
+      if (!isFeedCommentEventDetail(detail)) return
+      const { postId, comment } = detail
       if (!postId || !comment) return
       setCommentsByPostId(prev => {
         const list = prev[postId]
         if (!list) return prev
-        if (list.some(c => c.id === comment.id)) return prev
+        if (list.some(commentItem => commentItem.id === comment.id)) return prev
         return { ...prev, [postId]: [...list, comment] }
       })
     }
@@ -458,21 +491,21 @@ const FeedPage = () => {
   }, [])
 
   useEffect(() => {
-    const el = sentinelRef.current
-    if (!el || !hasMore || loading) return
+    const sentinelElement = sentinelRef.current
+    if (!sentinelElement || !hasMore || loading) return
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0]?.isIntersecting) void loadMore()
       },
       { root: null, rootMargin: '200px', threshold: 0 }
     )
-    observer.observe(el)
+    observer.observe(sentinelElement)
     return () => observer.disconnect()
   }, [hasMore, loadMore, loading, posts.length])
 
   useEffect(() => {
     const postId = highlightState?.highlightPostId
-    if (!postId || !posts.some(p => p.id === postId)) return
+    if (!postId || !posts.some(post => post.id === postId)) return
     loadComments(postId)
   }, [highlightState?.highlightPostId, posts, loadComments])
 
@@ -480,27 +513,27 @@ const FeedPage = () => {
     const postId = highlightState?.highlightPostId
     const commentId = highlightState?.highlightCommentId
     if (!postId) return
-    const postInList = posts.some(p => p.id === postId)
+    const postInList = posts.some(post => post.id === postId)
     const commentsLoaded = postInList && postId in commentsByPostId
     if (!postInList || !commentsLoaded) return
 
     const scrollToTarget = () => {
       if (commentId) {
-        const el = document.querySelector(`[data-comment-id="${commentId}"]`)
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          ;(el as HTMLElement).style.setProperty('background', 'hsl(var(--accent))', 'important')
-          setTimeout(() => (el as HTMLElement).style.removeProperty('background'), 2000)
+        const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`)
+        if (commentElement instanceof HTMLElement) {
+          commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          commentElement.style.setProperty('background', 'hsl(var(--accent))', 'important')
+          setTimeout(() => commentElement.style.removeProperty('background'), 2000)
         }
       } else {
-        const el = document.querySelector(`[data-post-id="${postId}"]`)
-        el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const postElement = document.querySelector(`[data-post-id="${postId}"]`)
+        postElement?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
       navigate('/feed', { replace: true, state: {} })
     }
 
-    const t = setTimeout(scrollToTarget, 300)
-    return () => clearTimeout(t)
+    const timeoutId = setTimeout(scrollToTarget, 300)
+    return () => clearTimeout(timeoutId)
   }, [highlightState?.highlightPostId, highlightState?.highlightCommentId, posts, commentsByPostId, navigate])
 
   const handleSubmit = async () => {
@@ -522,10 +555,10 @@ const FeedPage = () => {
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (postId: string) => {
     try {
-      await deletePost(id)
-      setPosts(prev => prev.filter(p => p.id !== id))
+      await deletePost(postId)
+      setPosts(prev => prev.filter(post => post.id !== postId))
       toast.success('ลบโพสต์แล้ว')
     } catch {
       toast.error('ลบโพสต์ไม่สำเร็จ')
@@ -552,7 +585,7 @@ const FeedPage = () => {
     try {
       const updated = await updatePost(editingPostId, { content: trimmed })
       setPosts(prev =>
-        prev.map(p => (p.id === editingPostId ? updated : p))
+        prev.map(post => (post.id === editingPostId ? updated : post))
       )
       cancelEdit()
       toast.success('แก้ไขโพสต์แล้ว')
@@ -577,11 +610,13 @@ const FeedPage = () => {
   )
 
   const handleUpdateComment = useCallback(
-    async (postId: string, id: string, content: string) => {
-      const updated = await updateComment(id, { content })
+    async (postId: string, commentId: string, content: string) => {
+      const updated = await updateComment(commentId, { content })
       setCommentsByPostId(prev => ({
         ...prev,
-        [postId]: (prev[postId] ?? []).map(c => (c.id === id ? updated : c)),
+        [postId]: (prev[postId] ?? []).map(commentItem =>
+          commentItem.id === commentId ? updated : commentItem
+        ),
       }))
       toast.success('แก้ไขความคิดเห็นแล้ว')
     },
@@ -589,11 +624,11 @@ const FeedPage = () => {
   )
 
   const handleDeleteComment = useCallback(
-    async (postId: string, id: string) => {
-      await deleteComment(id)
+    async (postId: string, commentId: string) => {
+      await deleteComment(commentId)
       setCommentsByPostId(prev => ({
         ...prev,
-        [postId]: (prev[postId] ?? []).filter(c => c.id !== id),
+        [postId]: (prev[postId] ?? []).filter(commentItem => commentItem.id !== commentId),
       }))
       toast.success('ลบความคิดเห็นแล้ว')
     },
@@ -654,8 +689,8 @@ const FeedPage = () => {
                     onSaveEdit={handleUpdatePost}
                     onDelete={handleDelete}
                     onAddComment={payload => handleAddComment(post.id, payload)}
-                    onUpdateComment={(id, content) => handleUpdateComment(post.id, id, content)}
-                    onDeleteComment={id => handleDeleteComment(post.id, id)}
+                    onUpdateComment={(commentId, content) => handleUpdateComment(post.id, commentId, content)}
+                    onDeleteComment={commentId => handleDeleteComment(post.id, commentId)}
                   />
                 </div>
               ))}

@@ -2,9 +2,8 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import _ from 'lodash'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 import { toast } from 'sonner'
 
 import { createEvent, EVENT_TYPE_LABELS, getEvents, type GetEventsParams } from 'core/apis/events'
@@ -13,7 +12,7 @@ import { getListLeave, type GetListLeaveParams } from 'core/apis/leave'
 import type { Leave } from 'core/apis/leave/types'
 import { getListUsers } from 'core/apis/auth'
 import type { User } from 'core/apis/auth/types'
-import { authUserState } from 'core/stores/auth'
+import { AuthContext } from 'core/contexts/AuthContext'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -36,6 +35,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+import { getLeaveStatusLabel, LEAVE_STATUS } from 'modules/leave/constants'
+import LeaveStatusBadge from 'modules/leave/components/LeaveStatusBadge'
 import { eventsByDate, getMonthRange, leavesByDate } from '../utils/leaveByDate'
 
 const EVENT_TYPE_OPTIONS = Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => ({ value, label }))
@@ -51,7 +52,7 @@ function formatMonthTitle(year: number, month: number): string {
 
 export default function CalendarPage() {
   const navigate = useNavigate()
-  const user = useRecoilValue(authUserState)
+  const user = useContext(AuthContext)
 
   const [year, setYear] = useState(() => dayjs().year())
   const [month, setMonth] = useState(() => dayjs().month() + 1)
@@ -71,7 +72,10 @@ export default function CalendarPage() {
   const [eventSubmitting, setEventSubmitting] = useState(false)
 
   const { from, to } = getMonthRange(year, month)
-  const byDate = leavesByDate(leaves)
+  const displayLeaves = leaves.filter(
+    l => (l.status ?? '') !== LEAVE_STATUS.CANCELLED
+  )
+  const byDate = leavesByDate(displayLeaves)
   const eventsByDay = eventsByDate(events)
   const today = dayjs().format('YYYY-MM-DD')
 
@@ -142,18 +146,18 @@ export default function CalendarPage() {
   const goPrevMonth = () => {
     if (month === 1) {
       setMonth(12)
-      setYear(y => y - 1)
+      setYear(previousYear => previousYear - 1)
     } else {
-      setMonth(m => m - 1)
+      setMonth(previousMonth => previousMonth - 1)
     }
   }
 
   const goNextMonth = () => {
     if (month === 12) {
       setMonth(1)
-      setYear(y => y + 1)
+      setYear(previousYear => previousYear + 1)
     } else {
-      setMonth(m => m + 1)
+      setMonth(previousMonth => previousMonth + 1)
     }
   }
 
@@ -163,11 +167,11 @@ export default function CalendarPage() {
   const startWeekday = firstDay.getDay()
   const calendarRows: (string | null)[][] = []
   let row: (string | null)[] = []
-  for (let i = 0; i < startWeekday; i++) {
+  for (let index = 0; index < startWeekday; index++) {
     row.push(null)
   }
-  for (let d = 1; d <= daysInMonth; d++) {
-    row.push(`${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`)
+  for (let day = 1; day <= daysInMonth; day++) {
+    row.push(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`)
     if (row.length === 7) {
       calendarRows.push(row)
       row = []
@@ -180,7 +184,7 @@ export default function CalendarPage() {
 
   const todayLeaves = byDate.get(today) ?? []
   const todayEvents = eventsByDay.get(today) ?? []
-  const pendingInList = leaves.filter(l => (l.status ?? '') === 'PENDING')
+  const pendingInList = leaves.filter(leave => (leave.status ?? '') === LEAVE_STATUS.PENDING)
 
   const selectValue = filterUserId === '' ? FILTER_ALL : filterUserId
   const handleFilterChange = (value: string) => {
@@ -240,15 +244,12 @@ export default function CalendarPage() {
                     <p className="text-xs text-muted-foreground">การลา</p>
                     {todayLeaves.map(({ leave }) => {
                       const name = leave.createdByName ?? '—'
-                      const status = leave.status ?? ''
                       const isMe = user?.id && leave.createdByUserId === user.id
                       return (
-                        <p key={leave.id} className="text-sm">
-                          {name}
-                          {isMe && <span className="ml-1 text-primary">(คุณ)</span>}
-                          {status === 'PENDING' && (
-                            <span className="ml-1 text-amber-600 dark:text-amber-400">· รออนุมัติ</span>
-                          )}
+                        <p key={leave.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                          <span>{name}</span>
+                          {isMe && <span className="text-primary">(คุณ)</span>}
+                          <LeaveStatusBadge statusKey={leave.status} className="shrink-0" />
                         </p>
                       )
                     })}
@@ -257,12 +258,12 @@ export default function CalendarPage() {
                 {todayEvents.length > 0 && (
                   <>
                     <p className="text-xs text-muted-foreground">งาน / เหตุการณ์</p>
-                    {todayEvents.map(ev => (
-                      <p key={ev.id} className="text-sm">
-                        {ev.startTime}
-                        {ev.endTime ? `–${ev.endTime}` : ''} {ev.title}
-                        {ev.userName && (
-                          <span className="ml-1 text-muted-foreground">({ev.userName})</span>
+                    {todayEvents.map(event => (
+                      <p key={event.id} className="text-sm">
+                        {event.startTime}
+                        {event.endTime ? `–${event.endTime}` : ''} {event.title}
+                        {event.userName && (
+                          <span className="ml-1 text-muted-foreground">({event.userName})</span>
                         )}
                       </p>
                     ))}
@@ -376,19 +377,19 @@ export default function CalendarPage() {
                                 {leaveItems.slice(0, 2).map(({ leave: L }) => (
                                   <span
                                     key={`l-${L.id}`}
-                                    className={`block truncate px-1 text-xs ${(L.status ?? '') === 'PENDING' ? 'bg-amber-500 text-white' : 'bg-primary text-primary-foreground'}`}
-                                    title={`${L.createdByName ?? ''} ${(L.status ?? '') === 'PENDING' ? '(รออนุมัติ)' : ''}`}
+                                    className={`block truncate px-1 text-xs ${(L.status ?? '') === LEAVE_STATUS.PENDING ? 'bg-amber-500 text-white' : 'bg-primary text-primary-foreground'}`}
+                                    title={`${L.createdByName ?? ''} ${getLeaveStatusLabel(L.status) ? `(${getLeaveStatusLabel(L.status)})` : ''}`}
                                   >
                                     {(L.createdByName ?? '').slice(0, 8)}
                                   </span>
                                 ))}
-                                {dayEvents.slice(0, 2).map(ev => (
+                                {dayEvents.slice(0, 2).map(event => (
                                   <span
-                                    key={`e-${ev.id}`}
+                                    key={`e-${event.id}`}
                                     className="block truncate px-1 text-xs bg-secondary text-secondary-foreground"
-                                    title={`${ev.startTime}${ev.endTime ? `-${ev.endTime}` : ''} ${ev.title} ${ev.userName ? `(${ev.userName})` : ''}`}
+                                    title={`${event.startTime}${event.endTime ? `-${event.endTime}` : ''} ${event.title} ${event.userName ? `(${event.userName})` : ''}`}
                                   >
-                                    {ev.startTime} {(ev.title ?? '').slice(0, 6)}
+                                    {event.startTime} {(event.title ?? '').slice(0, 6)}
                                   </span>
                                 ))}
                                 {leaveItems.length + dayEvents.length > 4 && (

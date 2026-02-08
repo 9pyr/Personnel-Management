@@ -1,6 +1,10 @@
 import { FieldValues, FormProvider, SubmitHandler, UseFormProps, useForm } from 'react-hook-form'
 
-interface FormProps extends UseFormProps<FieldValues, any> {
+interface FormContextDefault {
+  [key: string]: object
+}
+
+interface FormProps extends UseFormProps<FieldValues, FormContextDefault> {
   onSubmit: SubmitHandler<FieldValues>
 }
 

@@ -8,6 +8,7 @@ import {
   Users,
 } from 'lucide-react'
 
+import type { ReactElement } from 'react'
 import type { Role } from 'core/apis/auth/types'
 import CalendarPage from 'modules/calendar/pages/CalendarPage'
 import DashboardPage from 'modules/dashboard/page'
@@ -21,7 +22,7 @@ import { RouteObject } from 'react-router-dom'
 
 const iconClass = 'h-5 w-5'
 
-export const menuItems: ({ name: string; icon: JSX.Element; roles?: Role[] } & RouteObject)[] = [
+export const menuItems: ({ name: string; icon: ReactElement; roles?: Role[] } & RouteObject)[] = [
   {
     name: 'หน้าหลัก',
     icon: <LayoutDashboard className={iconClass} />,

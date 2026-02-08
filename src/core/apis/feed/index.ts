@@ -19,7 +19,7 @@ import type {
 
 const FEED_BASE = '/feed'
 
-function parseResponse<T>(data: unknown, schema: { parse: (v: unknown) => T }): T {
+function parseResponse<T>(data: object, schema: { parse: (v: object) => T }): T {
   return schema.parse(data)
 }
 
@@ -34,7 +34,7 @@ export interface GetFeedParams {
 export const getFeed = async (params?: GetFeedParams): Promise<FeedPost[]> => {
   const limit = params?.limit ?? DEFAULT_FEED_LIMIT
   const offset = params?.offset ?? 0
-  const { data } = await apiCaller.get<unknown>(FEED_BASE, {
+  const { data } = await apiCaller.get<object>(FEED_BASE, {
     params: { limit, offset },
   })
   return parseResponse(data, feedPostListSchema)
@@ -42,13 +42,13 @@ export const getFeed = async (params?: GetFeedParams): Promise<FeedPost[]> => {
 
 export const createPost = async (payload: CreatePostRequest): Promise<FeedPost> => {
   const body = createPostRequestSchema.parse(payload)
-  const { data } = await apiCaller.post<unknown>(FEED_BASE, body)
+  const { data } = await apiCaller.post<object>(FEED_BASE, body)
   return parseResponse(data, feedPostSchema)
 }
 
 export const updatePost = async (id: string, payload: CreatePostRequest): Promise<FeedPost> => {
   const body = createPostRequestSchema.parse(payload)
-  const { data } = await apiCaller.put<unknown>(`${FEED_BASE}/${id}`, body)
+  const { data } = await apiCaller.put<object>(`${FEED_BASE}/${id}`, body)
   return parseResponse(data, feedPostSchema)
 }
 
@@ -57,7 +57,7 @@ export const deletePost = async (id: string): Promise<void> => {
 }
 
 export const getComments = async (postId: string): Promise<FeedComment[]> => {
-  const { data } = await apiCaller.get<unknown>(`${FEED_BASE}/${postId}/comments`)
+  const { data } = await apiCaller.get<object>(`${FEED_BASE}/${postId}/comments`)
   return parseResponse(data, feedCommentListSchema)
 }
 
@@ -66,7 +66,7 @@ export const createComment = async (
   payload: CreateCommentRequest
 ): Promise<FeedComment> => {
   const body = createCommentRequestSchema.parse(payload)
-  const { data } = await apiCaller.post<unknown>(`${FEED_BASE}/${postId}/comments`, body)
+  const { data } = await apiCaller.post<object>(`${FEED_BASE}/${postId}/comments`, body)
   return parseResponse(data, feedCommentSchema)
 }
 
@@ -75,7 +75,7 @@ export const updateComment = async (
   payload: UpdateCommentRequest
 ): Promise<FeedComment> => {
   const body = updateCommentRequestSchema.parse(payload)
-  const { data } = await apiCaller.put<unknown>(`${FEED_BASE}/comments/${id}`, body)
+  const { data } = await apiCaller.put<object>(`${FEED_BASE}/comments/${id}`, body)
   return parseResponse(data, feedCommentSchema)
 }
 

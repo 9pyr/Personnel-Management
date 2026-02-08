@@ -6,7 +6,8 @@ import { toast } from 'sonner'
 import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
 import { getMe, updateProfile, uploadProfileImage } from 'core/apis/auth'
-import type { UpdateProfileRequest, User } from 'core/apis/auth/types'
+import { updateProfileRequestSchema } from 'core/apis/auth/schemas'
+import type { User } from 'core/apis/auth/types'
 import apiCaller from 'core/endpoints/apiCaller'
 import { authUserState } from 'core/stores/auth'
 
@@ -113,14 +114,18 @@ const ProfilePage = () => {
                   phone: profile.phone ?? '',
                 }}
                 onSubmit={async values => {
-                  const payload: UpdateProfileRequest = {
-                    name: values.name as string,
-                    email: values.email as string,
-                    education: (values.education as string) || undefined,
-                    position: (values.position as string) || undefined,
-                    phone: (values.phone as string) || undefined,
+                  const parsed = updateProfileRequestSchema.safeParse({
+                    name: values.name,
+                    email: values.email,
+                    education: values.education || undefined,
+                    position: values.position || undefined,
+                    phone: values.phone || undefined,
+                  })
+                  if (!parsed.success) {
+                    toast.error(parsed.error.errors.map(e => e.message).join(', '))
+                    return
                   }
-                  const updated = await updateProfile(payload)
+                  const updated = await updateProfile(parsed.data)
                   setProfile(updated)
                   setUser(updated)
                   toast.success('บันทึกโปรไฟล์สำเร็จ')

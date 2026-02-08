@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { leaveCreatePayloadSchema, leaveSchema, leaveUpdatePayloadSchema } from './schemas'
 import type { Leave } from './types'
 
-function parseResponse<T>(data: unknown, schema: { parse: (v: unknown) => T }): T {
+function parseResponse<T>(data: object, schema: { parse: (v: object) => T }): T {
   return schema.parse(data)
 }
 
@@ -25,7 +25,7 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
   if (params?.userId) search.set('user_id', params.userId)
   const qs = search.toString()
   const url = qs ? `/leaves?${qs}` : '/leaves'
-  const { data } = await apiCaller.get<unknown>(url)
+  const { data } = await apiCaller.get<object>(url)
   return parseResponse(data, leaveListSchema)
 }
 
@@ -50,24 +50,24 @@ const leaveBalanceSchema = z.array(
 )
 
 export const getLeaveBalance = async (): Promise<LeaveBalanceItem[]> => {
-  const { data } = await apiCaller.get<unknown>('/leaves/balance')
+  const { data } = await apiCaller.get<object>('/leaves/balance')
   return leaveBalanceSchema.parse(data)
 }
 
 export const getLeaveById = async (id: string): Promise<Leave> => {
-  const { data } = await apiCaller.get<unknown>(`/leaves/${id}`)
+  const { data } = await apiCaller.get<object>(`/leaves/${id}`)
   return parseResponse(data, leaveSchema)
 }
 
 export const createLeave = async (payload: Leave): Promise<Leave> => {
   const body = leaveCreatePayloadSchema.parse(payload)
-  const { data } = await apiCaller.post<unknown>('/leaves/create', body)
+  const { data } = await apiCaller.post<object>('/leaves/create', body)
   return parseResponse(data, leaveSchema)
 }
 
 export const updateLeaveById = async (payload: Leave): Promise<Leave> => {
   const body = leaveUpdatePayloadSchema.parse(payload)
-  const { data } = await apiCaller.put<unknown>('/leaves/update', body)
+  const { data } = await apiCaller.put<object>('/leaves/update', body)
   return parseResponse(data, leaveSchema)
 }
 

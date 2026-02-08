@@ -1,30 +1,43 @@
 import dayjs from 'dayjs'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 
 import Table from 'common/components/Table'
 import { getListLeave } from 'core/apis/leave'
 import type { Leave } from 'core/apis/leave/types'
-import { authUserState } from 'core/stores/auth'
+import { AuthContext } from 'core/contexts/AuthContext'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-import { leaveFields } from '../constants'
+import type { TableRowData } from 'common/components/Table'
+
+import { leaveFields, LEAVE_STATUS } from '../constants'
 
 import LeaveRequestCards from './LeaveRequestCards'
+import LeaveStatusBadge from './LeaveStatusBadge'
+
+function getStatusKey(row: TableRowData): string | undefined {
+  const statusValue = row[leaveFields.status]
+  return typeof statusValue === 'string' ? statusValue : undefined
+}
 
 const BASE_COLUMNS = [
   { label: 'ผู้ขอลา', source: 'createdByName' },
   { label: 'จากวันที่', source: leaveFields.startDate },
   { label: 'ถึงวันที่', source: leaveFields.endDate },
   { label: 'รายละเอียด', source: leaveFields.description },
-  { label: 'สถานะ', source: leaveFields.status },
+  {
+    label: 'สถานะ',
+    source: leaveFields.status,
+    render: (row: TableRowData) => (
+      <LeaveStatusBadge statusKey={getStatusKey(row)} />
+    ),
+  },
 ]
 
 const Inprogress = () => {
   const navigate = useNavigate()
-  const user = useRecoilValue(authUserState)
+  const user = useContext(AuthContext)
   const [leaves, setLeaves] = useState<Leave[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -50,18 +63,19 @@ const Inprogress = () => {
     return () => window.removeEventListener('leave-list-refresh', onRefresh)
   }, [fetchLeaves])
 
-  const myLeaves = leaves.filter(l => l.createdByUserId === user?.id)
+  const myLeaves = leaves.filter(leave => leave.createdByUserId === user?.id)
   const othersPending = leaves.filter(
-    l => l.createdByUserId !== user?.id && l.status === 'PENDING'
+    leave =>
+      leave.createdByUserId !== user?.id && leave.status === LEAVE_STATUS.PENDING
   )
 
-  const tableData = myLeaves.map(l => ({
-    id: l.id,
-    createdByName: l.createdByName ?? '-',
-    [leaveFields.startDate]: l.startDate ? dayjs(l.startDate).format('DD/MM/YYYY') : '-',
-    [leaveFields.endDate]: l.endDate ? dayjs(l.endDate).format('DD/MM/YYYY') : '-',
-    [leaveFields.description]: (l.description?.trim() ?? '') ? l.description : '-',
-    [leaveFields.status]: l.status ?? '-',
+  const tableData = myLeaves.map(leave => ({
+    id: leave.id,
+    createdByName: leave.createdByName ?? '-',
+    [leaveFields.startDate]: leave.startDate ? dayjs(leave.startDate).format('DD/MM/YYYY') : '-',
+    [leaveFields.endDate]: leave.endDate ? dayjs(leave.endDate).format('DD/MM/YYYY') : '-',
+    [leaveFields.description]: (leave.description?.trim() ?? '') ? leave.description : '-',
+    [leaveFields.status]: leave.status ?? '-',
   }))
 
   return (
@@ -83,7 +97,7 @@ const Inprogress = () => {
             <Table
               columns={BASE_COLUMNS}
               data={tableData}
-              rowClick={id => navigate(`/leave/${id}/edit`)}
+              rowClick={leaveId => navigate(`/leave/${leaveId}/edit`)}
             />
           )}
         </TabsContent>

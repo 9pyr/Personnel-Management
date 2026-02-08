@@ -15,9 +15,9 @@ const leaveSchemaBase = z.object({
   created_by_name: z.string().optional(),
 })
 
-export const leaveSchema = leaveSchemaBase.transform(o => ({
-  ...o,
-  createdByName: o.createdByName ?? (o as { created_by_name?: string }).created_by_name,
+export const leaveSchema = leaveSchemaBase.transform(object => ({
+  ...object,
+  createdByName: object.createdByName ?? object.created_by_name,
 }))
 
 export type Leave = z.infer<typeof leaveSchema>

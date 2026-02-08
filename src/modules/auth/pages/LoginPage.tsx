@@ -30,19 +30,22 @@ const LoginPage = () => {
             onSubmit={async values => {
               const { email, password } = values as { email: string; password: string }
               try {
-                const res = await login({ email, password })
-                setToken(res.token)
-                setUser(res.user)
-                persistAuthAfterLogin(res.token, res.user)
+                const response = await login({ email, password })
+                setToken(response.token)
+                setUser(response.user)
+                persistAuthAfterLogin(response.token, response.user)
                 toast.success('เข้าสู่ระบบสำเร็จ')
                 navigate('/', { replace: true })
-              } catch (err: unknown) {
-                const msg =
-                  err != null && typeof (err as { code?: string }).code === 'string' &&
-                  (err as { code: string }).code === 'ERR_NETWORK'
-                    ? 'เชื่อมต่อ server ไม่ได้ — กรุณารัน backend (port 8080)'
-                    : 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
-                toast.error(msg)
+              } catch (error) {
+                let message = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
+                if (error != null && typeof error === 'object') {
+                  const descriptor = Object.getOwnPropertyDescriptor(error, 'code')
+                  const code = descriptor?.value
+                  if (typeof code === 'string' && code === 'ERR_NETWORK') {
+                    message = 'เชื่อมต่อ server ไม่ได้ — กรุณารัน backend (port 8080)'
+                  }
+                }
+                toast.error(message)
               }
             }}
           >

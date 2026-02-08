@@ -1,3 +1,4 @@
+import { userSchema } from 'core/apis/auth/schemas'
 import type { User } from 'core/apis/auth/types'
 import { atom } from 'recoil'
 
@@ -33,7 +34,9 @@ export const authUserState = atom<User | null>({
     const raw = localStorage.getItem(USER_KEY)
     if (!raw) return null
     try {
-      return JSON.parse(raw) as User
+      const data: object = JSON.parse(raw)
+      const result = userSchema.safeParse(data)
+      return result.success ? result.data : null
     } catch {
       return null
     }

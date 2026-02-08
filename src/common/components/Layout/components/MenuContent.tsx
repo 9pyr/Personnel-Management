@@ -1,9 +1,9 @@
 import { startsWith } from 'lodash'
+import { useContext } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 
 import type { Role } from 'core/apis/auth/types'
-import { authUserState } from 'core/stores/auth'
+import { AuthContext } from 'core/contexts/AuthContext'
 
 import { menuItems } from 'routes'
 
@@ -14,7 +14,7 @@ function canSeeMenuItem(roles: Role[] | undefined, userRole: Role | undefined): 
 
 export default function MenuContent() {
   const location = useLocation()
-  const user = useRecoilValue(authUserState)
+  const user = useContext(AuthContext)
   const pathname = location.pathname
 
   return (

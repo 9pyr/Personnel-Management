@@ -1,8 +1,8 @@
-import { useRecoilValue } from 'recoil'
+import { useContext } from 'react'
 
 import apiCaller from 'core/endpoints/apiCaller'
 import type { Role } from 'core/apis/auth/types'
-import { authUserState } from 'core/stores/auth'
+import { AuthContext } from 'core/contexts/AuthContext'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +21,7 @@ const ROLE_LABELS: Record<Role, string> = {
 }
 
 function UserProfileBlock() {
-  const user = useRecoilValue(authUserState)
+  const user = useContext(AuthContext)
   const avatarSrc = user?.profileImageUrl
     ? `${apiCaller.defaults.baseURL ?? ''}${user.profileImageUrl}`
     : undefined
@@ -43,7 +43,10 @@ function UserProfileBlock() {
           <p className="truncate text-sm font-semibold leading-tight">{user?.name ?? '-'}</p>
           <p className="truncate text-xs text-muted-foreground">{user?.email ?? '-'}</p>
           {roleLabel && (
-            <Badge className="mt-1 h-5 bg-secondary text-[10px] text-secondary-foreground">
+            <Badge
+              variant="secondary"
+              className="mt-1 h-5 text-[10px] hover:bg-secondary hover:text-secondary-foreground"
+            >
               {roleLabel}
             </Badge>
           )}
