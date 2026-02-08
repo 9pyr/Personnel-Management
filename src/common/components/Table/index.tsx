@@ -1,14 +1,13 @@
-import Paper from '@mui/material/Paper'
-import BaseTable from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableContainer from '@mui/material/TableContainer'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
-
 import dayjs from 'dayjs'
 
-import { TableBodyTableRowSx } from './styles'
+import {
+  Table as BaseTable,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 interface TableColumn {
   label: string
@@ -24,22 +23,21 @@ interface TableProps {
 
 const Table = ({ columns, data, rowClick }: TableProps) => {
   return (
-    <TableContainer component={Paper}>
-      <BaseTable sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
+    <div className="w-full overflow-auto rounded-md border border-border">
+      <BaseTable>
+        <TableHeader>
           <TableRow>
             {columns.map(({ label }, index) => (
-              <TableCell key={`table-head-row:${index}`}>{label}</TableCell>
+              <TableHead key={`table-head-row:${index}`}>{label}</TableHead>
             ))}
           </TableRow>
-        </TableHead>
+        </TableHeader>
         <TableBody>
           {data.map((row, index) => (
             <TableRow
               key={`table-body-row:${index}`}
-              sx={TableBodyTableRowSx}
-              onClick={() => rowClick?.(row?.id)}
-              hover
+              className="cursor-pointer"
+              onClick={() => rowClick?.(row?.id as string | number | null | undefined | boolean)}
             >
               {columns.map((col, colIndex) => (
                 <TableCell
@@ -49,16 +47,20 @@ const Table = ({ columns, data, rowClick }: TableProps) => {
                 >
                   {col.render
                     ? col.render(row)
-                    : typeof row[col.source!] !== 'boolean' && dayjs(row[col.source!]).isValid()
-                      ? dayjs(row[col.source!]).format('DD-MM-YYYY')
-                      : (row[col.source!] as React.ReactNode)}
+                    : (() => {
+                        const val = row[col.source!]
+                        if (typeof val === 'boolean') return val as React.ReactNode
+                        if (val != null && dayjs(val as string | number | Date).isValid())
+                          return dayjs(val as string | number | Date).format('DD-MM-YYYY')
+                        return val as React.ReactNode
+                      })()}
                 </TableCell>
               ))}
             </TableRow>
           ))}
         </TableBody>
       </BaseTable>
-    </TableContainer>
+    </div>
   )
 }
 

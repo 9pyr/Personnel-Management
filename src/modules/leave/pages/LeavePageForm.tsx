@@ -1,6 +1,7 @@
-import { Button, Card, CardContent, Grid2, Stack, Typography } from '@mui/material'
-
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useRecoilValue } from 'recoil'
+import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
 import DatePicker from 'common/components/Input/DatePicker'
@@ -10,9 +11,9 @@ import { cancelLeave, createLeave, getLeaveById, updateLeaveById } from 'core/ap
 import { getListLeaveTypes } from 'core/apis/leave/leaveTypes'
 import type { Leave } from 'core/apis/leave/types'
 import { authUserState } from 'core/stores/auth'
-import { useSnackbar } from 'notistack'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { leaveFields } from '../constants'
 
@@ -45,11 +46,11 @@ function CancelLeaveButton({
   }
   return (
     <Button
-      variant="outlined"
-      color="error"
+      variant="outline"
       disabled={cancelling || !canCancel}
       title={!canCancel && leaveEndDate ? 'ยกเลิกได้เฉพาะก่อนถึงวันที่สิ้นสุดการลา' : undefined}
       onClick={handleClick}
+      className="border-destructive text-destructive hover:bg-destructive/10"
     >
       ยกเลิกคำขอ
     </Button>
@@ -58,7 +59,6 @@ function CancelLeaveButton({
 
 const LeavePageForm = () => {
   const navigate = useNavigate()
-  const { enqueueSnackbar } = useSnackbar()
   const currentUser = useRecoilValue(authUserState)
   const { pathname } = useLocation()
   const { id } = useParams()
@@ -129,40 +129,40 @@ const LeavePageForm = () => {
     } as Leave
     if (isNew) {
       if (!startDate || !endDate) {
-        enqueueSnackbar('กรุณาระบุจากวันที่และถึงวันที่', { variant: 'warning' })
+        toast.warning('กรุณาระบุจากวันที่และถึงวันที่')
         return
       }
       await createLeave(payload)
-      enqueueSnackbar('บันทึกคำขอลาสำเร็จ', { variant: 'success' })
+      toast.success('บันทึกคำขอลาสำเร็จ')
     } else {
       if (payload.id) await updateLeaveById(payload)
-      enqueueSnackbar('บันทึกสำเร็จ', { variant: 'success' })
+      toast.success('บันทึกสำเร็จ')
     }
     navigate('/leave', { replace: true })
   }
 
   if (formDefaults === null) {
-    return <Typography color="text.secondary">กำลังโหลด...</Typography>
+    return <p className="text-muted-foreground">กำลังโหลด...</p>
   }
 
   return (
-    <Card variant="outlined">
-      <CardContent>
+    <Card className="border">
+      <CardContent className="pt-6">
         <Form
           key={`leave-form-${id ?? 'new'}`}
           defaultValues={formDefaults}
           onSubmit={handleSubmit}
         >
-          <Grid2 container spacing={2}>
-            <Grid2 size={8}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2 md:col-span-1">
               <Select
                 name={leaveFields.leaveTypeId}
                 label="ประเภทการลา"
                 options={leaveTypeOptions}
                 disabled={isReadOnly}
               />
-            </Grid2>
-            <Grid2 size={12}>
+            </div>
+            <div className="sm:col-span-2">
               <TextInput
                 name={leaveFields.description}
                 label="รายละเอียด"
@@ -170,47 +170,43 @@ const LeavePageForm = () => {
                 multiline
                 disabled={isReadOnly}
               />
-            </Grid2>
-            <Grid2 size={6}>
+            </div>
+            <div>
               <DatePicker name={leaveFields.startDate} label="จากวันที่" disabled={isReadOnly} />
-            </Grid2>
-            <Grid2 size={6}>
+            </div>
+            <div>
               <DatePicker name={leaveFields.endDate} label="ถึงวันที่" disabled={isReadOnly} />
-            </Grid2>
-            <Grid2 size={12}>
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-                {!isReadOnly && (
-                  <Button variant="contained" type="submit">
-                    บันทึก
-                  </Button>
-                )}
-                {(leaveStatus === 'PENDING' || leaveStatus === 'APPROVED') && !isNew && (
-                  <CancelLeaveButton
-                    leaveId={id}
-                    leaveEndDate={leaveEndDate}
-                    cancelling={cancelling}
-                    onCancel={async (leaveIdToCancel) => {
-                      setCancelling(true)
-                      try {
-                        await cancelLeave(leaveIdToCancel)
-                        enqueueSnackbar('ยกเลิกคำขอลาแล้ว', { variant: 'success' })
-                        window.dispatchEvent(new CustomEvent('leave-list-refresh'))
-                        navigate('/leave', { replace: true })
-                      } catch {
-                        enqueueSnackbar('ยกเลิกไม่สำเร็จ', { variant: 'error' })
-                      }
-                    }}
-                    onDone={() => setCancelling(false)}
-                  />
-                )}
-                <Button variant="outlined" type="button" onClick={() => navigate('/leave')}>
-                  {isReadOnly || (leaveStatus !== 'PENDING' && leaveStatus !== null)
-                    ? 'กลับ'
-                    : 'ยกเลิก'}
-                </Button>
-              </Stack>
-            </Grid2>
-          </Grid2>
+            </div>
+            <div className="flex flex-wrap gap-2 sm:col-span-2">
+              {!isReadOnly && (
+                <Button type="submit">บันทึก</Button>
+              )}
+              {(leaveStatus === 'PENDING' || leaveStatus === 'APPROVED') && !isNew && (
+                <CancelLeaveButton
+                  leaveId={id}
+                  leaveEndDate={leaveEndDate}
+                  cancelling={cancelling}
+                  onCancel={async (leaveIdToCancel) => {
+                    setCancelling(true)
+                    try {
+                      await cancelLeave(leaveIdToCancel)
+                      toast.success('ยกเลิกคำขอลาแล้ว')
+                      window.dispatchEvent(new CustomEvent('leave-list-refresh'))
+                      navigate('/leave', { replace: true })
+                    } catch {
+                      toast.error('ยกเลิกไม่สำเร็จ')
+                    }
+                  }}
+                  onDone={() => setCancelling(false)}
+                />
+              )}
+              <Button variant="outline" type="button" onClick={() => navigate('/leave')}>
+                {isReadOnly || (leaveStatus !== 'PENDING' && leaveStatus !== null)
+                  ? 'กลับ'
+                  : 'ยกเลิก'}
+              </Button>
+            </div>
+          </div>
         </Form>
       </CardContent>
     </Card>

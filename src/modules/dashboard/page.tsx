@@ -1,10 +1,3 @@
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import LinearProgress from '@mui/material/LinearProgress'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -14,6 +7,10 @@ import { Link } from 'react-router-dom'
 import { getFeed } from 'core/apis/feed'
 import type { FeedPost } from 'core/apis/feed/types'
 import { getLeaveBalance, type LeaveBalanceItem } from 'core/apis/leave'
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Card, CardContent } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 
 dayjs.extend(relativeTime)
 dayjs.locale('th')
@@ -78,113 +75,90 @@ const DashboardPage = () => {
   const progressValue = maxDays > 0 ? (remaining / maxDays) * 100 : 0
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h5">Dashboard</Typography>
+    <div className="flex flex-col gap-6">
+      <h2 className="text-xl font-semibold">Dashboard</h2>
 
-      {/* วันลาคงเหลือ */}
-      <Card variant="outlined">
-        <CardContent>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+      <Card className="border">
+        <CardContent className="pt-6">
+          <p className="mb-2 text-sm font-semibold text-muted-foreground">
             วันลาพักร้อนคงเหลือ (ปีนี้)
-          </Typography>
+          </p>
           {loadingLeave ? (
-            <Typography color="text.secondary">กำลังโหลด...</Typography>
+            <p className="text-muted-foreground">กำลังโหลด...</p>
           ) : annualBalance ? (
             <>
-              <Stack direction="row" alignItems="baseline" spacing={1} sx={{ mb: 1 }}>
-                <Typography variant="h4" component="span" color="primary" fontWeight={700}>
+              <div className="mb-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-primary">
                   {maxDays > 0 ? remaining : '-'}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
+                </span>
+                <span className="text-muted-foreground">
                   / {maxDays > 0 ? `${maxDays} วัน` : 'ไม่จำกัด'}
-                </Typography>
-              </Stack>
+                </span>
+              </div>
               {maxDays > 0 && (
                 <>
-                  <LinearProgress
-                    variant="determinate"
-                    value={progressValue}
-                    sx={{ height: 8, borderRadius: 1 }}
-                    color="primary"
-                  />
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                    ใช้ไปแล้ว {used} วัน
-                  </Typography>
+                  <Progress value={progressValue} className="h-3 [&>div:last-child]:bg-emerald-600 [&>div:last-child]:dark:bg-emerald-500" />
+                  <p className="mt-1 text-xs text-muted-foreground">ใช้ไปแล้ว {used} วัน</p>
                 </>
               )}
             </>
           ) : (
             <>
-              <Stack direction="row" alignItems="baseline" spacing={1} sx={{ mb: 1 }}>
-                <Typography variant="h4" component="span" color="primary" fontWeight={700}>
-                  0
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  / 0 วัน
-                </Typography>
-              </Stack>
-              <Typography variant="caption" color="text.secondary" display="block">
+              <div className="mb-2 flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-primary">0</span>
+                <span className="text-muted-foreground">/ 0 วัน</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
                 ตั้งค่าจำนวนวันลาต่อปีได้ที่{' '}
-                <Link to="/leave-types" style={{ color: 'inherit' }}>
+                <Link to="/leave-types" className="text-primary underline underline-offset-4">
                   จัดการประเภทการลา
                 </Link>
-              </Typography>
+              </p>
             </>
           )}
         </CardContent>
       </Card>
 
-      {/* New Feed */}
-      <Box>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" fontWeight={600}>
-            ประกาศล่าสุด
-          </Typography>
-          <Typography
-            component={Link}
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-base font-semibold">ประกาศล่าสุด</h3>
+          <Link
             to="/feed"
-            variant="body2"
-            color="primary"
-            sx={{ textDecoration: 'none' }}
+            className="text-sm text-primary underline-offset-4 hover:underline"
           >
             ดูทั้งหมด
-          </Typography>
-        </Stack>
+          </Link>
+        </div>
         {loadingFeed ? (
-          <Typography color="text.secondary">กำลังโหลด...</Typography>
+          <p className="text-muted-foreground">กำลังโหลด...</p>
         ) : feedPosts.length === 0 ? (
-          <Typography color="text.secondary">ยังไม่มีโพสต์</Typography>
+          <p className="text-muted-foreground">ยังไม่มีโพสต์</p>
         ) : (
-          <Stack spacing={1.5}>
+          <div className="flex flex-col gap-3">
             {feedPosts.map(post => (
-              <Card key={post.id} variant="outlined" sx={{ overflow: 'hidden' }}>
-                <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-                  <Stack direction="row" spacing={1.5} alignItems="flex-start">
-                    <Avatar sx={{ width: 36, height: 36 }}>
-                      {post.authorName?.charAt(0) ?? '?'}
+              <Card key={post.id} className="overflow-hidden border">
+                <CardContent className="py-3">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback>{post.authorName?.charAt(0) ?? '?'}</AvatarFallback>
                     </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        {post.authorName}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">{post.authorName}</p>
+                      <p className="text-xs text-muted-foreground">
                         {formatFeedTime(post.createdAt)}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ mt: 0.5, whiteSpace: 'pre-wrap', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                      >
+                      </p>
+                      <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-sm">
                         {post.content}
-                      </Typography>
-                    </Box>
-                  </Stack>
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}
-          </Stack>
+          </div>
         )}
-      </Box>
-    </Stack>
+      </div>
+    </div>
   )
 }
 

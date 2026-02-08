@@ -1,18 +1,8 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Stack,
-  TextField,
-} from '@mui/material'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import { Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
+import { toast } from 'sonner'
 
 import Table from 'common/components/Table'
 import {
@@ -23,7 +13,17 @@ import {
   type LeaveType,
 } from 'core/apis/leave/leaveTypes'
 import { authUserState } from 'core/stores/auth'
-import { useSnackbar } from 'notistack'
+
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 const COLUMNS = [
   { label: 'รหัส', source: 'code' },
@@ -32,24 +32,24 @@ const COLUMNS = [
   {
     label: 'การดำเนินการ',
     render: (row: Record<string, unknown>) => (
-      <IconButton
-        size="small"
-        color="error"
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-destructive hover:text-destructive"
         onClick={e => {
           e.stopPropagation()
           ;(row._onDelete as () => void)?.()
         }}
         aria-label="ลบ"
       >
-        <DeleteOutlineIcon fontSize="small" />
-      </IconButton>
+        <Trash2 className="h-4 w-4" />
+      </Button>
     ),
   },
 ]
 
 const LeaveTypesPage = () => {
   const navigate = useNavigate()
-  const { enqueueSnackbar } = useSnackbar()
   const user = useRecoilValue(authUserState)
   const [types, setTypes] = useState<LeaveType[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,11 +66,11 @@ const LeaveTypesPage = () => {
       const list = await getListLeaveTypes()
       setTypes(list)
     } catch {
-      enqueueSnackbar('โหลดประเภทการลาไม่สำเร็จ', { variant: 'error' })
+      toast.error('โหลดประเภทการลาไม่สำเร็จ')
     } finally {
       setLoading(false)
     }
-  }, [enqueueSnackbar])
+  }, [])
 
   useEffect(() => {
     if (!canManage) {
@@ -98,7 +98,7 @@ const LeaveTypesPage = () => {
 
   const handleSave = async () => {
     if (!code.trim() || !name.trim()) {
-      enqueueSnackbar('กรุณากรอกรหัสและชื่อ', { variant: 'warning' })
+      toast.warning('กรุณากรอกรหัสและชื่อ')
       return
     }
     try {
@@ -108,30 +108,30 @@ const LeaveTypesPage = () => {
           name: name.trim(),
           maxDaysPerYear: maxDaysPerYear < 0 ? 0 : maxDaysPerYear,
         })
-        enqueueSnackbar('บันทึกแล้ว', { variant: 'success' })
+        toast.success('บันทึกแล้ว')
       } else {
         await createLeaveType({
           code: code.trim(),
           name: name.trim(),
           maxDaysPerYear: maxDaysPerYear < 0 ? 0 : maxDaysPerYear,
         })
-        enqueueSnackbar('เพิ่มประเภทการลาแล้ว', { variant: 'success' })
+        toast.success('เพิ่มประเภทการลาแล้ว')
       }
       setOpen(false)
       void loadTypes()
     } catch (e: unknown) {
       const msg = e && typeof e === 'object' && 'response' in e && (e.response as { data?: unknown })?.data
-      enqueueSnackbar(msg ? String(msg) : 'ดำเนินการไม่สำเร็จ', { variant: 'error' })
+      toast.error(msg ? String(msg) : 'ดำเนินการไม่สำเร็จ')
     }
   }
 
   const handleDelete = async (id: string) => {
     try {
       await deleteLeaveType(id)
-      enqueueSnackbar('ลบแล้ว', { variant: 'success' })
+      toast.success('ลบแล้ว')
       void loadTypes()
     } catch {
-      enqueueSnackbar('ลบไม่สำเร็จ (อาจมีการลาใช้ประเภทนี้อยู่)', { variant: 'error' })
+      toast.error('ลบไม่สำเร็จ (อาจมีการลาใช้ประเภทนี้อยู่)')
     }
   }
 
@@ -146,14 +146,12 @@ const LeaveTypesPage = () => {
   }))
 
   return (
-    <Box>
-      <Stack spacing={2}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+    <div>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-row items-center justify-between">
           <strong>จัดการประเภทการลา</strong>
-          <Button variant="contained" onClick={handleOpenCreate}>
-            เพิ่มประเภทการลา
-          </Button>
-        </Stack>
+          <Button onClick={handleOpenCreate}>เพิ่มประเภทการลา</Button>
+        </div>
         {!loading && (
           <Table
             columns={COLUMNS}
@@ -164,43 +162,45 @@ const LeaveTypesPage = () => {
             }}
           />
         )}
-      </Stack>
+      </div>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingId ? 'แก้ไขประเภทการลา' : 'เพิ่มประเภทการลา'}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField
-              label="รหัส (เช่น SICK_LEAVE)"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              fullWidth
-              disabled={!!editingId}
-            />
-            <TextField
-              label="ชื่อประเภท"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="จำนวนวันต่อปี (0 = ไม่จำกัด)"
-              type="number"
-              inputProps={{ min: 0, step: 1 }}
-              value={maxDaysPerYear}
-              onChange={e => setMaxDaysPerYear(Math.max(0, parseInt(e.target.value, 10) || 0))}
-              fullWidth
-            />
-          </Stack>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingId ? 'แก้ไขประเภทการลา' : 'เพิ่มประเภทการลา'}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>รหัส (เช่น SICK_LEAVE)</Label>
+              <Input
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                disabled={!!editingId}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>ชื่อประเภท</Label>
+              <Input value={name} onChange={e => setName(e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label>จำนวนวันต่อปี (0 = ไม่จำกัด)</Label>
+              <Input
+                type="number"
+                min={0}
+                value={maxDaysPerYear}
+                onChange={e => setMaxDaysPerYear(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              ยกเลิก
+            </Button>
+            <Button onClick={handleSave}>บันทึก</Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>ยกเลิก</Button>
-          <Button variant="contained" onClick={handleSave}>
-            บันทึก
-          </Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   )
 }
 

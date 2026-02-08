@@ -2,15 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+@layer base {
+  :root {
+    --radius: 0.5rem;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 174 63% 25%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 194 80% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 174 63% 25%;
+  }
+  .dark {
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 174 63% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 174 63% 35%;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+body {
   font-family: 'Sarabun', Inter, system-ui, Helvetica, Arial, sans-serif;
   line-height: 1.6;
-  font-weight: 400;
-  color-scheme: light;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  --hospital-bg: #E0F2F1;
-  --hospital-paper: #FFFFFF;
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
 }

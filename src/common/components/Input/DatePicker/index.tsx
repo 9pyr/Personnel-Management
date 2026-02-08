@@ -1,19 +1,22 @@
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import {
-  DatePicker as BaseDatePicker,
-  DatePickerProps as BaseDatePickerProps,
-} from '@mui/x-date-pickers/DatePicker'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-
 import dayjs from 'dayjs'
 import { Controller, useFormContext } from 'react-hook-form'
 
-interface DatePickerInputProps extends BaseDatePickerProps<any> {
+import { DatePickerSingle } from '@/components/ui/date-picker'
+import { Label } from '@/components/ui/label'
+
+interface DatePickerInputProps {
   name: string
   label: string
+  disabled?: boolean
+  placeholder?: string
 }
 
-const DatePickerInput = ({ name, label, ...props }: DatePickerInputProps) => {
+const DatePickerInput = ({
+  name,
+  label,
+  disabled,
+  placeholder = 'เลือกวันที่',
+}: DatePickerInputProps) => {
   const { control } = useFormContext()
 
   return (
@@ -21,26 +24,23 @@ const DatePickerInput = ({ name, label, ...props }: DatePickerInputProps) => {
       control={control}
       name={name}
       render={({ field }) => {
-        const { value, onChange } = field
+        const value = field.value
+        const dateValue =
+          value && dayjs(value).isValid() ? dayjs(value).toDate() : undefined
         return (
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <BaseDatePicker
-              label={label}
-              {...field}
-              value={dayjs(value)}
-              onChange={val => onChange(dayjs(val).toISOString())}
-              {...props}
-              format="DD-MM-YYYY"
-              className="w-full"
-              slotProps={{
-                ...props.slotProps,
-                textField: {
-                  ...props.slotProps?.textField,
-                  InputLabelProps: { shrink: true, ...props.slotProps?.textField?.InputLabelProps },
-                },
+          <div className="grid w-full gap-2">
+            <Label htmlFor={`datepicker:${name}`}>{label}</Label>
+            <DatePickerSingle
+              id={`datepicker:${name}`}
+              value={dateValue}
+              onChange={d => {
+                field.onChange(d ? dayjs(d).toISOString() : null)
               }}
+              disabled={disabled}
+              placeholder={placeholder}
+              className="w-full"
             />
-          </LocalizationProvider>
+          </div>
         )
       }}
     />

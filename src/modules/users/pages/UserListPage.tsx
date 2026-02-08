@@ -1,17 +1,9 @@
-import EditIcon from '@mui/icons-material/Edit'
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Stack,
-} from '@mui/material'
+import { Pencil } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
+import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
 import Select, { type SelectOptionGroup } from 'common/components/Input/Select'
@@ -20,7 +12,15 @@ import Table from 'common/components/Table'
 import { createUser, getListUsers, updateUser } from 'core/apis/auth'
 import type { CreateUserRequest, Role, User } from 'core/apis/auth/types'
 import { authUserState } from 'core/stores/auth'
-import { useSnackbar } from 'notistack'
+
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 const ROLE_OPTIONS: { label: string; value: Role }[] = [
   { label: 'Admin', value: 'ADMIN' },
@@ -70,40 +70,43 @@ function buildApproverOptionGroups(
   return [...noAssign, ...byDept, ...otherGroup]
 }
 
-const getColumns = (onEditApprover: (row: Record<string, unknown>) => void) => [
+type TableColumnDef = { label: string; source?: string; render?: (row: Record<string, unknown>) => ReactNode }
+
+const getColumns = (onEditApprover: (row: Record<string, unknown>) => void): TableColumnDef[] => [
   { label: 'ชื่อ', source: 'name' },
   { label: 'อีเมล', source: 'email' },
   { label: 'บทบาท', source: 'role' },
   {
     label: 'แผนก/ฝ่าย',
-    render: (row: Record<string, string | number | null | undefined>) =>
-      row.department ? String(row.department) : '-',
+    render: (row): ReactNode =>
+      row.department != null ? String(row.department) : '-',
   },
   {
     label: 'ผู้มีสิทธิอนุมัติ',
-    render: (row: Record<string, string | number | null | undefined | boolean>) =>
-      row.managerId ? row.manager_name ?? row.managerId : '-',
+    render: (row): ReactNode =>
+      row.managerId ? String(row.manager_name ?? row.managerId) : '-',
   },
   {
     label: 'จัดการ',
-    render: (row: Record<string, unknown>) => (
-      <IconButton
-        size="small"
+    render: (row): ReactNode => (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
         aria-label="แก้ไขผู้มีสิทธิอนุมัติ"
         onClick={e => {
           e.stopPropagation()
           onEditApprover(row)
         }}
       >
-        <EditIcon fontSize="small" />
-      </IconButton>
+        <Pencil className="h-4 w-4" />
+      </Button>
     ),
   },
 ]
 
 const UserListPage = () => {
   const navigate = useNavigate()
-  const { enqueueSnackbar } = useSnackbar()
   const currentUser = useRecoilValue(authUserState)
   const [users, setUsers] = useState<User[]>([])
   const [open, setOpen] = useState(false)
@@ -115,11 +118,11 @@ const UserListPage = () => {
       const list = await getListUsers()
       setUsers(list)
     } catch {
-      enqueueSnackbar('โหลดรายชื่อผู้ใช้ไม่สำเร็จ', { variant: 'error' })
+      toast.error('โหลดรายชื่อผู้ใช้ไม่สำเร็จ')
     } finally {
       setLoading(false)
     }
-  }, [enqueueSnackbar])
+  }, [])
 
   useEffect(() => {
     const allowed = currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE'
@@ -146,14 +149,12 @@ const UserListPage = () => {
   }))
 
   return (
-    <Box>
-      <Stack spacing={2}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+    <div>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-row items-center justify-between">
           <strong>จัดการผู้ใช้</strong>
-          <Button variant="contained" onClick={() => setOpen(true)}>
-            เพิ่มผู้ใช้
-          </Button>
-        </Stack>
+          <Button onClick={() => setOpen(true)}>เพิ่มผู้ใช้</Button>
+        </div>
         {!loading && (
           <Table
             columns={getColumns(row =>
@@ -163,38 +164,40 @@ const UserListPage = () => {
             rowClick={() => {}}
           />
         )}
-      </Stack>
+      </div>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <Form
-          defaultValues={{
-            email: '',
-            password: '',
-            name: '',
-            role: 'STAFF' as Role,
-            department: '',
-            managerId: '',
-          }}
-          onSubmit={async values => {
-            const payload: CreateUserRequest = {
-              email: values.email as string,
-              password: values.password as string,
-              name: values.name as string,
-              role: values.role as Role,
-              department: (values.department as string) || undefined,
-            }
-            if (values.role === 'STAFF' && values.managerId) {
-              payload.managerId = values.managerId as string
-            }
-            await createUser(payload)
-            enqueueSnackbar('เพิ่มผู้ใช้สำเร็จ', { variant: 'success' })
-            setOpen(false)
-            void fetchUsers()
-          }}
-        >
-          <DialogTitle>เพิ่มผู้ใช้ใหม่</DialogTitle>
-          <DialogContent>
-            <Stack spacing={2} sx={{ pt: 1 }}>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>เพิ่มผู้ใช้ใหม่</DialogTitle>
+          </DialogHeader>
+          <Form
+            defaultValues={{
+              email: '',
+              password: '',
+              name: '',
+              role: 'STAFF' as Role,
+              department: '',
+              managerId: '',
+            }}
+            onSubmit={async values => {
+              const payload: CreateUserRequest = {
+                email: values.email as string,
+                password: values.password as string,
+                name: values.name as string,
+                role: values.role as Role,
+                department: (values.department as string) || undefined,
+              }
+              if (values.role === 'STAFF' && values.managerId) {
+                payload.managerId = values.managerId as string
+              }
+              await createUser(payload)
+              toast.success('เพิ่มผู้ใช้สำเร็จ')
+              setOpen(false)
+              void fetchUsers()
+            }}
+          >
+            <div className="grid gap-4 py-4">
               <TextInput name="email" label="อีเมล" type="email" required />
               <TextInput name="password" label="รหัสผ่าน" type="password" required />
               <TextInput name="name" label="ชื่อ" required />
@@ -206,43 +209,45 @@ const UserListPage = () => {
                 options={[]}
                 optionGroups={buildApproverOptionGroups(users)}
               />
-            </Stack>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpen(false)}>ยกเลิก</Button>
-            <Button type="submit" variant="contained">
-              บันทึก
-            </Button>
-          </DialogActions>
-        </Form>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                ยกเลิก
+              </Button>
+              <Button type="submit">บันทึก</Button>
+            </DialogFooter>
+          </Form>
+        </DialogContent>
       </Dialog>
 
-      <Dialog open={!!editUser} onClose={() => setEditUser(null)} maxWidth="sm" fullWidth>
-        <DialogTitle>แก้ไขผู้ใช้</DialogTitle>
-        {editUser && (
-          <Form
-            key={editUser.id}
-            defaultValues={{
-              role: editUser.role,
-              department: editUser.department ?? '',
-              managerId: editUser.managerId ?? '',
-            }}
-            onSubmit={async values => {
-              await updateUser(editUser.id, {
-                role: values.role as Role,
-                department: values.department as string,
-                managerId: values.managerId === '' ? '' : (values.managerId as string),
-              })
-              enqueueSnackbar('บันทึกแล้ว', { variant: 'success' })
-              setEditUser(null)
-              void fetchUsers()
-            }}
-          >
-            <DialogContent>
-              <Stack spacing={2} sx={{ pt: 1 }}>
-                <Box>
+      <Dialog open={!!editUser} onOpenChange={open => !open && setEditUser(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>แก้ไขผู้ใช้</DialogTitle>
+          </DialogHeader>
+          {editUser && (
+            <Form
+              key={editUser.id}
+              defaultValues={{
+                role: editUser.role,
+                department: editUser.department ?? '',
+                managerId: editUser.managerId ?? '',
+              }}
+              onSubmit={async values => {
+                await updateUser(editUser.id, {
+                  role: values.role as Role,
+                  department: values.department as string,
+                  managerId: values.managerId === '' ? '' : (values.managerId as string),
+                })
+                toast.success('บันทึกแล้ว')
+                setEditUser(null)
+                void fetchUsers()
+              }}
+            >
+              <div className="grid gap-4 py-4">
+                <p>
                   <strong>{editUser.name}</strong> — {editUser.email}
-                </Box>
+                </p>
                 <Select name="role" label="บทบาท" options={ROLE_OPTIONS} />
                 <Select name="department" label="แผนก/ฝ่าย" options={DEPARTMENT_OPTIONS} />
                 <Select
@@ -251,18 +256,18 @@ const UserListPage = () => {
                   options={[]}
                   optionGroups={buildApproverOptionGroups(users, editUser.id)}
                 />
-              </Stack>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditUser(null)}>ยกเลิก</Button>
-              <Button type="submit" variant="contained">
-                บันทึก
-              </Button>
-            </DialogActions>
-          </Form>
-        )}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditUser(null)}>
+                  ยกเลิก
+                </Button>
+                <Button type="submit">บันทึก</Button>
+              </DialogFooter>
+            </Form>
+          )}
+        </DialogContent>
       </Dialog>
-    </Box>
+    </div>
   )
 }
 

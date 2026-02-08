@@ -1,27 +1,11 @@
-import AddIcon from '@mui/icons-material/Add'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import FormControl from '@mui/material/FormControl'
-import IconButton from '@mui/material/IconButton'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import _ from 'lodash'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
+import { toast } from 'sonner'
 
 import { createEvent, EVENT_TYPE_LABELS, getEvents, type GetEventsParams } from 'core/apis/events'
 import type { Event } from 'core/apis/events/schemas'
@@ -30,8 +14,27 @@ import type { Leave } from 'core/apis/leave/types'
 import { getListUsers } from 'core/apis/auth'
 import type { User } from 'core/apis/auth/types'
 import { authUserState } from 'core/stores/auth'
-import { useSnackbar } from 'notistack'
-import _ from 'lodash'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { DatePickerSingle } from '@/components/ui/date-picker'
+import { TimePicker } from '@/components/ui/time-picker'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import { eventsByDate, getMonthRange, leavesByDate } from '../utils/leaveByDate'
 
@@ -48,7 +51,6 @@ function formatMonthTitle(year: number, month: number): string {
 
 export default function CalendarPage() {
   const navigate = useNavigate()
-  const { enqueueSnackbar } = useSnackbar()
   const user = useRecoilValue(authUserState)
 
   const [year, setYear] = useState(() => dayjs().year())
@@ -94,13 +96,13 @@ export default function CalendarPage() {
         const list = await getListLeave(params)
         setLeaves(list)
       } catch {
-        enqueueSnackbar('โหลดข้อมูลการลาไม่สำเร็จ', { variant: 'error' })
+        toast.error('โหลดข้อมูลการลาไม่สำเร็จ')
         setLeaves([])
       } finally {
         setLoading(false)
       }
     },
-    [enqueueSnackbar]
+    []
   )
 
   const fetchEvents = useCallback(
@@ -109,11 +111,11 @@ export default function CalendarPage() {
         const list = await getEvents(params)
         setEvents(list)
       } catch {
-        enqueueSnackbar('โหลดข้อมูลงาน/เหตุการณ์ไม่สำเร็จ', { variant: 'error' })
+        toast.error('โหลดข้อมูลงาน/เหตุการณ์ไม่สำเร็จ')
         setEvents([])
       }
     },
-    [enqueueSnackbar]
+    []
   )
 
   useEffect(() => {
@@ -185,7 +187,7 @@ export default function CalendarPage() {
     setFilterUserId(value === FILTER_ALL ? '' : value)
   }
 
-  const canAddEvent = user?.id && (filterUserId === '' || filterUserId === user.id)
+  const canAddEvent = Boolean(user?.id && (filterUserId === '' || filterUserId === user.id))
   const handleOpenEventDialog = () => {
     setEventForm({
       date: today,
@@ -199,7 +201,7 @@ export default function CalendarPage() {
   const handleCreateEvent = async () => {
     const { date, startTime, endTime, title, eventType } = eventForm
     if (!title.trim()) {
-      enqueueSnackbar('กรุณากรอกหัวข้อ', { variant: 'warning' })
+      toast.warning('กรุณากรอกหัวข้อ')
       return
     }
     setEventSubmitting(true)
@@ -211,179 +213,139 @@ export default function CalendarPage() {
         title: title.trim(),
         eventType: eventType || undefined,
       })
-      enqueueSnackbar('เพิ่มงานแล้ว', { variant: 'success' })
+      toast.success('เพิ่มงานแล้ว')
       setEventDialogOpen(false)
       void fetchEvents({ from, to, userId: apiUserId })
     } catch {
-      enqueueSnackbar('เพิ่มงานไม่สำเร็จ', { variant: 'error' })
+      toast.error('เพิ่มงานไม่สำเร็จ')
     } finally {
       setEventSubmitting(false)
     }
   }
 
   return (
-    <Box>
-      <Stack spacing={2}>
-        <Typography variant="h5" fontWeight={600}>
-          ปฏิทินการลา
-        </Typography>
+    <div>
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-semibold">ปฏิทินการลา</h2>
 
-        <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}>
-          <CardContent>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+        <Card className="border bg-card">
+          <CardContent className="pt-6">
+            <p className="mb-2 text-sm font-semibold text-muted-foreground">
               งานวันนี้ · {dayjs().format('D MMMM YYYY')}
-            </Typography>
-            {(todayLeaves.length > 0 || todayEvents.length > 0) ? (
-              <Stack spacing={1}>
+            </p>
+            {todayLeaves.length > 0 || todayEvents.length > 0 ? (
+              <div className="flex flex-col gap-2">
                 {todayLeaves.length > 0 && (
                   <>
-                    <Typography variant="caption" color="text.secondary">
-                      การลา
-                    </Typography>
+                    <p className="text-xs text-muted-foreground">การลา</p>
                     {todayLeaves.map(({ leave }) => {
                       const name = leave.createdByName ?? '—'
                       const status = leave.status ?? ''
                       const isMe = user?.id && leave.createdByUserId === user.id
                       return (
-                        <Typography key={leave.id} variant="body2">
+                        <p key={leave.id} className="text-sm">
                           {name}
-                          {isMe && (
-                            <Typography component="span" color="primary.main" sx={{ ml: 1 }}>
-                              (คุณ)
-                            </Typography>
-                          )}
+                          {isMe && <span className="ml-1 text-primary">(คุณ)</span>}
                           {status === 'PENDING' && (
-                            <Typography component="span" color="warning.main" sx={{ ml: 1 }}>
-                              · รออนุมัติ
-                            </Typography>
+                            <span className="ml-1 text-amber-600 dark:text-amber-400">· รออนุมัติ</span>
                           )}
-                        </Typography>
+                        </p>
                       )
                     })}
                   </>
                 )}
                 {todayEvents.length > 0 && (
                   <>
-                    <Typography variant="caption" color="text.secondary">
-                      งาน / เหตุการณ์
-                    </Typography>
+                    <p className="text-xs text-muted-foreground">งาน / เหตุการณ์</p>
                     {todayEvents.map(ev => (
-                      <Typography key={ev.id} variant="body2">
+                      <p key={ev.id} className="text-sm">
                         {ev.startTime}
                         {ev.endTime ? `–${ev.endTime}` : ''} {ev.title}
                         {ev.userName && (
-                          <Typography component="span" color="text.secondary" sx={{ ml: 0.5 }}>
-                            ({ev.userName})
-                          </Typography>
+                          <span className="ml-1 text-muted-foreground">({ev.userName})</span>
                         )}
-                      </Typography>
+                      </p>
                     ))}
                   </>
                 )}
-              </Stack>
+              </div>
             ) : (
-              <Typography variant="body2" color="text.secondary">
-                วันนี้ไม่มีรายการลาหรืองาน
-              </Typography>
+              <p className="text-sm text-muted-foreground">วันนี้ไม่มีรายการลาหรืองาน</p>
             )}
             {!_.isEmpty(pendingInList) && (
-              <Typography
-                variant="body2"
-                sx={{ mt: 1.5, cursor: 'pointer' }}
-                color="primary.main"
+              <p
+                className="mt-3 cursor-pointer text-sm text-primary"
                 onClick={() => navigate('/leave')}
               >
                 คำขอลารอการดำเนินการ {pendingInList.length} รายการ →
-              </Typography>
+              </p>
             )}
           </CardContent>
         </Card>
 
-        <Card variant="outlined" sx={{ bgcolor: 'background.paper' }}>
-          <CardContent>
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              flexWrap="wrap"
-              gap={2}
-              sx={{ mb: 2 }}
-            >
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <IconButton size="small" onClick={goPrevMonth} aria-label="เดือนก่อน">
-                  <ChevronLeftIcon />
-                </IconButton>
-                <Typography variant="h6" component="span" sx={{ minWidth: 180, textAlign: 'center' }}>
-                  {formatMonthTitle(year, month)}
-                </Typography>
-                <IconButton size="small" onClick={goNextMonth} aria-label="เดือนถัดไป">
-                  <ChevronRightIcon />
-                </IconButton>
-              </Stack>
-              <FormControl
-                size="small"
-                sx={{
-                  minWidth: 200,
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'background.paper',
-                    '& fieldset': { borderColor: 'divider' },
-                    '&:hover fieldset': { borderColor: 'primary.main', borderWidth: 1 },
-                    '&.Mui-focused fieldset': { borderWidth: 1.5 },
-                  },
-                }}
-              >
-                <InputLabel id="calendar-user-filter">ดูการลาของ</InputLabel>
-                <Select
-                  labelId="calendar-user-filter"
-                  value={selectValue}
-                  label="ดูการลาของ"
-                  onChange={e => handleFilterChange(e.target.value)}
-                  displayEmpty={false}
+        <Card className="border bg-card">
+          <CardContent className="pt-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={goPrevMonth}
+                  aria-label="เดือนก่อน"
                 >
-                  <MenuItem value={FILTER_ALL}>ทั้งหมด</MenuItem>
-                  {user?.id && (
-                    <MenuItem value={user.id}>ตัวฉัน</MenuItem>
-                  )}
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <span className="min-w-[180px] text-center text-lg font-semibold">
+                  {formatMonthTitle(year, month)}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={goNextMonth}
+                  aria-label="เดือนถัดไป"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+              <Select value={selectValue} onValueChange={handleFilterChange}>
+                <SelectTrigger className="min-w-[200px]">
+                  <SelectValue placeholder="ดูการลาของ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={FILTER_ALL}>ทั้งหมด</SelectItem>
+                  {user?.id && <SelectItem value={user.id}>ตัวฉัน</SelectItem>}
                   {users.map(u => (
-                    <MenuItem key={u.id} value={u.id}>
+                    <SelectItem key={u.id} value={u.id}>
                       {u.name}
                       {u.department ? ` (${u.department})` : ''}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
-                </Select>
-              </FormControl>
+                </SelectContent>
+              </Select>
               {canAddEvent && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<AddIcon />}
-                  onClick={handleOpenEventDialog}
-                >
+                <Button size="sm" onClick={handleOpenEventDialog}>
+                  <Plus className="mr-1 h-4 w-4" />
                   เพิ่มงาน
                 </Button>
               )}
-            </Stack>
+            </div>
 
             {loading ? (
-              <Typography color="text.secondary">กำลังโหลด...</Typography>
+              <p className="text-muted-foreground">กำลังโหลด...</p>
             ) : (
-              <Box sx={{ overflowX: 'auto' }}>
-                <Box
-                  component="table"
-                  sx={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                    tableLayout: 'fixed',
-                    '& td, & th': { border: 1, borderColor: 'divider', p: 0.5, verticalAlign: 'top' },
-                    '& th': { bgcolor: 'action.hover', fontWeight: 600, fontSize: '0.75rem' },
-                  }}
-                >
+              <div className="overflow-x-auto">
+                <table className="w-full table-fixed border-collapse">
                   <thead>
                     <tr>
                       {WEEKDAY_LABELS.map((label, i) => (
-                        <Box key={i} component="th" sx={{ width: '14.28%' }}>
+                        <th
+                          key={i}
+                          className="w-[14.28%] border border-border bg-muted/50 p-1.5 text-left text-xs font-semibold"
+                        >
                           {label}
-                        </Box>
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -393,10 +355,9 @@ export default function CalendarPage() {
                         {row.map((date, ci) => {
                           if (!date) {
                             return (
-                              <Box
+                              <td
                                 key={ci}
-                                component="td"
-                                sx={{ minHeight: 80, bgcolor: 'action.hover' }}
+                                className="min-h-[80px] bg-muted/50"
                               />
                             )
                           }
@@ -404,132 +365,122 @@ export default function CalendarPage() {
                           const dayEvents = eventsByDay.get(date) ?? []
                           const isToday = date === today
                           return (
-                            <Box
+                            <td
                               key={ci}
-                              component="td"
-                              sx={{
-                                minHeight: 80,
-                                bgcolor: isToday ? 'action.selected' : undefined,
-                              }}
+                              className={`min-h-[80px] align-top p-1 ${isToday ? 'bg-accent/50' : ''}`}
                             >
-                              <Typography variant="caption" color="text.secondary">
+                              <span className="text-xs text-muted-foreground">
                                 {dayjs(date).date()}
-                              </Typography>
-                              <Stack spacing={0.25} sx={{ mt: 0.5 }}>
+                              </span>
+                              <div className="mt-1 flex flex-col gap-0.5">
                                 {leaveItems.slice(0, 2).map(({ leave: L }) => (
-                                  <Typography
+                                  <span
                                     key={`l-${L.id}`}
-                                    variant="caption"
-                                    display="block"
-                                    noWrap
+                                    className={`block truncate px-1 text-xs ${(L.status ?? '') === 'PENDING' ? 'bg-amber-500 text-white' : 'bg-primary text-primary-foreground'}`}
                                     title={`${L.createdByName ?? ''} ${(L.status ?? '') === 'PENDING' ? '(รออนุมัติ)' : ''}`}
-                                    sx={{
-                                      bgcolor: (L.status ?? '') === 'PENDING' ? 'warning.light' : 'primary.light',
-                                      color: (L.status ?? '') === 'PENDING' ? 'warning.contrastText' : 'primary.contrastText',
-                                      px: 0.5,
-                                    }}
                                   >
                                     {(L.createdByName ?? '').slice(0, 8)}
-                                  </Typography>
+                                  </span>
                                 ))}
                                 {dayEvents.slice(0, 2).map(ev => (
-                                  <Typography
+                                  <span
                                     key={`e-${ev.id}`}
-                                    variant="caption"
-                                    display="block"
-                                    noWrap
+                                    className="block truncate px-1 text-xs bg-secondary text-secondary-foreground"
                                     title={`${ev.startTime}${ev.endTime ? `-${ev.endTime}` : ''} ${ev.title} ${ev.userName ? `(${ev.userName})` : ''}`}
-                                    sx={{
-                                      bgcolor: 'secondary.light',
-                                      color: 'secondary.contrastText',
-                                      px: 0.5,
-                                    }}
                                   >
                                     {ev.startTime} {(ev.title ?? '').slice(0, 6)}
-                                  </Typography>
+                                  </span>
                                 ))}
-                                {(leaveItems.length + dayEvents.length) > 4 && (
-                                  <Typography variant="caption" color="text.secondary">
+                                {leaveItems.length + dayEvents.length > 4 && (
+                                  <span className="text-xs text-muted-foreground">
                                     +{leaveItems.length + dayEvents.length - 4}
-                                  </Typography>
+                                  </span>
                                 )}
-                              </Stack>
-                            </Box>
+                              </div>
+                            </td>
                           )
                         })}
                       </tr>
                     ))}
                   </tbody>
-                </Box>
-              </Box>
+                </table>
+              </div>
             )}
           </CardContent>
         </Card>
-      </Stack>
+      </div>
 
-      <Dialog open={eventDialogOpen} onClose={() => setEventDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>เพิ่มงาน / เหตุการณ์</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            <TextField
-              label="วันที่"
-              type="date"
-              value={eventForm.date}
-              onChange={e => setEventForm(f => ({ ...f, date: e.target.value }))}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="เวลาเริ่ม"
-                type="time"
-                value={eventForm.startTime}
-                onChange={e => setEventForm(f => ({ ...f, startTime: e.target.value }))}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 300 }}
+      <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>เพิ่มงาน / เหตุการณ์</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>วันที่</Label>
+              <DatePickerSingle
+                value={eventForm.date ? new Date(eventForm.date) : undefined}
+                onChange={d =>
+                  setEventForm(f => ({ ...f, date: d ? dayjs(d).format('YYYY-MM-DD') : '' }))
+                }
+                placeholder="เลือกวันที่"
               />
-              <TextField
-                label="เวลาสิ้นสุด (ไม่บังคับ)"
-                type="time"
-                value={eventForm.endTime}
-                onChange={e => setEventForm(f => ({ ...f, endTime: e.target.value }))}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ step: 300 }}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>เวลาเริ่ม</Label>
+                <TimePicker
+                  step={300}
+                  value={eventForm.startTime}
+                  onChange={v => setEventForm(f => ({ ...f, startTime: v }))}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>เวลาสิ้นสุด (ไม่บังคับ)</Label>
+                <TimePicker
+                  step={300}
+                  value={eventForm.endTime}
+                  onChange={v => setEventForm(f => ({ ...f, endTime: v }))}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label>หัวข้อ / รายละเอียด</Label>
+              <Input
+                value={eventForm.title}
+                onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))}
+                placeholder="เช่น พบคนไข้, เฝ้าตรวจ, นัดผ่าตัด 09:00"
               />
-            </Stack>
-            <TextField
-              label="หัวข้อ / รายละเอียด"
-              value={eventForm.title}
-              onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))}
-              fullWidth
-              placeholder="เช่น พบคนไข้, เฝ้าตรวจ, นัดผ่าตัด 09:00"
-              required
-            />
-            <FormControl fullWidth>
-              <InputLabel>ประเภท</InputLabel>
+            </div>
+            <div className="grid gap-2">
+              <Label>ประเภท</Label>
               <Select
                 value={eventForm.eventType}
-                label="ประเภท"
-                onChange={e => setEventForm(f => ({ ...f, eventType: e.target.value }))}
+                onValueChange={v => setEventForm(f => ({ ...f, eventType: v }))}
               >
-                {EVENT_TYPE_OPTIONS.map(opt => (
-                  <MenuItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </MenuItem>
-                ))}
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {EVENT_TYPE_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </FormControl>
-          </Stack>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEventDialogOpen(false)}>
+              ยกเลิก
+            </Button>
+            <Button onClick={handleCreateEvent} disabled={eventSubmitting}>
+              {eventSubmitting ? 'กำลังบันทึก...' : 'เพิ่มงาน'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEventDialogOpen(false)}>ยกเลิก</Button>
-          <Button variant="contained" onClick={handleCreateEvent} disabled={eventSubmitting}>
-            {eventSubmitting ? 'กำลังบันทึก...' : 'เพิ่มงาน'}
-          </Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   )
 }

@@ -1,32 +1,30 @@
-import { useSnackbar } from 'notistack'
 import { useWebSocket } from 'core/hooks/useWebSocket'
+import { toast } from 'sonner'
 
 import { dispatchNotificationsRefresh } from 'common/components/Layout/components/NotificationButton'
 import { dispatchFeedComment } from 'modules/feed/feedRealtime'
 import type { FeedComment } from 'core/apis/feed/types'
 
 function NotificationListener() {
-  const { enqueueSnackbar } = useSnackbar()
-
   useWebSocket(msg => {
     switch (msg.type) {
       case 'LEAVE_APPROVED':
-        enqueueSnackbar('การลาของคุณได้รับการอนุมัติแล้ว', { variant: 'success' })
+        toast.success('การลาของคุณได้รับการอนุมัติแล้ว')
         dispatchNotificationsRefresh()
         break
       case 'LEAVE_REJECTED':
-        enqueueSnackbar('การลาของคุณถูกปฏิเสธ', { variant: 'warning' })
+        toast.warning('การลาของคุณถูกปฏิเสธ')
         dispatchNotificationsRefresh()
         break
       case 'NEW_LEAVE_REQUEST':
-        enqueueSnackbar('มีคำขอลาใหม่ รอการดำเนินการ', { variant: 'info' })
+        toast.info('มีคำขอลาใหม่ รอการดำเนินการ')
         dispatchNotificationsRefresh()
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('leave-list-refresh'))
         }
         break
       case 'LEAVE_CANCELLED':
-        enqueueSnackbar('มีคำขอลาถูกยกเลิก', { variant: 'info' })
+        toast.info('มีคำขอลาถูกยกเลิก')
         dispatchNotificationsRefresh()
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('leave-list-refresh'))
@@ -57,11 +55,11 @@ function NotificationListener() {
         }
         break
       case 'FEED_COMMENT':
-        enqueueSnackbar('มีความคิดเห็นใหม่ในโพสต์ของคุณ', { variant: 'info' })
+        toast.info('มีความคิดเห็นใหม่ในโพสต์ของคุณ')
         dispatchNotificationsRefresh()
         break
       case 'FEED_COMMENT_REPLY':
-        enqueueSnackbar('มีคนตอบกลับความคิดเห็นของคุณ', { variant: 'info' })
+        toast.info('มีคนตอบกลับความคิดเห็นของคุณ')
         dispatchNotificationsRefresh()
         break
       default:

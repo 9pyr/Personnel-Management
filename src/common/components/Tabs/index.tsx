@@ -1,17 +1,6 @@
-import Box from '@mui/material/Box'
-import Tab from '@mui/material/Tab'
-import BaseTabs from '@mui/material/Tabs'
-
 import { useState } from 'react'
 
-import TabPanel from './components/TabPanel'
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  }
-}
+import { Tabs as BaseTabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface TabsProps {
   items: { label: string; element: JSX.Element }[]
@@ -20,24 +9,20 @@ interface TabsProps {
 export default function Tabs({ items }: TabsProps) {
   const [value, setValue] = useState(0)
 
-  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue)
-  }
-
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <BaseTabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          {items.map(({ label }, index) => (
-            <Tab label={label} {...a11yProps(index)} />
-          ))}
-        </BaseTabs>
-      </Box>
+    <BaseTabs value={String(value)} onValueChange={v => setValue(Number(v))} className="w-full">
+      <TabsList>
+        {items.map(({ label }, index) => (
+          <TabsTrigger key={index} value={String(index)}>
+            {label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
       {items.map(({ element }, index) => (
-        <TabPanel value={value} index={index}>
+        <TabsContent key={index} value={String(index)}>
           {element}
-        </TabPanel>
+        </TabsContent>
       ))}
-    </Box>
+    </BaseTabs>
   )
 }

@@ -1,15 +1,14 @@
-import NotificationsIcon from '@mui/icons-material/Notifications'
-import Badge from '@mui/material/Badge'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemText from '@mui/material/ListItemText'
-import Popover from '@mui/material/Popover'
-import Typography from '@mui/material/Typography'
+import { Bell } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 import {
   getNotifications,
@@ -38,7 +37,7 @@ function formatNotificationTime(createdAt: string): string {
 
 export default function NotificationButton() {
   const navigate = useNavigate()
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -61,14 +60,10 @@ export default function NotificationButton() {
     return () => window.removeEventListener(NOTIFICATIONS_REFRESH_EVENT, onRefresh)
   }, [fetchList])
 
-  const open = Boolean(anchorEl)
-
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-    if (!open) void fetchList()
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (next) void fetchList()
   }
-
-  const handleClose = () => setAnchorEl(null)
 
   const handleMarkRead = useCallback(
     async (n: Notification) => {
@@ -78,10 +73,9 @@ export default function NotificationButton() {
         setItems(prev =>
           prev.map(item => (item.id === n.id ? { ...item, readAt: new Date().toISOString() } : item))
         )
-        handleClose()
+        setOpen(false)
 
-        const isFeedComment =
-          n.type === 'FEED_COMMENT' || n.type === 'FEED_COMMENT_REPLY'
+        const isFeedComment = n.type === 'FEED_COMMENT' || n.type === 'FEED_COMMENT_REPLY'
         if (isFeedComment && n.relatedId) {
           navigate('/feed', {
             state: {
@@ -115,71 +109,54 @@ export default function NotificationButton() {
   }, [])
 
   return (
-    <>
-      <IconButton
-        color="inherit"
-        aria-label={`การแจ้งเตือน${unreadCount > 0 ? ` ${unreadCount} รายการยังไม่อ่าน` : ''}`}
-        onClick={handleOpen}
-        size="small"
-      >
-        <Badge badgeContent={unreadCount} color="error" showZero={false}>
-          <NotificationsIcon />
-        </Badge>
-      </IconButton>
-      <Popover
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{ paper: { sx: { width: 360, maxHeight: 400 } } }}
-      >
-        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="subtitle1" fontWeight={600}>
-            การแจ้งเตือน
-          </Typography>
+    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative" aria-label={`การแจ้งเตือน${unreadCount > 0 ? ` ${unreadCount} รายการยังไม่อ่าน` : ''}`}>
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Button size="small" onClick={handleMarkAllRead} disabled={loading}>
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[360px]" sideOffset={8}>
+        <div className="flex items-center justify-between border-b border-border px-2 py-3">
+          <span className="font-semibold">การแจ้งเตือน</span>
+          {unreadCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={handleMarkAllRead} disabled={loading}>
               อ่านทั้งหมด
             </Button>
           )}
-        </Box>
-        <List dense sx={{ maxHeight: 320, overflow: 'auto' }}>
+        </div>
+        <ScrollArea className="h-[320px]">
           {items.length === 0 ? (
-            <ListItemButton disabled>
-              <ListItemText primary="ไม่มีรายการแจ้งเตือน" />
-            </ListItemButton>
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              ไม่มีรายการแจ้งเตือน
+            </div>
           ) : (
-            items.map(n => (
-              <ListItemButton
-                key={n.id}
-                onClick={() => handleMarkRead(n)}
-                sx={{
-                  bgcolor: n.readAt ? undefined : 'action.hover',
-                  borderLeft: n.readAt ? undefined : '3px solid',
-                  borderColor: 'primary.main',
-                }}
-              >
-                <ListItemText
-                  primary={n.title}
-                  secondary={
-                    <>
-                    <Typography component="span" variant="body2" color="text.secondary" display="block">
-                      {n.body}
-                    </Typography>
-                    <Typography component="span" variant="caption" color="text.secondary">
-                      {formatNotificationTime(n.createdAt)}
-                    </Typography>
-                    </>
-                  }
-                  primaryTypographyProps={{ fontWeight: n.readAt ? 400 : 600 }}
-                />
-              </ListItemButton>
-            ))
+            <div className="flex flex-col">
+              {items.map(n => (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => handleMarkRead(n)}
+                  className={`flex w-full flex-col gap-0.5 border-b border-border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent ${
+                    !n.readAt ? 'border-l-4 border-l-primary bg-accent/50' : ''
+                  }`}
+                >
+                  <span className={n.readAt ? 'font-normal' : 'font-semibold'}>{n.title}</span>
+                  <span className="text-muted-foreground">{n.body}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatNotificationTime(n.createdAt)}
+                  </span>
+                </button>
+              ))}
+            </div>
           )}
-        </List>
-      </Popover>
-    </>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

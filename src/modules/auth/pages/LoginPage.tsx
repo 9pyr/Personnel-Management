@@ -1,37 +1,30 @@
-import { Box, Button, Card, CardContent, Typography } from '@mui/material'
-import { useSnackbar } from 'notistack'
 import { useNavigate } from 'react-router-dom'
 import { useSetRecoilState } from 'recoil'
+import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
 import { login } from 'core/apis/auth'
 import { authTokenState, authUserState, persistAuthAfterLogin } from 'core/stores/auth'
 
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { enqueueSnackbar } = useSnackbar()
   const setToken = useSetRecoilState(authTokenState)
   const setUser = useSetRecoilState(authUserState)
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: 'background.default',
-      }}
-    >
-      <Card sx={{ minWidth: 360, overflow: 'visible' }}>
-        <CardContent sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom align="center" color="primary" fontWeight={600}>
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <Card className="min-w-[360px] overflow-visible border">
+        <CardContent className="p-6">
+          <h1 className="mb-2 text-center text-xl font-semibold text-primary">
             ระบบจัดการบุคคล
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }} align="center">
+          </h1>
+          <p className="mb-4 text-center text-sm text-muted-foreground">
             เข้าสู่ระบบ
-          </Typography>
+          </p>
           <Form
             defaultValues={{ email: '', password: '' }}
             onSubmit={async values => {
@@ -41,7 +34,7 @@ const LoginPage = () => {
                 setToken(res.token)
                 setUser(res.user)
                 persistAuthAfterLogin(res.token, res.user)
-                enqueueSnackbar('เข้าสู่ระบบสำเร็จ', { variant: 'success' })
+                toast.success('เข้าสู่ระบบสำเร็จ')
                 navigate('/', { replace: true })
               } catch (err: unknown) {
                 const msg =
@@ -49,21 +42,21 @@ const LoginPage = () => {
                   (err as { code: string }).code === 'ERR_NETWORK'
                     ? 'เชื่อมต่อ server ไม่ได้ — กรุณารัน backend (port 8080)'
                     : 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
-                enqueueSnackbar(msg, { variant: 'error' })
+                toast.error(msg)
               }
             }}
           >
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextInput name="email" label="อีเมล" type="email" required inputProps={{ autoComplete: 'email' }} />
-              <TextInput name="password" label="รหัสผ่าน" type="password" required inputProps={{ autoComplete: 'current-password' }} />
-              <Button type="submit" variant="contained" size="large" fullWidth>
+            <div className="flex flex-col gap-4">
+              <TextInput name="email" label="อีเมล" type="email" required />
+              <TextInput name="password" label="รหัสผ่าน" type="password" required />
+              <Button type="submit" size="lg" className="w-full">
                 เข้าสู่ระบบ
               </Button>
-            </Box>
+            </div>
           </Form>
         </CardContent>
       </Card>
-    </Box>
+    </div>
   )
 }
 

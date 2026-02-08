@@ -1,13 +1,7 @@
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Grid2 from '@mui/material/Grid2'
-import IconButton from '@mui/material/IconButton'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
+import { Camera } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSetRecoilState } from 'recoil'
+import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
@@ -15,9 +9,10 @@ import { getMe, updateProfile, uploadProfileImage } from 'core/apis/auth'
 import type { UpdateProfileRequest, User } from 'core/apis/auth/types'
 import apiCaller from 'core/endpoints/apiCaller'
 import { authUserState } from 'core/stores/auth'
-import { useSnackbar } from 'notistack'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRecoilValue, useSetRecoilState } from 'recoil'
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 function profileImageSrc(user: User | null): string | undefined {
   const url = user?.profileImageUrl
@@ -27,8 +22,6 @@ function profileImageSrc(user: User | null): string | undefined {
 }
 
 const ProfilePage = () => {
-  const { enqueueSnackbar } = useSnackbar()
-  const user = useRecoilValue(authUserState)
   const setUser = useSetRecoilState(authUserState)
   const [profile, setProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,11 +33,11 @@ const ProfilePage = () => {
       setProfile(me)
       setUser(me)
     } catch {
-      enqueueSnackbar('โหลดโปรไฟล์ไม่สำเร็จ', { variant: 'error' })
+      toast.error('โหลดโปรไฟล์ไม่สำเร็จ')
     } finally {
       setLoading(false)
     }
-  }, [enqueueSnackbar, setUser])
+  }, [setUser])
 
   useEffect(() => {
     void loadProfile()
@@ -54,71 +47,62 @@ const ProfilePage = () => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) {
-      enqueueSnackbar('กรุณาเลือกไฟล์รูปภาพ', { variant: 'error' })
+      toast.error('กรุณาเลือกไฟล์รูปภาพ')
       return
     }
     try {
       await uploadProfileImage(file)
       await loadProfile()
-      enqueueSnackbar('อัปโหลดรูปโปรไฟล์สำเร็จ', { variant: 'success' })
+      toast.success('อัปโหลดรูปโปรไฟล์สำเร็จ')
     } catch {
-      enqueueSnackbar('อัปโหลดรูปไม่สำเร็จ', { variant: 'error' })
+      toast.error('อัปโหลดรูปไม่สำเร็จ')
     }
     e.target.value = ''
   }
 
   if (loading || !profile) {
     return (
-      <Box py={4}>
-        <Typography color="text.secondary">กำลังโหลด...</Typography>
-      </Box>
+      <div className="py-8">
+        <p className="text-muted-foreground">กำลังโหลด...</p>
+      </div>
     )
   }
 
   return (
-    <Box>
-      <Stack spacing={2}>
-        <Typography variant="h5">จัดการโปรไฟล์</Typography>
+    <div>
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-semibold">จัดการโปรไฟล์</h2>
 
-        <Card variant="outlined">
-          <CardContent>
-            <Stack spacing={3}>
-              <Stack direction="row" spacing={3} alignItems="flex-start">
-                <Box sx={{ position: 'relative' }}>
-                  <Avatar
-                    src={profileImageSrc(profile)}
-                    sx={{ width: 120, height: 120 }}
-                  >
-                    {profile.name?.charAt(0) ?? '?'}
+        <Card className="border">
+          <CardContent className="pt-6">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-row items-start gap-4">
+                <div className="relative">
+                  <Avatar className="h-28 w-28">
+                    <AvatarImage src={profileImageSrc(profile)} alt={profile.name ?? undefined} />
+                    <AvatarFallback>{profile.name?.charAt(0) ?? '?'}</AvatarFallback>
                   </Avatar>
-                  <IconButton
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      bottom: 0,
-                      right: 0,
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      '&:hover': { bgcolor: 'primary.dark' },
-                    }}
+                  <Button
+                    size="icon"
+                    className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <PhotoCameraIcon fontSize="small" />
-                  </IconButton>
+                    <Camera className="h-4 w-4" />
+                  </Button>
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/jpeg,image/png,image/gif,image/webp"
-                    hidden
+                    className="hidden"
                     onChange={handleAvatarChange}
                   />
-                </Box>
-                <Box flex={1}>
-                  <Typography variant="body2" color="text.secondary">
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">
                     คลิกไอคอนกล้องเพื่อเปลี่ยนรูปโปรไฟล์ (JPEG, PNG, GIF, WebP สูงสุด 5MB)
-                  </Typography>
-                </Box>
-              </Stack>
+                  </p>
+                </div>
+              </div>
 
               <Form
                 defaultValues={{
@@ -139,37 +123,25 @@ const ProfilePage = () => {
                   const updated = await updateProfile(payload)
                   setProfile(updated)
                   setUser(updated)
-                  enqueueSnackbar('บันทึกโปรไฟล์สำเร็จ', { variant: 'success' })
+                  toast.success('บันทึกโปรไฟล์สำเร็จ')
                 }}
               >
-                <Grid2 container spacing={2}>
-                  <Grid2 size={12} md={6}>
-                    <TextInput name="name" label="ชื่อ" required />
-                  </Grid2>
-                  <Grid2 size={12} md={6}>
-                    <TextInput name="email" label="อีเมล" type="email" required />
-                  </Grid2>
-                  <Grid2 size={12} md={6}>
-                    <TextInput name="education" label="การศึกษา" />
-                  </Grid2>
-                  <Grid2 size={12} md={6}>
-                    <TextInput name="position" label="ตำแหน่งหน้าที่" />
-                  </Grid2>
-                  <Grid2 size={12} md={6}>
-                    <TextInput name="phone" label="เบอร์โทร" />
-                  </Grid2>
-                  <Grid2 size={12}>
-                    <Button type="submit" variant="contained">
-                      บันทึก
-                    </Button>
-                  </Grid2>
-                </Grid2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TextInput name="name" label="ชื่อ" required />
+                  <TextInput name="email" label="อีเมล" type="email" required />
+                  <TextInput name="education" label="การศึกษา" />
+                  <TextInput name="position" label="ตำแหน่งหน้าที่" />
+                  <TextInput name="phone" label="เบอร์โทร" />
+                </div>
+                <div className="mt-4">
+                  <Button type="submit">บันทึก</Button>
+                </div>
               </Form>
-            </Stack>
+            </div>
           </CardContent>
         </Card>
-      </Stack>
-    </Box>
+      </div>
+    </div>
   )
 }
 

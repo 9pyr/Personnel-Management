@@ -1,10 +1,12 @@
-import ArticleIcon from '@mui/icons-material/Article'
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import PeopleIcon from '@mui/icons-material/People'
-import PersonIcon from '@mui/icons-material/Person'
-import SailingIcon from '@mui/icons-material/Sailing'
+import {
+  Calendar,
+  ClipboardList,
+  FileText,
+  LayoutDashboard,
+  Sailboat,
+  User,
+  Users,
+} from 'lucide-react'
 
 import type { Role } from 'core/apis/auth/types'
 import CalendarPage from 'modules/calendar/pages/CalendarPage'
@@ -17,29 +19,31 @@ import ProfilePage from 'modules/profile/pages/ProfilePage'
 import UserListPage from 'modules/users/pages/UserListPage'
 import { RouteObject } from 'react-router-dom'
 
+const iconClass = 'h-5 w-5'
+
 export const menuItems: ({ name: string; icon: JSX.Element; roles?: Role[] } & RouteObject)[] = [
   {
     name: 'หน้าหลัก',
-    icon: <DashboardIcon />,
+    icon: <LayoutDashboard className={iconClass} />,
     element: <DashboardPage />,
     index: true,
   },
   {
     path: '/profile',
     name: 'โปรไฟล์',
-    icon: <PersonIcon />,
+    icon: <User className={iconClass} />,
     element: <ProfilePage />,
   },
   {
     path: '/feed',
     name: 'ประกาศ',
-    icon: <ArticleIcon />,
+    icon: <FileText className={iconClass} />,
     element: <FeedPage />,
   },
   {
     path: '/leave',
     name: 'การลา',
-    icon: <SailingIcon />,
+    icon: <Sailboat className={iconClass} />,
     children: [
       { index: true, element: <LeavePageList /> },
       { path: 'new', element: <LeavePageForm /> },
@@ -49,20 +53,20 @@ export const menuItems: ({ name: string; icon: JSX.Element; roles?: Role[] } & R
   {
     path: '/calendar',
     name: 'ปฏิทินการลา',
-    icon: <CalendarMonthIcon />,
+    icon: <Calendar className={iconClass} />,
     element: <CalendarPage />,
   },
   {
     path: '/leave-types',
     name: 'จัดการประเภทการลา',
-    icon: <AssignmentIcon />,
+    icon: <ClipboardList className={iconClass} />,
     roles: ['PEOPLE', 'ADMIN'],
     element: <LeaveTypesPage />,
   },
   {
     path: '/users',
     name: 'จัดการผู้ใช้',
-    icon: <PeopleIcon />,
+    icon: <Users className={iconClass} />,
     roles: ['ADMIN', 'PEOPLE'],
     element: <UserListPage />,
   },

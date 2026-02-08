@@ -1,10 +1,17 @@
-import { InputLabel } from '@mui/material'
-import FormControl from '@mui/material/FormControl'
-import ListSubheader from '@mui/material/ListSubheader'
-import MenuItem from '@mui/material/MenuItem'
-import BaseSelect from '@mui/material/Select'
-
 import { Controller, useFormContext } from 'react-hook-form'
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+
+/** Form Select – ผูกกับ react-hook-form ใช้ shadcn Select (Radix) ทั้งหมด */
 
 export interface SelectOption {
   value: string
@@ -32,34 +39,36 @@ const SelectInput = ({ name, label, options, optionGroups, disabled }: SelectInp
       control={control}
       name={name}
       render={({ field }) => (
-        <FormControl fullWidth disabled={disabled}>
-          <InputLabel id={`select:${name}`}>{label}</InputLabel>
-          <BaseSelect
-            variant="outlined"
-            labelId={`select:${name}`}
-            id={`select:${name}`}
-            label={label}
-            {...field}
+        <div className="grid w-full gap-2">
+          <Label id={`select:${name}`}>{label}</Label>
+          <Select
             disabled={disabled}
+            value={field.value ?? ''}
+            onValueChange={field.onChange}
           >
-            {optionGroups != null && optionGroups.length > 0
-              ? optionGroups.map((group, gi) => [
-                  <ListSubheader key={`group-${name}-${gi}`} sx={{ lineHeight: 2 }}>
-                    {group.groupLabel}
-                  </ListSubheader>,
-                  ...group.options.map((opt, oi) => (
-                    <MenuItem key={`${name}-${gi}-${oi}`} value={opt.value} sx={{ pl: 3 }}>
-                      {opt.label}
-                    </MenuItem>
-                  )),
-                ])
-              : options.map(({ value, label: optLabel }, index) => (
-                  <MenuItem key={`select-optins-${name}:${index}`} value={value}>
-                    {optLabel}
-                  </MenuItem>
-                ))}
-          </BaseSelect>
-        </FormControl>
+            <SelectTrigger id={`select:${name}`} aria-labelledby={`select:${name}`}>
+              <SelectValue placeholder={label} />
+            </SelectTrigger>
+            <SelectContent>
+              {optionGroups != null && optionGroups.length > 0
+                ? optionGroups.map((group, gi) => (
+                    <SelectGroup key={`group-${name}-${gi}`}>
+                      <SelectLabel className="pl-2">{group.groupLabel}</SelectLabel>
+                      {group.options.map((opt, oi) => (
+                        <SelectItem key={`${name}-${gi}-${oi}`} value={opt.value} className="pl-6">
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))
+                : options.map(({ value, label: optLabel }, index) => (
+                    <SelectItem key={`select-options-${name}:${index}`} value={value}>
+                      {optLabel}
+                    </SelectItem>
+                  ))}
+            </SelectContent>
+          </Select>
+        </div>
       )}
     />
   )

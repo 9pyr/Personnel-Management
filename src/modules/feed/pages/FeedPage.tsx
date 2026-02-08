@@ -1,21 +1,12 @@
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import IconButton from '@mui/material/IconButton'
-import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { Pencil, Trash2 } from 'lucide-react'
+import _ from 'lodash'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
-import { useSnackbar } from 'notistack'
+import { toast } from 'sonner'
 
 import {
   createComment,
@@ -30,7 +21,11 @@ import {
 import type { FeedComment, FeedPost } from 'core/apis/feed/types'
 import { authUserState } from 'core/stores/auth'
 import { FEED_COMMENT_EVENT, type FeedCommentEventDetail } from '../feedRealtime'
-import _ from 'lodash'
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 
 dayjs.extend(relativeTime)
 dayjs.locale('th')
@@ -121,77 +116,62 @@ function CommentBlock({
   }
 
   return (
-    <Box data-comment-id={node.id} sx={{ ml: depth > 0 ? 3 : 0, mb: 1.5 }}>
-      <Stack direction="row" alignItems="flex-start" spacing={1}>
-        <Avatar sx={{ width: 28, height: 28, fontSize: '0.875rem' }}>
-          {node.authorName?.charAt(0) ?? '?'}
+    <div
+      data-comment-id={node.id}
+      className={depth > 0 ? 'ml-6 mb-1.5' : 'mb-1.5'}
+    >
+      <div className="flex flex-row items-start gap-2">
+        <Avatar className="h-7 w-7 text-sm">
+          <AvatarFallback>{node.authorName?.charAt(0) ?? '?'}</AvatarFallback>
         </Avatar>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Stack direction="row" alignItems="center" flexWrap="wrap" sx={{ gap: 0.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-              {node.authorName}
-            </Typography>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-sm font-semibold">{node.authorName}</span>
             {node.replyToUserName && (
               <>
-                <Typography variant="body2" color="text.secondary">
-                  ตอบกลับ
-                </Typography>
-                <Typography
-                  component="span"
-                  variant="subtitle2"
-                  sx={{
-                    fontWeight: 600,
-                    color: 'primary.main',
-                    cursor: 'default',
-                  }}
-                >
-                  {node.replyToUserName}
-                </Typography>
+                <span className="text-sm text-muted-foreground">ตอบกลับ</span>
+                <span className="text-sm font-semibold text-primary">{node.replyToUserName}</span>
               </>
             )}
-            <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+            <span className="ml-1 text-xs text-muted-foreground">
               {formatPostTime(node.createdAt)}
-            </Typography>
-          </Stack>
+            </span>
+          </div>
           {editing ? (
-            <Stack spacing={1} sx={{ mt: 0.5 }}>
-              <TextField
-                fullWidth
-                size="small"
-                multiline
-                minRows={1}
+            <div className="mt-1 flex flex-col gap-2">
+              <Textarea
+                className="min-h-[60px] w-full"
                 value={editContent}
                 onChange={e => setEditContent(e.target.value)}
-                variant="outlined"
               />
-              <Stack direction="row" spacing={1}>
-                <Button size="small" variant="outlined" onClick={() => setEditing(false)}>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setEditing(false)}>
                   ยกเลิก
                 </Button>
-                <Button size="small" variant="contained" onClick={handleSaveEdit}>
+                <Button size="sm" onClick={handleSaveEdit}>
                   บันทึก
                 </Button>
-              </Stack>
-            </Stack>
+              </div>
+            </div>
           ) : (
-            <Typography variant="body2" sx={{ mt: 0.25, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {node.content}
-            </Typography>
+            <p className="mt-0.5 whitespace-pre-wrap break-words text-sm">{node.content}</p>
           )}
           {!editing && (
-            <Stack direction="row" spacing={0} sx={{ mt: 0.25 }}>
+            <div className="mt-0.5 flex flex-row gap-0">
               <Button
-                size="small"
-                sx={{ minWidth: 'auto', px: 1, textTransform: 'none' }}
-                onClick={() => onReply(node.id, node.createdByUserId, node.authorName)}
+                size="sm"
+                variant="ghost"
+                className="h-auto px-2 py-1 text-sm"
+                onClick={() => onReply(node.id, node.createdByUserId, node.authorName ?? '')}
               >
                 ตอบกลับ
               </Button>
               {isOwner && (
                 <>
                   <Button
-                    size="small"
-                    sx={{ minWidth: 'auto', px: 1, textTransform: 'none' }}
+                    size="sm"
+                    variant="ghost"
+                    className="h-auto px-2 py-1 text-sm"
                     onClick={() => {
                       setEditing(true)
                       setEditContent(node.content)
@@ -200,19 +180,19 @@ function CommentBlock({
                     แก้ไข
                   </Button>
                   <Button
-                    size="small"
-                    color="error"
-                    sx={{ minWidth: 'auto', px: 1, textTransform: 'none' }}
+                    size="sm"
+                    variant="ghost"
+                    className="h-auto px-2 py-1 text-sm text-destructive hover:text-destructive"
                     onClick={() => onDelete(node.id)}
                   >
                     ลบ
                   </Button>
                 </>
               )}
-            </Stack>
+            </div>
           )}
-        </Box>
-      </Stack>
+        </div>
+      </div>
       {node.replies.map(reply => (
         <CommentBlock
           key={reply.id}
@@ -224,7 +204,7 @@ function CommentBlock({
           depth={depth + 1}
         />
       ))}
-    </Box>
+    </div>
   )
 }
 
@@ -287,76 +267,66 @@ function FeedCard({
   }
 
   return (
-    <Card variant="outlined" sx={{ mb: 2 }}>
-      <CardContent>
-        <Stack direction="row" alignItems="flex-start" spacing={1.5}>
-          <Avatar sx={{ width: 40, height: 40 }}>
-            {post.authorName?.charAt(0) ?? '?'}
+    <Card className="mb-2 border">
+      <CardContent className="pt-6">
+        <div className="flex flex-row items-start gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback>{post.authorName?.charAt(0) ?? '?'}</AvatarFallback>
           </Avatar>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                {post.authorName}
-              </Typography>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">{post.authorName}</span>
               {isOwner && !isEditing && (
-                <Stack direction="row" spacing={0}>
-                  <IconButton
-                    size="small"
+                <div className="flex gap-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={() => onStartEdit(post)}
                     aria-label="แก้ไขโพสต์"
                   >
-                    <EditOutlinedIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="error"
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
                     onClick={() => onDelete(post.id)}
                     aria-label="ลบโพสต์"
                   >
-                    <DeleteOutlineIcon fontSize="small" />
-                  </IconButton>
-                </Stack>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
-            </Stack>
-            <Typography variant="caption" color="text.secondary">
-              {formatPostTime(post.createdAt)}
-            </Typography>
+            </div>
+            <p className="text-xs text-muted-foreground">{formatPostTime(post.createdAt)}</p>
             {isEditing ? (
-              <Stack spacing={1} sx={{ mt: 1 }}>
-                <TextField
-                  fullWidth
-                  multiline
-                  minRows={2}
+              <div className="mt-2 flex flex-col gap-2">
+                <Textarea
+                  className="min-h-[80px] w-full"
                   value={editingContent}
                   onChange={e => onEditingContentChange(e.target.value)}
-                  variant="outlined"
-                  size="small"
                 />
-                <Stack direction="row" spacing={1}>
-                  <Button size="small" variant="outlined" onClick={onCancelEdit}>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={onCancelEdit}>
                     ยกเลิก
                   </Button>
-                  <Button size="small" variant="contained" onClick={onSaveEdit}>
+                  <Button size="sm" onClick={onSaveEdit}>
                     บันทึก
                   </Button>
-                </Stack>
-              </Stack>
+                </div>
+              </div>
             ) : (
-              <Typography
-                sx={{ mt: 1, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-                variant="body2"
-              >
-                {post.content}
-              </Typography>
+              <p className="mt-1 whitespace-pre-wrap break-words text-sm">{post.content}</p>
             )}
-          </Box>
-        </Stack>
+          </div>
+        </div>
 
         {comments.length > 0 && (
-          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="mb-2 text-sm font-semibold text-muted-foreground">
               ความคิดเห็น ({comments.length})
-            </Typography>
+            </p>
             {tree.map(node => (
               <CommentBlock
                 key={node.id}
@@ -369,45 +339,36 @@ function FeedCard({
                 onDelete={onDeleteComment}
               />
             ))}
-          </Box>
+          </div>
         )}
 
-        <Box sx={{ mt: 2 }}>
+        <div className="mt-4">
           {replyTarget && (
-            <Stack direction="row" alignItems="center" sx={{ mb: 1, gap: 1 }}>
-              <Typography variant="body2" color="text.secondary">
-                ตอบกลับ
-              </Typography>
-              <Typography variant="subtitle2" sx={{ color: 'primary.main', fontWeight: 600 }}>
-                {replyTarget.replyToUserName}
-              </Typography>
-              <Button size="small" onClick={() => setReplyTarget(null)}>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">ตอบกลับ</span>
+              <span className="text-sm font-semibold text-primary">{replyTarget.replyToUserName}</span>
+              <Button size="sm" variant="ghost" onClick={() => setReplyTarget(null)}>
                 ยกเลิก
               </Button>
-            </Stack>
+            </div>
           )}
-          <Stack direction="row" spacing={1} alignItems="flex-start">
-            <TextField
-              fullWidth
-              size="small"
+          <div className="flex gap-2 items-start">
+            <Textarea
+              className="min-h-[60px] flex-1"
               placeholder={replyTarget ? `เขียนข้อความถึง ${replyTarget.replyToUserName}...` : 'เขียนความคิดเห็น...'}
               value={newCommentContent}
               onChange={e => setNewCommentContent(e.target.value)}
-              multiline
-              minRows={1}
-              maxRows={4}
-              variant="outlined"
+              rows={1}
             />
             <Button
-              variant="contained"
-              size="small"
+              size="sm"
               onClick={handleSubmitComment}
               disabled={submitting || !newCommentContent.trim()}
             >
               ส่ง
             </Button>
-          </Stack>
-        </Box>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )
@@ -419,7 +380,6 @@ export interface FeedHighlightState {
 }
 
 const FeedPage = () => {
-  const { enqueueSnackbar } = useSnackbar()
   const user = useRecoilValue(authUserState)
   const location = useLocation()
   const navigate = useNavigate()
@@ -437,19 +397,16 @@ const FeedPage = () => {
   const [commentsByPostId, setCommentsByPostId] = useState<Record<string, FeedComment[]>>({})
   const requestedCommentsRef = useRef<Set<string>>(new Set())
 
-  const loadComments = useCallback(
-    async (postId: string) => {
-      if (requestedCommentsRef.current.has(postId)) return
-      requestedCommentsRef.current.add(postId)
-      try {
-        const list = await getComments(postId)
-        setCommentsByPostId(prev => ({ ...prev, [postId]: list }))
-      } catch {
-        enqueueSnackbar('โหลดความคิดเห็นไม่สำเร็จ', { variant: 'error' })
-      }
-    },
-    [enqueueSnackbar]
-  )
+  const loadComments = useCallback(async (postId: string) => {
+    if (requestedCommentsRef.current.has(postId)) return
+    requestedCommentsRef.current.add(postId)
+    try {
+      const list = await getComments(postId)
+      setCommentsByPostId(prev => ({ ...prev, [postId]: list }))
+    } catch {
+      toast.error('โหลดความคิดเห็นไม่สำเร็จ')
+    }
+  }, [])
 
   const sortPostsNewestFirst = useCallback((items: FeedPost[]) =>
     [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()), [])
@@ -461,11 +418,11 @@ const FeedPage = () => {
       setPosts(sortPostsNewestFirst(list))
       setHasMore(list.length >= FEED_PAGE_SIZE)
     } catch {
-      enqueueSnackbar('โหลดฟีดไม่สำเร็จ', { variant: 'error' })
+      toast.error('โหลดฟีดไม่สำเร็จ')
     } finally {
       setLoading(false)
     }
-  }, [enqueueSnackbar, sortPostsNewestFirst])
+  }, [sortPostsNewestFirst])
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return
@@ -475,11 +432,11 @@ const FeedPage = () => {
       setPosts(prev => sortPostsNewestFirst([...prev, ...list]))
       setHasMore(list.length >= FEED_PAGE_SIZE)
     } catch {
-      enqueueSnackbar('โหลดเพิ่มไม่สำเร็จ', { variant: 'error' })
+      toast.error('โหลดเพิ่มไม่สำเร็จ')
     } finally {
       setLoadingMore(false)
     }
-  }, [enqueueSnackbar, loadingMore, hasMore, posts.length, sortPostsNewestFirst])
+  }, [loadingMore, hasMore, posts.length, sortPostsNewestFirst])
 
   useEffect(() => {
     void loadInitial()
@@ -532,7 +489,7 @@ const FeedPage = () => {
         const el = document.querySelector(`[data-comment-id="${commentId}"]`)
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          ;(el as HTMLElement).style.setProperty('background', 'var(--mui-palette-action-selected)', 'important')
+          ;(el as HTMLElement).style.setProperty('background', 'hsl(var(--accent))', 'important')
           setTimeout(() => (el as HTMLElement).style.removeProperty('background'), 2000)
         }
       } else {
@@ -549,7 +506,7 @@ const FeedPage = () => {
   const handleSubmit = async () => {
     const trimmed = content.trim()
     if (!trimmed) {
-      enqueueSnackbar('กรุณากรอกข้อความ', { variant: 'warning' })
+      toast.warning('กรุณากรอกข้อความ')
       return
     }
     setSubmitting(true)
@@ -557,9 +514,9 @@ const FeedPage = () => {
       const created = await createPost({ content: trimmed })
       setContent('')
       setPosts(prev => [created, ...prev])
-      enqueueSnackbar('โพสต์แล้ว', { variant: 'success' })
+      toast.success('โพสต์แล้ว')
     } catch {
-      enqueueSnackbar('โพสต์ไม่สำเร็จ', { variant: 'error' })
+      toast.error('โพสต์ไม่สำเร็จ')
     } finally {
       setSubmitting(false)
     }
@@ -569,9 +526,9 @@ const FeedPage = () => {
     try {
       await deletePost(id)
       setPosts(prev => prev.filter(p => p.id !== id))
-      enqueueSnackbar('ลบโพสต์แล้ว', { variant: 'success' })
+      toast.success('ลบโพสต์แล้ว')
     } catch {
-      enqueueSnackbar('ลบโพสต์ไม่สำเร็จ', { variant: 'error' })
+      toast.error('ลบโพสต์ไม่สำเร็จ')
     }
   }
 
@@ -589,7 +546,7 @@ const FeedPage = () => {
     if (!editingPostId) return
     const trimmed = editingContent.trim()
     if (!trimmed) {
-      enqueueSnackbar('กรุณากรอกข้อความ', { variant: 'warning' })
+      toast.warning('กรุณากรอกข้อความ')
       return
     }
     try {
@@ -598,9 +555,9 @@ const FeedPage = () => {
         prev.map(p => (p.id === editingPostId ? updated : p))
       )
       cancelEdit()
-      enqueueSnackbar('แก้ไขโพสต์แล้ว', { variant: 'success' })
+      toast.success('แก้ไขโพสต์แล้ว')
     } catch {
-      enqueueSnackbar('แก้ไขโพสต์ไม่สำเร็จ', { variant: 'error' })
+      toast.error('แก้ไขโพสต์ไม่สำเร็จ')
     }
   }
 
@@ -614,9 +571,9 @@ const FeedPage = () => {
         ...prev,
         [postId]: [...(prev[postId] ?? []), created],
       }))
-      enqueueSnackbar('แสดงความคิดเห็นแล้ว', { variant: 'success' })
+      toast.success('แสดงความคิดเห็นแล้ว')
     },
-    [enqueueSnackbar]
+    []
   )
 
   const handleUpdateComment = useCallback(
@@ -626,9 +583,9 @@ const FeedPage = () => {
         ...prev,
         [postId]: (prev[postId] ?? []).map(c => (c.id === id ? updated : c)),
       }))
-      enqueueSnackbar('แก้ไขความคิดเห็นแล้ว', { variant: 'success' })
+      toast.success('แก้ไขความคิดเห็นแล้ว')
     },
-    [enqueueSnackbar]
+    []
   )
 
   const handleDeleteComment = useCallback(
@@ -638,85 +595,81 @@ const FeedPage = () => {
         ...prev,
         [postId]: (prev[postId] ?? []).filter(c => c.id !== id),
       }))
-      enqueueSnackbar('ลบความคิดเห็นแล้ว', { variant: 'success' })
+      toast.success('ลบความคิดเห็นแล้ว')
     },
-    [enqueueSnackbar]
+    []
   )
 
   return (
-    <Box sx={{ maxWidth: 680, mx: 'auto' }}>
-      <Stack spacing={2}>
-        <Typography variant="h5">ประกาศ / Feed</Typography>
+    <div className="mx-auto max-w-[680px]">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-semibold">ประกาศ / Feed</h2>
 
-        <Stack spacing={1}>
-          <Card variant="outlined">
-            <CardContent>
-              <TextField
-                fullWidth
-                multiline
-                minRows={3}
+        <div className="flex flex-col gap-2">
+          <Card className="border">
+            <CardContent className="pt-6">
+              <Textarea
+                className="mb-4 min-h-[80px] w-full"
                 placeholder="มีอะไรบางอย่างไหม?"
                 value={content}
                 onChange={e => setContent(e.target.value)}
-                variant="outlined"
-                sx={{ mb: 2 }}
+                rows={3}
               />
-              <Stack direction="row" justifyContent="flex-end">
+              <div className="flex justify-end">
                 <Button
-                  variant="contained"
                   onClick={handleSubmit}
                   disabled={submitting || !content.trim()}
                 >
                   โพสต์
                 </Button>
-              </Stack>
+              </div>
             </CardContent>
           </Card>
 
           {loading ? (
-          <Typography color="text.secondary">กำลังโหลด...</Typography>
-        ) : posts.length === 0 ? (
-          <Card variant="outlined">
-            <CardContent>
-              <Typography color="text.secondary" align="center">
-                ยังไม่มีโพสต์ — เป็นคนแรกที่โพสต์เลย
-              </Typography>
-            </CardContent>
-          </Card>
-        ) : (
-          <Stack spacing={2}>
-            {posts.map(post => (
-              <Box key={post.id} data-post-id={post.id}>
-                <FeedCardWithComments
-                  post={post}
-                comments={commentsByPostId[post.id] ?? []}
-                currentUserId={user?.id}
-                loadComments={loadComments}
-                isOwner={user?.id === post.createdByUserId}
-                isEditing={editingPostId === post.id}
-                editingContent={editingContent}
-                onStartEdit={startEdit}
-                onEditingContentChange={setEditingContent}
-                onCancelEdit={cancelEdit}
-                onSaveEdit={handleUpdatePost}
-                onDelete={handleDelete}
-                onAddComment={payload => handleAddComment(post.id, payload)}
-                onUpdateComment={(id, content) => handleUpdateComment(post.id, id, content)}
-                onDeleteComment={id => handleDeleteComment(post.id, id)}
-                />
-              </Box>
-            ))}
-            <Box ref={sentinelRef} sx={{ height: 1, minHeight: 1 }} aria-hidden="true" />
-            {loadingMore && (
-              <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
-                กำลังโหลด...
-              </Typography>
-            )}
-          </Stack>
-        )}
-        </Stack>
-      </Stack>
-    </Box>
+            <p className="text-muted-foreground">กำลังโหลด...</p>
+          ) : posts.length === 0 ? (
+            <Card className="border">
+              <CardContent>
+                <p className="text-center text-muted-foreground">
+                  ยังไม่มีโพสต์ — เป็นคนแรกที่โพสต์เลย
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {posts.map(post => (
+                <div key={post.id} data-post-id={post.id}>
+                  <FeedCardWithComments
+                    post={post}
+                    comments={commentsByPostId[post.id] ?? []}
+                    currentUserId={user?.id}
+                    loadComments={loadComments}
+                    isOwner={user?.id === post.createdByUserId}
+                    isEditing={editingPostId === post.id}
+                    editingContent={editingContent}
+                    onStartEdit={startEdit}
+                    onEditingContentChange={setEditingContent}
+                    onCancelEdit={cancelEdit}
+                    onSaveEdit={handleUpdatePost}
+                    onDelete={handleDelete}
+                    onAddComment={payload => handleAddComment(post.id, payload)}
+                    onUpdateComment={(id, content) => handleUpdateComment(post.id, id, content)}
+                    onDeleteComment={id => handleDeleteComment(post.id, id)}
+                  />
+                </div>
+              ))}
+              <div ref={sentinelRef} className="h-px min-h-px" aria-hidden="true" />
+              {loadingMore && (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  กำลังโหลด...
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 

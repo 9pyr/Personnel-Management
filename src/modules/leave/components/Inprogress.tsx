@@ -1,16 +1,14 @@
-import Box from '@mui/material/Box'
-import Tab from '@mui/material/Tab'
-import Tabs from '@mui/material/Tabs'
-import Typography from '@mui/material/Typography'
+import dayjs from 'dayjs'
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useRecoilValue } from 'recoil'
 
 import Table from 'common/components/Table'
 import { getListLeave } from 'core/apis/leave'
 import type { Leave } from 'core/apis/leave/types'
 import { authUserState } from 'core/stores/auth'
-import dayjs from 'dayjs'
-import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { leaveFields } from '../constants'
 
@@ -29,7 +27,6 @@ const Inprogress = () => {
   const user = useRecoilValue(authUserState)
   const [leaves, setLeaves] = useState<Leave[]>([])
   const [loading, setLoading] = useState(true)
-  const [tabIndex, setTabIndex] = useState(0)
 
   const canApproveLeave =
     user?.role === 'MANAGER' || user?.role === 'PEOPLE' || user?.role === 'ADMIN'
@@ -68,18 +65,20 @@ const Inprogress = () => {
   }))
 
   return (
-    <Box>
-      <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ mb: 2 }}>
-        <Tab label="การลาของฉัน" />
-        {canApproveLeave && <Tab label="คำขอลาจากคนอื่น" />}
-      </Tabs>
+    <div>
+      <Tabs defaultValue="mine" className="mb-4">
+        <TabsList>
+          <TabsTrigger value="mine">การลาของฉัน</TabsTrigger>
+          {canApproveLeave && (
+            <TabsTrigger value="others">คำขอลาจากคนอื่น</TabsTrigger>
+          )}
+        </TabsList>
 
-      {tabIndex === 0 && (
-        <Box>
+        <TabsContent value="mine">
           {loading ? (
-            <Typography color="text.secondary">กำลังโหลด...</Typography>
+            <p className="text-muted-foreground">กำลังโหลด...</p>
           ) : tableData.length === 0 ? (
-            <Typography color="text.secondary">ไม่มีรายการลาของคุณ</Typography>
+            <p className="text-muted-foreground">ไม่มีรายการลาของคุณ</p>
           ) : (
             <Table
               columns={BASE_COLUMNS}
@@ -87,19 +86,19 @@ const Inprogress = () => {
               rowClick={id => navigate(`/leave/${id}/edit`)}
             />
           )}
-        </Box>
-      )}
+        </TabsContent>
 
-      {tabIndex === 1 && canApproveLeave && (
-        <Box>
-          {loading ? (
-            <Typography color="text.secondary">กำลังโหลด...</Typography>
-          ) : (
-            <LeaveRequestCards leaves={othersPending} onActionDone={fetchLeaves} />
-          )}
-        </Box>
-      )}
-    </Box>
+        {canApproveLeave && (
+          <TabsContent value="others">
+            {loading ? (
+              <p className="text-muted-foreground">กำลังโหลด...</p>
+            ) : (
+              <LeaveRequestCards leaves={othersPending} onActionDone={fetchLeaves} />
+            )}
+          </TabsContent>
+        )}
+      </Tabs>
+    </div>
   )
 }
 

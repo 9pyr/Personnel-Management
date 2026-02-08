@@ -1,16 +1,14 @@
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Chip from '@mui/material/Chip'
-import Divider from '@mui/material/Divider'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
 import { useRecoilValue } from 'recoil'
 
 import apiCaller from 'core/endpoints/apiCaller'
 import type { Role } from 'core/apis/auth/types'
 import { authUserState } from 'core/stores/auth'
 
-import { Drawer, SideMenuDrawerSx, SideMenuStackSx } from '../styles'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+
+import { drawerWidth } from '../styles'
 import MenuContent from './MenuContent'
 import NotificationButton from './NotificationButton'
 import OptionsMenu from './OptionsMenu'
@@ -30,48 +28,40 @@ function UserProfileBlock() {
   const roleLabel = user?.role ? ROLE_LABELS[user.role] ?? user.role : null
 
   return (
-    <Stack sx={SideMenuStackSx} spacing={1.5}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+    <div className="flex flex-col gap-3 p-2">
+      <div className="flex flex-1 items-center gap-2">
         <NotificationButton />
-        <Box sx={{ flex: 1, minWidth: 0 }} />
+        <div className="min-w-0 flex-1" />
         <OptionsMenu />
-      </Stack>
-      <Stack direction="row" alignItems="center" spacing={1.5}>
-        <Avatar src={avatarSrc} sx={{ width: 40, height: 40, flexShrink: 0 }}>
-          {user?.name?.charAt(0) ?? '?'}
+      </div>
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <Avatar className="h-10 w-10 shrink-0">
+          <AvatarImage src={avatarSrc} alt={user?.name ?? undefined} />
+          <AvatarFallback>{user?.name?.charAt(0) ?? '?'}</AvatarFallback>
         </Avatar>
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: 600, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          >
-            {user?.name ?? '-'}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{ color: 'text.secondary', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-          >
-            {user?.email ?? '-'}
-          </Typography>
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <p className="truncate text-sm font-semibold leading-tight">{user?.name ?? '-'}</p>
+          <p className="truncate text-xs text-muted-foreground">{user?.email ?? '-'}</p>
           {roleLabel && (
-            <Chip
-              label={roleLabel}
-              size="small"
-              sx={{ mt: 0.5, height: 20, fontSize: '0.7rem', '& .MuiChip-label': { px: 0.75 } }}
-            />
+            <Badge className="mt-1 h-5 bg-secondary text-[10px] text-secondary-foreground">
+              {roleLabel}
+            </Badge>
           )}
-        </Box>
-      </Stack>
-    </Stack>
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default function SideMenu() {
   return (
-    <Drawer variant="permanent" sx={SideMenuDrawerSx}>
-      <Divider />
+    <aside
+      className="fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-border bg-card"
+      style={{ width: drawerWidth }}
+    >
+      <Separator />
       <MenuContent />
       <UserProfileBlock />
-    </Drawer>
+    </aside>
   )
 }

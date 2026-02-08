@@ -1,14 +1,11 @@
-import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardActions from '@mui/material/CardActions'
-import CardContent from '@mui/material/CardContent'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
 import dayjs from 'dayjs'
+import { toast } from 'sonner'
 
 import { nextStateLeave, rejectStateLeave } from 'core/apis/leave'
 import type { Leave } from 'core/apis/leave/types'
-import { useSnackbar } from 'notistack'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 
 interface LeaveRequestCardsProps {
   leaves: Leave[]
@@ -16,25 +13,23 @@ interface LeaveRequestCardsProps {
 }
 
 function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
-  const { enqueueSnackbar } = useSnackbar()
-
   const handleApprove = async (id: string) => {
     try {
       await nextStateLeave(id)
-      enqueueSnackbar('อนุมัติการลาแล้ว', { variant: 'success' })
+      toast.success('อนุมัติการลาแล้ว')
       onActionDone?.()
     } catch {
-      enqueueSnackbar('ดำเนินการไม่สำเร็จ', { variant: 'error' })
+      toast.error('ดำเนินการไม่สำเร็จ')
     }
   }
 
   const handleReject = async (id: string) => {
     try {
       await rejectStateLeave(id)
-      enqueueSnackbar('ปฏิเสธการลาแล้ว', { variant: 'success' })
+      toast.success('ปฏิเสธการลาแล้ว')
       onActionDone?.()
     } catch {
-      enqueueSnackbar('ดำเนินการไม่สำเร็จ', { variant: 'error' })
+      toast.error('ดำเนินการไม่สำเร็จ')
     }
   }
 
@@ -42,44 +37,42 @@ function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
 
   if (pending.length === 0) {
     return (
-      <Typography color="text.secondary">ไม่มีคำขอลาจากคนอื่นที่รอดำเนินการ</Typography>
+      <p className="text-muted-foreground">ไม่มีคำขอลาจากคนอื่นที่รอดำเนินการ</p>
     )
   }
 
   return (
-    <Stack spacing={2}>
-      <Typography variant="subtitle1" fontWeight={600}>
+    <div className="flex flex-col gap-4">
+      <p className="text-base font-semibold">
         คำขอลาจากคนอื่นที่รอการอนุมัติ ({pending.length})
-      </Typography>
-      <Stack direction="row" flexWrap="wrap" useFlexGap spacing={2}>
+      </p>
+      <div className="flex flex-wrap gap-4">
         {pending.map(leave => (
-          <Card key={leave.id} variant="outlined" sx={{ minWidth: 280, maxWidth: 360 }}>
-            <CardContent>
-              <Typography variant="subtitle2" color="primary" gutterBottom>
+          <Card key={leave.id} className="min-w-[280px] max-w-[360px] border">
+            <CardContent className="pt-6">
+              <p className="mb-2 text-sm font-semibold text-primary">
                 ขอลาโดย {leave.createdByName ?? '-'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </p>
+              <p className="text-sm text-muted-foreground">
                 {dayjs(leave.startDate).format('DD/MM/YYYY')} – {dayjs(leave.endDate).format('DD/MM/YYYY')}
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 0.5 }}>
-                {leave.description || '-'}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+              </p>
+              <p className="mt-1 text-sm">{leave.description || '-'}</p>
+              <p className="mt-2 block text-xs text-muted-foreground">
                 สถานะ: {leave.status}
-              </Typography>
+              </p>
             </CardContent>
-            <CardActions>
-              <Button size="small" color="success" onClick={() => handleApprove(leave.id!)}>
+            <CardFooter className="flex gap-2">
+              <Button size="sm" variant="default" onClick={() => handleApprove(leave.id!)}>
                 อนุมัติ
               </Button>
-              <Button size="small" color="error" onClick={() => handleReject(leave.id!)}>
+              <Button size="sm" variant="destructive" onClick={() => handleReject(leave.id!)}>
                 ปฏิเสธ
               </Button>
-            </CardActions>
+            </CardFooter>
           </Card>
         ))}
-      </Stack>
-    </Stack>
+      </div>
+    </div>
   )
 }
 

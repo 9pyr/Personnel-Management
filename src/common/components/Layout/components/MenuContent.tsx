@@ -1,10 +1,3 @@
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import Stack from '@mui/material/Stack'
-
 import { startsWith } from 'lodash'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
@@ -25,34 +18,33 @@ export default function MenuContent() {
   const pathname = location.pathname
 
   return (
-    <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
-      <List dense>
+    <nav className="flex flex-1 flex-col justify-between p-2">
+      <ul className="flex flex-col gap-0.5">
         {menuItems
           .filter(item => canSeeMenuItem(item.roles, user?.role))
           .map(({ path: initialPath, name, icon, index: isDefaultPath }, index) => {
             const path = isDefaultPath ? '/' : (initialPath ?? '/#')
+            const isActive =
+              startsWith(pathname, path) &&
+              (pathname[path.length] === '/' || pathname.length === path.length)
 
             return (
-              <ListItem
-                key={index}
-                component={NavLink}
-                to={path}
-                disablePadding
-                sx={{ display: 'block' }}
-              >
-                <ListItemButton
-                  selected={
-                    startsWith(pathname, path) &&
-                    (pathname[path.length] === '/' || pathname.length === path.length)
-                  }
+              <li key={index} className="block">
+                <NavLink
+                  to={path}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
+                    isActive ? 'bg-accent font-medium text-accent-foreground' : ''
+                  }`}
                 >
-                  <ListItemIcon>{icon}</ListItemIcon>
-                  <ListItemText primary={name} />
-                </ListItemButton>
-              </ListItem>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
+                    {icon}
+                  </span>
+                  {name}
+                </NavLink>
+              </li>
             )
           })}
-      </List>
-    </Stack>
+      </ul>
+    </nav>
   )
 }
