@@ -156,12 +156,14 @@ const LeaveTypesPage = () => {
   }))
 
   return (
-    <div>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-row items-center justify-between">
-          <strong>จัดการประเภทการลา</strong>
-          <Button onClick={handleOpenCreate}>เพิ่มประเภทการลา</Button>
+    <div className="flex flex-col gap-4">
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">จัดการประเภทการลา</h1>
+          <p className="page-description mt-0.5">กำหนดรหัส ชื่อ และจำนวนวันต่อปี</p>
         </div>
+        <Button onClick={handleOpenCreate} className="shrink-0">เพิ่มประเภทการลา</Button>
+      </header>
         {!loading && (
           <Table
             columns={getColumns(handleDelete)}
@@ -172,7 +174,6 @@ const LeaveTypesPage = () => {
             }}
           />
         )}
-      </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">

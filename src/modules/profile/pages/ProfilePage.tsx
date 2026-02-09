@@ -63,14 +63,16 @@ const ProfilePage = () => {
   }
 
   return (
-    <div>
-      <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">จัดการโปรไฟล์</h2>
+    <div className="flex flex-col gap-4">
+      <header className="page-header">
+        <h1 className="page-title">จัดการโปรไฟล์</h1>
+        <p className="page-description mt-0.5">แก้ไขข้อมูลและรูปโปรไฟล์</p>
+      </header>
 
-        <Card className="border">
-          <CardContent className="pt-6">
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-row items-start gap-4">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col items-start gap-4 sm:flex-row">
                 <div className="relative">
                   <Avatar className="h-28 w-28">
                     <AvatarImage src={profileImageSrc(profile)} alt={profile.name ?? undefined} />
@@ -143,7 +145,6 @@ const ProfilePage = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   )
 }

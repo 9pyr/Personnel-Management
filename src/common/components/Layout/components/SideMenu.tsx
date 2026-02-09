@@ -4,7 +4,6 @@ import { Separator } from '@/components/ui/separator'
 
 import { useContext } from 'react'
 
-import { drawerWidth } from 'common/components/Layout/styles'
 import type { Role } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import apiCaller from 'core/endpoints/apiCaller'
@@ -56,17 +55,24 @@ function UserProfileBlock() {
   )
 }
 
-export default function SideMenu() {
+export function SidebarContent() {
   return (
-    <aside
-      className="fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-sidebar-border bg-sidebar-bg shadow-soft"
-      style={{ width: drawerWidth }}
-    >
+    <>
       <Separator className="bg-sidebar-border" />
       <MenuContent />
       <div className="mt-auto border-t border-sidebar-border">
         <UserProfileBlock />
       </div>
+    </>
+  )
+}
+
+export default function SideMenu() {
+  return (
+    <aside
+      className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar-bg shadow-soft lg:flex"
+    >
+      <SidebarContent />
     </aside>
   )
 }

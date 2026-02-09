@@ -48,8 +48,8 @@ export function CalendarToolbar({
   ]
 
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-      <div className="flex items-center gap-1">
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div className="flex items-center justify-center gap-1 sm:justify-start">
         <Button
           variant="ghost"
           size="icon"
@@ -92,7 +92,7 @@ export function CalendarToolbar({
       <SelectBase
         id="calendar-filter-user"
         ariaLabel="กรองการลาและงานตามผู้ใช้"
-        className="max-w-[200px]"
+        className="w-full sm:max-w-[200px]"
         placeholder="ทั้งหมด"
         value={filterValue}
         onChange={onFilterChange}

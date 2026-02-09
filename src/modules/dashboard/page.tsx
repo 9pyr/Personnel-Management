@@ -120,7 +120,10 @@ const DashboardPage = () => {
         ) : (
           <div className="flex flex-col gap-3">
             {feedPosts.map(post => (
-              <Card key={post.id} className="overflow-hidden transition-shadow hover:shadow-soft-md">
+              <Card
+                key={post.id}
+                className="overflow-hidden transition-shadow hover:shadow-soft-md"
+              >
                 <CardContent className="py-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-9 w-9">

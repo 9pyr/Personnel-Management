@@ -68,7 +68,7 @@ interface TableProps {
 
 const Table = ({ columns, data, rowClick }: TableProps) => {
   return (
-    <div className="w-full overflow-auto rounded-md border border-border bg-card">
+    <div className="w-full min-w-0 overflow-x-auto rounded-md border border-border bg-card">
       <BaseTable>
         <TableHeader>
           <TableRow>

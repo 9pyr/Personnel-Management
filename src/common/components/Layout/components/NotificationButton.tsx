@@ -17,7 +17,7 @@ import type { Notification } from 'core/apis/notifications/types'
 import { Bell } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const NOTIFICATIONS_REFRESH_EVENT = 'notifications-refresh'
+import { NOTIFICATIONS_REFRESH_EVENT } from './notificationsRefresh'
 
 function formatNotificationTime(createdAt: string): string {
   try {
@@ -151,10 +151,4 @@ export default function NotificationButton() {
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
-
-export function dispatchNotificationsRefresh(): void {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(NOTIFICATIONS_REFRESH_EVENT))
-  }
 }

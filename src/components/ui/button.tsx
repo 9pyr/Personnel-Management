@@ -10,7 +10,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 active:scale-[0.98]',
+        default:
+          'bg-primary text-primary-foreground shadow-soft hover:bg-primary/90 active:scale-[0.98]',
         destructive: 'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
         outline:
           'border border-input bg-background shadow-sm hover:bg-primary/5 hover:border-primary/30 hover:text-foreground',
@@ -48,4 +49,5 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = 'Button'
 
+// eslint-disable-next-line react-refresh/only-export-components -- buttonVariants is shared for composition
 export { Button, buttonVariants }

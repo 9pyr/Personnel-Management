@@ -291,7 +291,7 @@ const FeedPage = () => {
   )
 
   return (
-    <div className="mx-auto max-w-[680px]">
+    <div className="w-full max-w-[680px] mx-auto px-0 sm:px-0">
       <div className="flex flex-col gap-4">
         <header className="page-header">
           <div>

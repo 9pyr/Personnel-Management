@@ -106,104 +106,104 @@ export default function CalendarPage() {
       </header>
 
       {pendingInList.length > 0 && (
-          <p
-            className="cursor-pointer text-sm text-primary w-fit hover:underline"
-            onClick={() => navigate('/leave')}
-          >
-            คำขอลารอการดำเนินการ {pendingInList.length} รายการ →
-          </p>
-        )}
+        <p
+          className="cursor-pointer text-sm text-primary w-fit hover:underline"
+          onClick={() => navigate('/leave')}
+        >
+          คำขอลารอการดำเนินการ {pendingInList.length} รายการ →
+        </p>
+      )}
 
-        <Card className="border bg-card">
-          <CardContent className="pt-6">
-            <CalendarToolbar
-              year={year}
-              month={month}
-              onPrevMonth={goPrevMonth}
-              onNextMonth={goNextMonth}
-              onMonthSelect={handleMonthSelect}
-              filterValue={selectValue}
-              onFilterChange={handleFilterChange}
-              users={users}
-              currentUser={user}
-            />
+      <Card className="border bg-card">
+        <CardContent className="pt-6">
+          <CalendarToolbar
+            year={year}
+            month={month}
+            onPrevMonth={goPrevMonth}
+            onNextMonth={goNextMonth}
+            onMonthSelect={handleMonthSelect}
+            filterValue={selectValue}
+            onFilterChange={handleFilterChange}
+            users={users}
+            currentUser={user}
+          />
 
-            <div className="flex justify-between items-center gap-2 mb-4">
-              <div className="flex items-center gap-2">
-                {canAddEvent && (
-                  <Button size="sm" onClick={eventForm.openDialog}>
-                    <Plus className="mr-1 h-4 w-4" />
-                    เพิ่มงาน
-                  </Button>
-                )}
-                {canAddHoliday && (
-                  <Button size="sm" onClick={holidayForm.openDialog}>
-                    <Plus className="mr-1 h-4 w-4" />
-                    เพิ่มวันหยุด
-                  </Button>
-                )}
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={loading}
-                onClick={handleRefresh}
-              >
-                {loading ? 'กำลังโหลด...' : 'โหลดใหม่'}
-              </Button>
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              {canAddEvent && (
+                <Button size="sm" onClick={eventForm.openDialog}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  เพิ่มงาน
+                </Button>
+              )}
+              {canAddHoliday && (
+                <Button size="sm" onClick={holidayForm.openDialog}>
+                  <Plus className="mr-1 h-4 w-4" />
+                  เพิ่มวันหยุด
+                </Button>
+              )}
             </div>
 
-            {loading ? (
-              <p className="text-muted-foreground">กำลังโหลด...</p>
-            ) : (
-              <>
-                <div className="h-[640px] w-full rounded-md border border-border bg-background">
-                  <BigCalendar
-                    localizer={bigCalendarLocalizer}
-                    events={calendarEvents}
-                    startAccessor="start"
-                    endAccessor="end"
-                    allDayAccessor="allDay"
-                    views={['month']}
-                    view="month"
-                    date={new Date(year, month - 1, 1)}
-                    onNavigate={(nextDate: Date) => {
-                      const next = dayjs(nextDate)
-                      setYear(next.year())
-                      setMonth(next.month() + 1)
-                    }}
-                    toolbar={false}
-                    culture="th"
-                    popup
-                    onSelectEvent={event => {
-                      if ('type' in event && 'leave' in event) {
-                        setDetailEvent(event as CalendarItemEvent)
-                      } else if ('type' in event && 'holiday' in event) {
-                        setDetailEvent(event as CalendarItemEvent)
-                      } else if ('type' in event && 'workEvent' in event) {
-                        setDetailEvent(event as CalendarItemEvent)
-                      }
-                    }}
-                    components={{ event: CalendarEventCell }}
-                    eventPropGetter={event => {
-                      if ('type' in event) {
-                        return getEventStyle(event as CalendarItemEvent, user?.id)
-                      }
-                      return {}
-                    }}
-                  />
-                </div>
-                {displayLeaves.length === 0 && events.length === 0 && holidays.length === 0 && (
-                  <p className="mt-4 text-center text-sm text-muted-foreground">
-                    เดือนนี้ยังไม่มีใครลงกิจกรรม
-                  </p>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={handleRefresh}
+            >
+              {loading ? 'กำลังโหลด...' : 'โหลดใหม่'}
+            </Button>
+          </div>
+
+          {loading ? (
+            <p className="text-muted-foreground">กำลังโหลด...</p>
+          ) : (
+            <>
+              <div className="h-[min(70vh,640px)] min-h-[360px] w-full rounded-md border border-border bg-background">
+                <BigCalendar
+                  localizer={bigCalendarLocalizer}
+                  events={calendarEvents}
+                  startAccessor="start"
+                  endAccessor="end"
+                  allDayAccessor="allDay"
+                  views={['month']}
+                  view="month"
+                  date={new Date(year, month - 1, 1)}
+                  onNavigate={(nextDate: Date) => {
+                    const next = dayjs(nextDate)
+                    setYear(next.year())
+                    setMonth(next.month() + 1)
+                  }}
+                  toolbar={false}
+                  culture="th"
+                  popup
+                  onSelectEvent={event => {
+                    if ('type' in event && 'leave' in event) {
+                      setDetailEvent(event as CalendarItemEvent)
+                    } else if ('type' in event && 'holiday' in event) {
+                      setDetailEvent(event as CalendarItemEvent)
+                    } else if ('type' in event && 'workEvent' in event) {
+                      setDetailEvent(event as CalendarItemEvent)
+                    }
+                  }}
+                  components={{ event: CalendarEventCell }}
+                  eventPropGetter={event => {
+                    if ('type' in event) {
+                      return getEventStyle(event as CalendarItemEvent, user?.id)
+                    }
+                    return {}
+                  }}
+                />
+              </div>
+              {displayLeaves.length === 0 && events.length === 0 && holidays.length === 0 && (
+                <p className="mt-4 text-center text-sm text-muted-foreground">
+                  เดือนนี้ยังไม่มีใครลงกิจกรรม
+                </p>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <EventDetailDialog event={detailEvent} onClose={() => setDetailEvent(null)} />
 

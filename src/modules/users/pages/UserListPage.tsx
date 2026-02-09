@@ -136,12 +136,14 @@ const UserListPage = () => {
   }))
 
   return (
-    <div>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-row items-center justify-between">
-          <strong>จัดการผู้ใช้</strong>
-          <Button onClick={() => setOpen(true)}>เพิ่มผู้ใช้</Button>
+    <div className="flex flex-col gap-4">
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">จัดการผู้ใช้</h1>
+          <p className="page-description mt-0.5">เพิ่มและแก้ไขผู้ใช้ในระบบ</p>
         </div>
+        <Button onClick={() => setOpen(true)} className="shrink-0">เพิ่มผู้ใช้</Button>
+      </header>
         {!loading && (
           <Table
             columns={getColumns(row => setEditUser(users.find(user => user.id === row.id) ?? null))}
@@ -149,7 +151,6 @@ const UserListPage = () => {
             rowClick={() => {}}
           />
         )}
-      </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">
