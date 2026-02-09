@@ -59,12 +59,14 @@ function UserProfileBlock() {
 export default function SideMenu() {
   return (
     <aside
-      className="fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-border bg-card"
+      className="fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-sidebar-border bg-sidebar-bg shadow-soft"
       style={{ width: drawerWidth }}
     >
-      <Separator />
+      <Separator className="bg-sidebar-border" />
       <MenuContent />
-      <UserProfileBlock />
+      <div className="mt-auto border-t border-sidebar-border">
+        <UserProfileBlock />
+      </div>
     </aside>
   )
 }

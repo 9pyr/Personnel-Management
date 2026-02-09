@@ -95,14 +95,17 @@ export default function CalendarPage() {
   }, [refresh])
 
   return (
-    <div>
-      <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">ปฏิทิน</h2>
-        <p className="text-sm text-muted-foreground">
-          แสดงว่าวันไหน ใครทำอะไร อยู่ที่ไหน ตามที่ทุกคนลงไว้ (การลา · งาน/เหตุการณ์ · วันหยุด)
-        </p>
+    <div className="flex flex-col gap-4">
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">ปฏิทิน</h1>
+          <p className="page-description mt-0.5">
+            แสดงว่าวันไหน ใครทำอะไร อยู่ที่ไหน (การลา · งาน/เหตุการณ์ · วันหยุด)
+          </p>
+        </div>
+      </header>
 
-        {pendingInList.length > 0 && (
+      {pendingInList.length > 0 && (
           <p
             className="cursor-pointer text-sm text-primary w-fit hover:underline"
             onClick={() => navigate('/leave')}
@@ -201,7 +204,6 @@ export default function CalendarPage() {
             )}
           </CardContent>
         </Card>
-      </div>
 
       <EventDetailDialog event={detailEvent} onClose={() => setDetailEvent(null)} />
 

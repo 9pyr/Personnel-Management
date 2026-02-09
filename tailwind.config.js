@@ -13,6 +13,9 @@ export default {
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        'content-bg': 'hsl(var(--content-bg))',
+        'sidebar-bg': 'hsl(var(--sidebar-bg))',
+        'sidebar-border': 'hsl(var(--sidebar-border))',
         card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
         popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
         primary: { DEFAULT: 'hsl(var(--primary))', foreground: 'hsl(var(--primary-foreground))' },
@@ -23,6 +26,10 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+      },
+      boxShadow: {
+        'soft': 'var(--shadow)',
+        'soft-md': 'var(--shadow-md)',
       },
     },
   },

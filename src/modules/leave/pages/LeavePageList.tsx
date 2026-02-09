@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
 import { useState } from 'react'
 
@@ -20,16 +21,18 @@ const LeavePageList = () => {
   }
 
   return (
-    <div>
-      <div className="flex flex-col gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          <strong>การลา</strong>
-          <div className="flex justify-end">
-            <Button onClick={handleOpenNew}>ขอลา</Button>
-          </div>
+    <div className="flex flex-col gap-6">
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">การลา</h1>
+          <p className="page-description mt-0.5">รายการคำขอลาและสถานะ</p>
         </div>
-        <Inprogress onEditLeave={handleEdit} />
-      </div>
+        <Button onClick={handleOpenNew} size="default" className="shrink-0">
+          <Plus className="h-4 w-4" />
+          ขอลา
+        </Button>
+      </header>
+      <Inprogress onEditLeave={handleEdit} />
       <LeaveFormModal
         open={modalOpen}
         onOpenChange={setModalOpen}

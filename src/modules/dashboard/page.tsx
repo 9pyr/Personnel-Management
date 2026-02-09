@@ -55,9 +55,14 @@ const DashboardPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-xl font-semibold">Dashboard</h2>
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-description mt-0.5">ภาพรวมวันลาและประกาศล่าสุด</p>
+        </div>
+      </header>
 
-      <Card className="border">
+      <Card>
         <CardContent className="pt-6">
           <p className="mb-2 text-sm font-semibold text-muted-foreground">
             วันลาพักร้อนคงเหลือ (ปีนี้)
@@ -115,7 +120,7 @@ const DashboardPage = () => {
         ) : (
           <div className="flex flex-col gap-3">
             {feedPosts.map(post => (
-              <Card key={post.id} className="overflow-hidden border">
+              <Card key={post.id} className="overflow-hidden transition-shadow hover:shadow-soft-md">
                 <CardContent className="py-3">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-9 w-9">

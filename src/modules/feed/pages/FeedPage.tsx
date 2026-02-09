@@ -293,7 +293,12 @@ const FeedPage = () => {
   return (
     <div className="mx-auto max-w-[680px]">
       <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">ประกาศ / Feed</h2>
+        <header className="page-header">
+          <div>
+            <h1 className="page-title">ประกาศ</h1>
+            <p className="page-description mt-0.5">โพสต์และติดตามข่าวจากทีม</p>
+          </div>
+        </header>
 
         <div className="flex flex-col gap-2">
           <Card className="border">

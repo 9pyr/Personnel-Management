@@ -100,7 +100,7 @@ export default function NotificationButton() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative"
+          className="relative rounded-full bg-muted/90 hover:bg-primary/15 hover:text-primary"
           aria-label={`การแจ้งเตือน${unreadCount > 0 ? ` ${unreadCount} รายการยังไม่อ่าน` : ''}`}
         >
           <Bell className="h-5 w-5" />

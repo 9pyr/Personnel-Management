@@ -23,7 +23,10 @@ export default function OptionsMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <MenuButton aria-label="Open menu">
+        <MenuButton
+          aria-label="Open menu"
+          className="rounded-full bg-muted/90 hover:bg-primary/15 hover:text-primary"
+        >
           <MoreVertical className="h-5 w-5" />
         </MenuButton>
       </DropdownMenuTrigger>

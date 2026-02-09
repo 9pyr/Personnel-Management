@@ -2,7 +2,7 @@ import { useContext } from 'react'
 
 import type { Role } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { menuItems } from 'routes'
 
 function canSeeMenuItem(roles: Role[] | undefined, userRole: Role | undefined): boolean {
@@ -11,9 +11,7 @@ function canSeeMenuItem(roles: Role[] | undefined, userRole: Role | undefined): 
 }
 
 export default function MenuContent() {
-  const location = useLocation()
   const user = useContext(AuthContext)
-  const pathname = location.pathname
 
   return (
     <nav className="flex flex-1 flex-col justify-between p-2">
@@ -22,17 +20,18 @@ export default function MenuContent() {
           .filter(item => canSeeMenuItem(item.roles, user?.role))
           .map(({ path: initialPath, name, icon, index: isDefaultPath }, index) => {
             const path = isDefaultPath ? '/' : (initialPath ?? '/#')
-            const isActive =
-              pathname.startsWith(path) &&
-              (pathname[path.length] === '/' || pathname.length === path.length)
 
             return (
               <li key={index} className="block">
                 <NavLink
                   to={path}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
-                    isActive ? 'bg-accent font-medium text-accent-foreground' : ''
-                  }`}
+                  className={({ isActive, isPending }) =>
+                    `flex items-center gap-3 rounded-r-md border-l-2 px-3 py-2.5 text-sm transition-colors duration-200 hover:bg-accent hover:text-accent-foreground ${
+                      isActive
+                        ? 'border-primary bg-primary/10 font-medium text-primary [&_span]:text-primary'
+                        : 'border-transparent'
+                    } ${isPending ? 'opacity-70' : ''}`
+                  }
                 >
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center [&_svg]:h-5 [&_svg]:w-5">
                     {icon}
