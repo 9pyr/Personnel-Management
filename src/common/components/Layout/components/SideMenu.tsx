@@ -69,9 +69,7 @@ export function SidebarContent() {
 
 export default function SideMenu() {
   return (
-    <aside
-      className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar-bg shadow-soft lg:flex"
-    >
+    <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar-bg shadow-soft lg:flex">
       <SidebarContent />
     </aside>
   )

@@ -1,9 +1,8 @@
-import {
-  Sheet,
-  SheetContent,
-} from '@/components/ui/sheet'
-import NotificationListener from 'common/components/NotificationListener'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+
 import { useEffect, useState } from 'react'
+
+import NotificationListener from 'common/components/NotificationListener'
 import { Outlet, useLocation } from 'react-router-dom'
 
 import MobileHeader from './components/MobileHeader'

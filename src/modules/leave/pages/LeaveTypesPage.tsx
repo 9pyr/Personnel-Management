@@ -162,18 +162,20 @@ const LeaveTypesPage = () => {
           <h1 className="page-title">จัดการประเภทการลา</h1>
           <p className="page-description mt-0.5">กำหนดรหัส ชื่อ และจำนวนวันต่อปี</p>
         </div>
-        <Button onClick={handleOpenCreate} className="shrink-0">เพิ่มประเภทการลา</Button>
+        <Button onClick={handleOpenCreate} className="shrink-0">
+          เพิ่มประเภทการลา
+        </Button>
       </header>
-        {!loading && (
-          <Table
-            columns={getColumns(handleDelete)}
-            data={tableData}
-            rowClick={rowId => {
-              const foundType = rowId ? types.find(typeItem => typeItem.id === rowId) : undefined
-              if (foundType) handleOpenEdit(foundType)
-            }}
-          />
-        )}
+      {!loading && (
+        <Table
+          columns={getColumns(handleDelete)}
+          data={tableData}
+          rowClick={rowId => {
+            const foundType = rowId ? types.find(typeItem => typeItem.id === rowId) : undefined
+            if (foundType) handleOpenEdit(foundType)
+          }}
+        />
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">

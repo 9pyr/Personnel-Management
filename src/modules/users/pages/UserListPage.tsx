@@ -142,15 +142,17 @@ const UserListPage = () => {
           <h1 className="page-title">จัดการผู้ใช้</h1>
           <p className="page-description mt-0.5">เพิ่มและแก้ไขผู้ใช้ในระบบ</p>
         </div>
-        <Button onClick={() => setOpen(true)} className="shrink-0">เพิ่มผู้ใช้</Button>
+        <Button onClick={() => setOpen(true)} className="shrink-0">
+          เพิ่มผู้ใช้
+        </Button>
       </header>
-        {!loading && (
-          <Table
-            columns={getColumns(row => setEditUser(users.find(user => user.id === row.id) ?? null))}
-            data={tableData}
-            rowClick={() => {}}
-          />
-        )}
+      {!loading && (
+        <Table
+          columns={getColumns(row => setEditUser(users.find(user => user.id === row.id) ?? null))}
+          data={tableData}
+          rowClick={() => {}}
+        />
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">
