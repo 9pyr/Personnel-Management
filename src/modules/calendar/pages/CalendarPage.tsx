@@ -126,18 +126,21 @@ export default function CalendarPage() {
             />
 
             <div className="flex justify-between items-center gap-2 mb-4">
-              {canAddEvent && (
-                <Button size="sm" onClick={eventForm.openDialog}>
-                  <Plus className="mr-1 h-4 w-4" />
-                  เพิ่มงาน
-                </Button>
-              )}
-              {canAddHoliday && (
-                <Button size="sm" onClick={holidayForm.openDialog}>
-                  <Plus className="mr-1 h-4 w-4" />
-                  เพิ่มวันหยุด
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {canAddEvent && (
+                  <Button size="sm" onClick={eventForm.openDialog}>
+                    <Plus className="mr-1 h-4 w-4" />
+                    เพิ่มงาน
+                  </Button>
+                )}
+                {canAddHoliday && (
+                  <Button size="sm" onClick={holidayForm.openDialog}>
+                    <Plus className="mr-1 h-4 w-4" />
+                    เพิ่มวันหยุด
+                  </Button>
+                )}
+              </div>
+
               <Button
                 type="button"
                 variant="outline"

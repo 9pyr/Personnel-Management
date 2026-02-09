@@ -13,7 +13,6 @@ import {
 import CalendarPage from 'modules/calendar/pages/CalendarPage'
 import DashboardPage from 'modules/dashboard/page'
 import FeedPage from 'modules/feed/pages/FeedPage'
-import LeavePageForm from 'modules/leave/pages/LeavePageForm'
 import LeavePageList from 'modules/leave/pages/LeavePageList'
 import LeaveTypesPage from 'modules/leave/pages/LeaveTypesPage'
 import ProfilePage from 'modules/profile/pages/ProfilePage'
@@ -45,11 +44,7 @@ export const menuItems: ({ name: string; icon: ReactElement; roles?: Role[] } & 
     path: '/leave',
     name: 'การลา',
     icon: <Sailboat className={iconClass} />,
-    children: [
-      { index: true, element: <LeavePageList /> },
-      { path: 'new', element: <LeavePageForm /> },
-      { path: ':id/edit', element: <LeavePageForm /> },
-    ],
+    element: <LeavePageList />,
   },
   {
     path: '/calendar',

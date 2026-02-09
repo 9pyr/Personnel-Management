@@ -39,10 +39,12 @@ export function CalendarToolbar({
   const filterOptions: SelectOption[] = [
     { value: FILTER_ALL, label: 'ทั้งหมด (ทุกคน)' },
     ...(currentUser?.id ? [{ value: currentUser.id, label: 'ตัวฉัน' } satisfies SelectOption] : []),
-    ...users.map<SelectOption>(u => ({
-      value: u.id,
-      label: `${u.name}${u.department ? ` (${u.department})` : ''}`,
-    })),
+    ...users
+      .filter(u => u.id != null && u.id !== '')
+      .map<SelectOption>(u => ({
+        value: u.id,
+        label: `${u.name}${u.department ? ` (${u.department})` : ''}`,
+      })),
   ]
 
   return (

@@ -28,7 +28,11 @@ const BASE_COLUMNS = [
   },
 ]
 
-const Inprogress = () => {
+interface InprogressProps {
+  onEditLeave?: (leaveId: string) => void
+}
+
+const Inprogress = ({ onEditLeave }: InprogressProps) => {
   const navigate = useNavigate()
   const user = useContext(AuthContext)
   const leavesQuery = useListLeave()
@@ -75,7 +79,13 @@ const Inprogress = () => {
             <Table
               columns={BASE_COLUMNS}
               data={tableData}
-              rowClick={leaveId => navigate(`/leave/${leaveId}/edit`)}
+              rowClick={leaveId => {
+                if (onEditLeave && leaveId != null) {
+                  onEditLeave(String(leaveId))
+                } else if (leaveId != null) {
+                  navigate(`/leave/${leaveId}/edit`)
+                }
+              }}
             />
           )}
         </TabsContent>

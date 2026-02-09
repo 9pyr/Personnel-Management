@@ -46,6 +46,9 @@ export function SelectBase({
   disabled,
   className,
 }: SelectBaseProps) {
+  const safeOptions = (opts: SelectOption[]) => opts.filter(o => o.value !== '')
+  const safeGroupOptions = (opts: SelectOption[]) => opts.filter(o => o.value !== '')
+
   return (
     <Select disabled={disabled} value={value} onValueChange={onChange}>
       <SelectTrigger id={id} aria-label={ariaLabel} className={className}>
@@ -56,7 +59,7 @@ export function SelectBase({
           ? optionGroups.map((group, groupIndex) => (
               <SelectGroup key={`select-group-${id ?? ''}-${groupIndex}`}>
                 <SelectLabel className="pl-2">{group.groupLabel}</SelectLabel>
-                {group.options.map((option, optionIndex) => (
+                {safeGroupOptions(group.options).map((option, optionIndex) => (
                   <SelectItem
                     key={`select-option-${id ?? ''}-${groupIndex}-${optionIndex}`}
                     value={option.value}
@@ -67,7 +70,7 @@ export function SelectBase({
                 ))}
               </SelectGroup>
             ))
-          : options.map((option, optionIndex) => (
+          : safeOptions(options).map((option, optionIndex) => (
               <SelectItem key={`select-option-${id ?? ''}-${optionIndex}`} value={option.value}>
                 {option.label}
               </SelectItem>
