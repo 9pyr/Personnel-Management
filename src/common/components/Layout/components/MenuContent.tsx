@@ -1,4 +1,3 @@
-import { startsWith } from 'lodash'
 import { useContext } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 
@@ -25,7 +24,7 @@ export default function MenuContent() {
           .map(({ path: initialPath, name, icon, index: isDefaultPath }, index) => {
             const path = isDefaultPath ? '/' : (initialPath ?? '/#')
             const isActive =
-              startsWith(pathname, path) &&
+              pathname.startsWith(path) &&
               (pathname[path.length] === '/' || pathname.length === path.length)
 
             return (

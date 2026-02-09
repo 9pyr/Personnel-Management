@@ -1,6 +1,14 @@
 import { userSchema } from 'core/apis/auth/schemas'
 import type { User } from 'core/apis/auth/types'
-import { atom } from 'recoil'
+import { create } from 'zustand'
+
+interface AuthState {
+  token: string | null
+  user: User | null
+  setToken: (value: string | null) => void
+  setUser: (value: User | null) => void
+  clearAuth: () => void
+}
 
 const TOKEN_KEY = 'personnel_token'
 const USER_KEY = 'personnel_user'
@@ -17,36 +25,40 @@ function persistUser(value: User | null): void {
   else localStorage.removeItem(USER_KEY)
 }
 
-export const authTokenState = atom<string | null>({
-  key: 'authToken',
-  default: typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null,
-  effects: [
-    ({ onSet }) => {
-      onSet(persistToken)
-    },
-  ],
-})
+function getInitialToken(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem(TOKEN_KEY)
+}
 
-export const authUserState = atom<User | null>({
-  key: 'authUser',
-  default: (() => {
-    if (typeof window === 'undefined') return null
-    const raw = localStorage.getItem(USER_KEY)
-    if (!raw) return null
-    try {
-      const data: object = JSON.parse(raw)
-      const result = userSchema.safeParse(data)
-      return result.success ? result.data : null
-    } catch {
-      return null
-    }
-  })(),
-  effects: [
-    ({ onSet }) => {
-      onSet(persistUser)
-    },
-  ],
-})
+function getInitialUser(): User | null {
+  if (typeof window === 'undefined') return null
+  const raw = localStorage.getItem(USER_KEY)
+  if (!raw) return null
+  try {
+    const data: object = JSON.parse(raw)
+    const result = userSchema.safeParse(data)
+    return result.success ? result.data : null
+  } catch {
+    return null
+  }
+}
+
+export const useAuthStore = create<AuthState>(set => ({
+  token: getInitialToken(),
+  user: getInitialUser(),
+  setToken: value => {
+    persistToken(value)
+    set({ token: value })
+  },
+  setUser: value => {
+    persistUser(value)
+    set({ user: value })
+  },
+  clearAuth: () => {
+    clearAuthStorage()
+    set({ token: null, user: null })
+  },
+}))
 
 export function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null
@@ -64,4 +76,23 @@ export function clearAuthStorage(): void {
   if (typeof window === 'undefined') return
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
+}
+
+export function useAuthToken(): string | null {
+  return useAuthStore(state => state.token)
+}
+
+export function useAuthUser(): User | null {
+  return useAuthStore(state => state.user)
+}
+
+export function useAuthActions(): {
+  setToken: (value: string | null) => void
+  setUser: (value: User | null) => void
+  clearAuth: () => void
+} {
+  const setToken = useAuthStore(state => state.setToken)
+  const setUser = useAuthStore(state => state.setUser)
+  const clearAuth = useAuthStore(state => state.clearAuth)
+  return { setToken, setUser, clearAuth }
 }

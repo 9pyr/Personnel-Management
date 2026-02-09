@@ -4,7 +4,8 @@ import 'dayjs/locale/th'
 import { Calendar as CalendarIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { Calendar, CalendarRange, type DateRange } from '@/components/ui/calendar'
+import { Calendar, CalendarRange } from '@/components/ui/calendar'
+import type { DateRange } from '@/components/ui/calendar'
 import {
   Popover,
   PopoverContent,
@@ -27,6 +28,8 @@ export interface DatePickerSingleProps {
   disabled?: boolean
   className?: string
   id?: string
+  minDate?: Date
+  maxDate?: Date
 }
 
 export function DatePickerSingle({
@@ -36,6 +39,8 @@ export function DatePickerSingle({
   disabled,
   className,
   id,
+  minDate,
+  maxDate,
 }: DatePickerSingleProps) {
   const [open, setOpen] = React.useState(false)
   return (
@@ -58,6 +63,8 @@ export function DatePickerSingle({
             onChange?.(date)
             setOpen(false)
           }}
+          minDate={minDate}
+          maxDate={maxDate}
         />
       </PopoverContent>
     </Popover>

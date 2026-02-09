@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 
 dayjs.locale('th')
 
-import { nextStateLeave, rejectStateLeave } from 'core/apis/leave'
+import { useNextStateLeave, useRejectStateLeave } from 'core/apis/leave/queries'
 import type { Leave } from 'core/apis/leave/types'
 
 import LeaveStatusBadge from './LeaveStatusBadge'
@@ -18,9 +18,12 @@ interface LeaveRequestCardsProps {
 }
 
 function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
+  const nextStateMutation = useNextStateLeave()
+  const rejectStateMutation = useRejectStateLeave()
+
   const handleApprove = async (id: string) => {
     try {
-      await nextStateLeave(id)
+      await nextStateMutation.mutateAsync({ id })
       toast.success('อนุมัติการลาแล้ว')
       onActionDone?.()
     } catch {
@@ -30,7 +33,7 @@ function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
 
   const handleReject = async (id: string) => {
     try {
-      await rejectStateLeave(id)
+      await rejectStateMutation.mutateAsync({ id })
       toast.success('ปฏิเสธการลาแล้ว')
       onActionDone?.()
     } catch {

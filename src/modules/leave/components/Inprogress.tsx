@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import Table from 'common/components/Table'
-import { getListLeave } from 'core/apis/leave'
+import { useListLeave } from 'core/apis/leave/queries'
 import type { Leave } from 'core/apis/leave/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 
@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import type { TableRowData } from 'common/components/Table'
 
-import { leaveFields, LEAVE_STATUS } from '../constants'
+import { leaveFields, LEAVE_STATUS } from 'modules/leave/constants'
 
 import LeaveRequestCards from './LeaveRequestCards'
 import LeaveStatusBadge from './LeaveStatusBadge'
@@ -37,30 +37,18 @@ const BASE_COLUMNS = [
 const Inprogress = () => {
   const navigate = useNavigate()
   const user = useContext(AuthContext)
-  const [leaves, setLeaves] = useState<Leave[]>([])
-  const [loading, setLoading] = useState(true)
+  const leavesQuery = useListLeave()
+  const leaves = leavesQuery.data ?? []
+  const loading = leavesQuery.isLoading
 
   const canApproveLeave =
     user?.role === 'MANAGER' || user?.role === 'PEOPLE' || user?.role === 'ADMIN'
 
-  const fetchLeaves = useCallback(async () => {
-    try {
-      const list = await getListLeave()
-      setLeaves(Array.isArray(list) ? list : [])
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
   useEffect(() => {
-    void fetchLeaves()
-  }, [fetchLeaves])
-
-  useEffect(() => {
-    const onRefresh = () => void fetchLeaves()
+    const onRefresh = () => void leavesQuery.refetch()
     window.addEventListener('leave-list-refresh', onRefresh)
     return () => window.removeEventListener('leave-list-refresh', onRefresh)
-  }, [fetchLeaves])
+  }, [leavesQuery])
 
   const myLeaves = leaves.filter(leave => leave.createdByUserId === user?.id)
   const othersPending = leaves.filter(
@@ -106,7 +94,7 @@ const Inprogress = () => {
             {loading ? (
               <p className="text-muted-foreground">กำลังโหลด...</p>
             ) : (
-              <LeaveRequestCards leaves={othersPending} onActionDone={fetchLeaves} />
+              <LeaveRequestCards leaves={othersPending} onActionDone={() => leavesQuery.refetch()} />
             )}
           </TabsContent>
         )}

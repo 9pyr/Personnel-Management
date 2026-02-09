@@ -1,16 +1,3 @@
-import { useContext, useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { toast } from 'sonner'
-
-import Form from 'common/components/Form'
-import DatePicker from 'common/components/Input/DatePicker'
-import Select from 'common/components/Input/Select'
-import TextInput from 'common/components/Input/Text'
-import { cancelLeave, createLeave, getLeaveById, updateLeaveById } from 'core/apis/leave'
-import { getListLeaveTypes } from 'core/apis/leave/leaveTypes'
-import type { Leave } from 'core/apis/leave/types'
-import { AuthContext } from 'core/contexts/AuthContext'
-
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -21,14 +8,39 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { TimePicker } from '@/components/ui/time-picker'
 
-import { leaveFields, LEAVE_STATUS } from '../constants'
+import { useContext, useState } from 'react'
+
+import Form from 'common/components/Form'
+import DatePicker from 'common/components/Input/DatePicker'
+import Select from 'common/components/Input/Select'
+import TextInput from 'common/components/Input/Text'
+import { useListLeaveTypes } from 'core/apis/leave/leaveTypesQueries'
+import {
+  useCancelLeave,
+  useCreateLeave,
+  useLeaveById,
+  useUpdateLeave,
+} from 'core/apis/leave/queries'
+import type { Leave, LeaveCreatePayload, LeaveUpdatePayload } from 'core/apis/leave/types'
+import { AuthContext } from 'core/contexts/AuthContext'
+import { LEAVE_STATUS, leaveFields } from 'modules/leave/constants'
+import { Controller, useFormContext, useWatch } from 'react-hook-form'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
+
+type LeaveDurationType = 'FULL_DAY' | 'HOURLY'
 
 type LeaveFormDefaults = Partial<Leave> & {
   leaveTypeId: string
   description: string
   startDate: string
   endDate: string
+  durationType: LeaveDurationType
+  startTime?: string
+  endTime?: string
 }
 
 interface LeaveTypeOption {
@@ -73,96 +85,240 @@ const LeavePageForm = () => {
   const { pathname } = useLocation()
   const { id: leaveId } = useParams()
   const isNew = pathname.endsWith('/new')
-  const [leaveTypeOptions, setLeaveTypeOptions] = useState<LeaveTypeOption[]>([])
-  const [formDefaults, setFormDefaults] = useState<LeaveFormDefaults | null>(null)
-  const [isReadOnly, setIsReadOnly] = useState(false)
-  const [leaveStatus, setLeaveStatus] = useState<string | null>(null)
-  const [leaveEndDate, setLeaveEndDate] = useState<string | null>(null)
-  const [cancelling, setCancelling] = useState(false)
-  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
+  const leaveTypesQuery = useListLeaveTypes()
+  const leaveQuery = useLeaveById(leaveId ?? '', { enabled: Boolean(leaveId) && !isNew })
+  const createLeaveMutation = useCreateLeave()
+  const updateLeaveMutation = useUpdateLeave()
+  const cancelLeaveMutation = useCancelLeave()
 
-  useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      const types = await getListLeaveTypes()
-      if (cancelled) return
-      setLeaveTypeOptions(types.map(leaveType => ({ label: leaveType.name, value: leaveType.id })))
-      if (isNew) {
-        setFormDefaults({
-          [leaveFields.leaveTypeId]: types[0]?.id ?? '',
-          [leaveFields.description]: '',
-          [leaveFields.startDate]: '',
-          [leaveFields.endDate]: '',
-        })
-        return
+  const leaveTypeOptions: LeaveTypeOption[] = (leaveTypesQuery.data ?? []).map(leaveType => ({
+    label: leaveType.name,
+    value: leaveType.id,
+  }))
+
+  const formDefaults: LeaveFormDefaults | null = (() => {
+    if (!leaveTypesQuery.data) return null
+    const types = leaveTypesQuery.data
+    if (isNew || !leaveId) {
+      return {
+        [leaveFields.leaveTypeId]: types[0]?.id ?? '',
+        [leaveFields.description]: '',
+        [leaveFields.startDate]: '',
+        [leaveFields.endDate]: '',
+        durationType: 'FULL_DAY',
+        startTime: '09:00',
+        endTime: '18:00',
       }
-      if (!leaveId) {
-        setFormDefaults({
-          [leaveFields.leaveTypeId]: types[0]?.id ?? '',
-          [leaveFields.description]: '',
-          [leaveFields.startDate]: '',
-          [leaveFields.endDate]: '',
-        })
-        return
-      }
-      const data = await getLeaveById(leaveId)
-      if (cancelled) return
-      const notOwner = data.createdByUserId != null && data.createdByUserId !== currentUser?.id
-      const approvedOrRejected =
-        data.status === LEAVE_STATUS.APPROVED ||
-        data.status === LEAVE_STATUS.REJECTED ||
-        data.status === LEAVE_STATUS.CANCELLED
-      setIsReadOnly(notOwner || approvedOrRejected)
-      setLeaveStatus(data.status ?? null)
-      setLeaveEndDate(data.endDate ?? null)
-      const typeId =
-        data.leaveTypeId ??
-        (data.reason ? types.find(leaveType => leaveType.code === data.reason)?.id : undefined) ??
-        types[0]?.id ??
-        ''
-      setFormDefaults({
-        ...data,
-        [leaveFields.leaveTypeId]: typeId,
-      })
     }
-    void load()
-    return () => {
-      cancelled = true
+    if (!leaveQuery.data) return null
+    const data = leaveQuery.data
+    const typeId =
+      data.leaveTypeId ??
+      (data.reason ? types.find(leaveType => leaveType.code === data.reason)?.id : undefined) ??
+      types[0]?.id ??
+      ''
+    return {
+      ...data,
+      [leaveFields.leaveTypeId]: typeId,
+      durationType: data.durationType ?? 'FULL_DAY',
+      startTime: data.startTime ?? '09:00',
+      endTime: data.endTime ?? '18:00',
     }
-  }, [leaveId, isNew, currentUser?.id])
+  })()
+
+  const isReadOnly = (() => {
+    if (!leaveQuery.data) return false
+    const data = leaveQuery.data
+    const notOwner = data.createdByUserId != null && data.createdByUserId !== currentUser?.id
+    const approvedOrRejected =
+      data.status === LEAVE_STATUS.APPROVED ||
+      data.status === LEAVE_STATUS.REJECTED ||
+      data.status === LEAVE_STATUS.CANCELLED
+    return notOwner || approvedOrRejected
+  })()
+
+  const leaveStatus = leaveQuery.data?.status ?? null
+  const leaveEndDate = leaveQuery.data?.endDate ?? null
+  const cancelling = cancelLeaveMutation.isPending
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
 
   const handleSubmit = async (values: LeaveFormDefaults) => {
     const startDate = String(values.startDate ?? '')
     const endDate = String(values.endDate ?? '')
-    const payload: Leave = {
-      id: values.id,
-      leaveTypeId: values.leaveTypeId ?? '',
-      description: String(values.description ?? ''),
-      startDate,
-      endDate,
+    const durationType: LeaveDurationType = values.durationType ?? 'FULL_DAY'
+    const startTime = String(values.startTime ?? '')
+    const endTime = String(values.endTime ?? '')
+
+    if (durationType === 'HOURLY') {
+      if (!startTime || !endTime) {
+        toast.warning('กรุณาระบุเวลาเริ่มและเวลาสิ้นสุด')
+        return
+      }
+      if (startTime >= endTime) {
+        toast.warning('เวลาเริ่มต้องน้อยกว่าเวลาสิ้นสุด')
+        return
+      }
     }
+
     if (isNew) {
       if (!startDate || !endDate) {
         toast.warning('กรุณาระบุจากวันที่และถึงวันที่')
         return
       }
-      await createLeave(payload)
-      toast.success('บันทึกคำขอลาสำเร็จ')
+
+      const createPayload: LeaveCreatePayload = {
+        leaveTypeId: values.leaveTypeId ?? '',
+        description: String(values.description ?? ''),
+        startDate,
+        endDate,
+        durationType,
+      }
+
+      if (durationType === 'HOURLY') {
+        createPayload.startTime = startTime
+        createPayload.endTime = endTime
+      }
+
+      try {
+        await createLeaveMutation.mutateAsync(createPayload)
+        toast.success('บันทึกคำขอลาสำเร็จ')
+        navigate('/leave', { replace: true })
+      } catch {
+        toast.error('บันทึกคำขอลาไม่สำเร็จ')
+      }
     } else {
-      if (payload.id) await updateLeaveById(payload)
-      toast.success('บันทึกสำเร็จ')
+      if (!values.id) {
+        toast.error('ไม่พบรหัสคำขอลา')
+        return
+      }
+
+      const updatePayload: LeaveUpdatePayload = {
+        id: values.id,
+        leaveTypeId: values.leaveTypeId ?? '',
+        description: String(values.description ?? ''),
+        startDate,
+        endDate,
+        durationType,
+      }
+
+      if (durationType === 'HOURLY') {
+        updatePayload.startTime = startTime
+        updatePayload.endTime = endTime
+      }
+
+      try {
+        await updateLeaveMutation.mutateAsync(updatePayload)
+        toast.success('บันทึกสำเร็จ')
+        navigate('/leave', { replace: true })
+      } catch {
+        toast.error('บันทึกไม่สำเร็จ')
+      }
     }
-    navigate('/leave', { replace: true })
   }
 
   if (formDefaults === null) {
     return <p className="text-muted-foreground">กำลังโหลด...</p>
   }
 
+  const DurationTimeFields = () => {
+    const { control } = useFormContext<LeaveFormDefaults>()
+    const durationType = useWatch({
+      control,
+      name: 'durationType',
+    }) as LeaveDurationType | undefined
+    const startTimeValue = useWatch({
+      control,
+      name: 'startTime',
+    }) as string | undefined
+
+    const startHour = Number((startTimeValue ?? '09:00').split(':')[0] ?? '9')
+    const minEndHour = Number.isFinite(startHour) ? (startHour as number) + 1 : 10
+
+    if (isReadOnly || durationType !== 'HOURLY') {
+      return null
+    }
+
+    return (
+      <div className="sm:col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Controller
+          control={control}
+          name="startTime"
+          rules={{ required: 'กรุณาเลือกเวลาเริ่ม' }}
+          render={({ field }) => (
+            <div className="grid gap-2">
+              <Label>เวลาเริ่ม</Label>
+              <TimePicker
+                step={300}
+                showMinutes={false}
+                value={field.value ?? '09:00'}
+                onChange={value => field.onChange(value)}
+              />
+            </div>
+          )}
+        />
+        <Controller
+          control={control}
+          name="endTime"
+          rules={{ required: 'กรุณาเลือกเวลาสิ้นสุด' }}
+          render={({ field }) => (
+            <div className="grid gap-2">
+              <Label>เวลาสิ้นสุด</Label>
+              <TimePicker
+                step={300}
+                showMinutes={false}
+                minHour={minEndHour}
+                value={field.value ?? '18:00'}
+                onChange={value => field.onChange(value)}
+              />
+            </div>
+          )}
+        />
+      </div>
+    )
+  }
+
+  const LeaveDateRangeFields = () => {
+    const { control } = useFormContext<LeaveFormDefaults>()
+    const startDateIso = useWatch({
+      control,
+      name: leaveFields.startDate,
+    }) as string | undefined
+    const endDateIso = useWatch({
+      control,
+      name: leaveFields.endDate,
+    }) as string | undefined
+
+    const startDate = startDateIso ? new Date(startDateIso) : undefined
+    const endDate = endDateIso ? new Date(endDateIso) : undefined
+
+    return (
+      <>
+        <div>
+          <DatePicker
+            name={leaveFields.startDate}
+            label="จากวันที่"
+            disabled={isReadOnly}
+            required={!isReadOnly}
+            maxDate={endDate}
+          />
+        </div>
+        <div>
+          <DatePicker
+            name={leaveFields.endDate}
+            label="ถึงวันที่"
+            disabled={isReadOnly}
+            required={!isReadOnly}
+            minDate={startDate}
+          />
+        </div>
+      </>
+    )
+  }
+
   return (
     <Card className="border">
       <CardContent className="pt-6">
-        <Form
+        <Form<LeaveFormDefaults>
           key={`leave-form-${leaveId ?? 'new'}`}
           defaultValues={formDefaults}
           onSubmit={handleSubmit}
@@ -176,6 +332,17 @@ const LeavePageForm = () => {
                 disabled={isReadOnly}
               />
             </div>
+            <div className="sm:col-span-2 md:col-span-1">
+              <Select
+                name="durationType"
+                label="รูปแบบการลา"
+                options={[
+                  { value: 'FULL_DAY', label: 'เต็มวัน' },
+                  { value: 'HOURLY', label: 'ลาตามชั่วโมง' },
+                ]}
+                disabled={isReadOnly}
+              />
+            </div>
             <div className="sm:col-span-2">
               <TextInput
                 name={leaveFields.description}
@@ -185,67 +352,59 @@ const LeavePageForm = () => {
                 disabled={isReadOnly}
               />
             </div>
-            <div>
-              <DatePicker name={leaveFields.startDate} label="จากวันที่" disabled={isReadOnly} />
-            </div>
-            <div>
-              <DatePicker name={leaveFields.endDate} label="ถึงวันที่" disabled={isReadOnly} />
-            </div>
+            <DurationTimeFields />
+            <LeaveDateRangeFields />
             <div className="flex flex-wrap gap-2 sm:col-span-2">
-              {!isReadOnly && (
-                <Button type="submit">บันทึก</Button>
-              )}
-              {(leaveStatus === LEAVE_STATUS.PENDING || leaveStatus === LEAVE_STATUS.APPROVED) && !isNew && (
-                <>
-                  <CancelLeaveButton
-                    leaveId={leaveId}
-                    leaveEndDate={leaveEndDate}
-                    cancelling={cancelling}
-                    onOpenConfirm={() => setConfirmCancelOpen(true)}
-                  />
-                  <Dialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
-                    <DialogContent showClose={true}>
-                      <DialogHeader>
-                        <DialogTitle>ยืนยันการยกเลิกคำขอลา</DialogTitle>
-                        <DialogDescription>
-                          คุณต้องการยกเลิกคำขอลานี้ใช่หรือไม่ การดำเนินการนี้ไม่สามารถย้อนกลับได้
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter className="gap-2 sm:gap-0">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setConfirmCancelOpen(false)}
-                        >
-                          ไม่ ยกเลิก
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          disabled={cancelling}
-                          onClick={async () => {
-                            if (!leaveId) return
-                            setCancelling(true)
-                            try {
-                              await cancelLeave(leaveId)
-                              toast.success('ยกเลิกคำขอลาแล้ว')
-                              setConfirmCancelOpen(false)
-                              window.dispatchEvent(new CustomEvent('leave-list-refresh'))
-                              navigate('/leave', { replace: true })
-                            } catch {
-                              toast.error('ยกเลิกไม่สำเร็จ')
-                            } finally {
-                              setCancelling(false)
-                            }
-                          }}
-                        >
-                          {cancelling ? 'กำลังดำเนินการ...' : 'ยืนยันยกเลิก'}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </>
-              )}
+              {!isReadOnly && <Button type="submit">บันทึก</Button>}
+              {(leaveStatus === LEAVE_STATUS.PENDING || leaveStatus === LEAVE_STATUS.APPROVED) &&
+                !isNew && (
+                  <>
+                    <CancelLeaveButton
+                      leaveId={leaveId}
+                      leaveEndDate={leaveEndDate}
+                      cancelling={cancelling}
+                      onOpenConfirm={() => setConfirmCancelOpen(true)}
+                    />
+                    <Dialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+                      <DialogContent showClose={true}>
+                        <DialogHeader>
+                          <DialogTitle>ยืนยันการยกเลิกคำขอลา</DialogTitle>
+                          <DialogDescription>
+                            คุณต้องการยกเลิกคำขอลานี้ใช่หรือไม่ การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="gap-2 sm:gap-0">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setConfirmCancelOpen(false)}
+                          >
+                            ไม่ ยกเลิก
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={cancelling}
+                            onClick={async () => {
+                              if (!leaveId) return
+                              try {
+                                await cancelLeaveMutation.mutateAsync({ id: leaveId })
+                                toast.success('ยกเลิกคำขอลาแล้ว')
+                                setConfirmCancelOpen(false)
+                                window.dispatchEvent(new CustomEvent('leave-list-refresh'))
+                                navigate('/leave', { replace: true })
+                              } catch {
+                                toast.error('ยกเลิกไม่สำเร็จ')
+                              }
+                            }}
+                          >
+                            {cancelling ? 'กำลังดำเนินการ...' : 'ยืนยันยกเลิก'}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </>
+                )}
               <Button variant="outline" type="button" onClick={() => navigate('/leave')}>
                 {isReadOnly || (leaveStatus !== LEAVE_STATUS.PENDING && leaveStatus !== null)
                   ? 'กลับ'

@@ -1,9 +1,6 @@
 import { getListLeave } from 'core/apis/leave'
-import { selector } from 'recoil'
+import type { Leave } from 'core/apis/leave/types'
 
-export const leaveListState = selector({
-  key: 'leaveListState',
-  get: async () => {
-    return getListLeave()
-  },
-})
+export async function fetchLeaveList(): Promise<Leave[]> {
+  return getListLeave()
+}

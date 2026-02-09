@@ -1,7 +1,6 @@
 import { LogOut, MoreVertical } from 'lucide-react'
-import { useSetRecoilState } from 'recoil'
 
-import { authTokenState, authUserState, clearAuthStorage } from 'core/stores/auth'
+import { clearAuthStorage, useAuthActions } from 'core/stores/auth'
 
 import {
   DropdownMenu,
@@ -13,13 +12,11 @@ import {
 import MenuButton from './MenuButton'
 
 export default function OptionsMenu() {
-  const setToken = useSetRecoilState(authTokenState)
-  const setUser = useSetRecoilState(authUserState)
+  const { setToken, setUser, clearAuth } = useAuthActions()
 
   const handleLogout = () => {
     clearAuthStorage()
-    setToken(null)
-    setUser(null)
+    clearAuth()
     window.location.href = '/login'
   }
 

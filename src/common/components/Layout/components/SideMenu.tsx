@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
-import { drawerWidth } from '../styles'
+import { drawerWidth } from 'common/components/Layout/styles'
 import MenuContent from './MenuContent'
 import NotificationButton from './NotificationButton'
 import OptionsMenu from './OptionsMenu'

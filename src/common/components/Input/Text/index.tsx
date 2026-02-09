@@ -33,32 +33,43 @@ const TextInput = ({
     <Controller
       control={control}
       name={name}
-      render={({ field }) => (
-        <div className={className ? `grid w-full gap-2 ${className}` : 'grid w-full gap-2'}>
-          <Label htmlFor={name}>
-            {label}
-            {required && <span className="text-destructive"> *</span>}
-          </Label>
-          {multiline ? (
-            <Textarea
-              id={name}
-              placeholder={placeholder}
-              disabled={disabled}
-              rows={minRows}
-              className="min-h-[80px] resize-y"
-              {...field}
-            />
-          ) : (
-            <Input
-              id={name}
-              type={type}
-              placeholder={placeholder}
-              disabled={disabled}
-              {...field}
-            />
-          )}
-        </div>
-      )}
+      rules={required ? { required: `${label} จำเป็นต้องกรอก` } : undefined}
+      render={({ field, fieldState }) => {
+        const errorMessage = fieldState.error?.message
+        const containerClass =
+          className != null && className.trim().length > 0
+            ? `grid w-full gap-2 ${className}`
+            : 'grid w-full gap-2'
+        return (
+          <div className={containerClass}>
+            <Label htmlFor={name}>
+              {label}
+              {required && <span className="text-destructive"> *</span>}
+            </Label>
+            {multiline ? (
+              <Textarea
+                id={name}
+                placeholder={placeholder}
+                disabled={disabled}
+                rows={minRows}
+                className="min-h-[80px] resize-y"
+                {...field}
+              />
+            ) : (
+              <Input
+                id={name}
+                type={type}
+                placeholder={placeholder}
+                disabled={disabled}
+                {...field}
+              />
+            )}
+            {errorMessage && (
+              <p className="text-xs text-destructive">{String(errorMessage)}</p>
+            )}
+          </div>
+        )
+      }}
     />
   )
 }

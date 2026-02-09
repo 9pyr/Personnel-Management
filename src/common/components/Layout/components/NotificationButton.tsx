@@ -11,10 +11,10 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 import {
-  getNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
-} from 'core/apis/notifications'
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+} from 'core/apis/notifications/queries'
 import type { Notification } from 'core/apis/notifications/types'
 
 const NOTIFICATIONS_REFRESH_EVENT = 'notifications-refresh'
@@ -38,80 +38,60 @@ function formatNotificationTime(createdAt: string): string {
 export default function NotificationButton() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const [items, setItems] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const notificationsQuery = useNotifications()
+  const markReadMutation = useMarkNotificationRead()
+  const markAllReadMutation = useMarkAllNotificationsRead()
 
-  const fetchList = useCallback(async () => {
-    try {
-      const response = await getNotifications()
-      setItems(response.items)
-      setUnreadCount(response.unreadCount)
-    } catch {
-      setItems([])
-      setUnreadCount(0)
-    }
-  }, [])
+  const items = notificationsQuery.data?.items ?? []
+  const unreadCount = notificationsQuery.data?.unreadCount ?? 0
+  const loading = markAllReadMutation.isPending
 
   useEffect(() => {
-    void fetchList()
-    const onRefresh = () => void fetchList()
+    const onRefresh = () => void notificationsQuery.refetch()
     window.addEventListener(NOTIFICATIONS_REFRESH_EVENT, onRefresh)
     return () => window.removeEventListener(NOTIFICATIONS_REFRESH_EVENT, onRefresh)
-  }, [fetchList])
+  }, [notificationsQuery])
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next)
-    if (next) void fetchList()
+    if (next) void notificationsQuery.refetch()
   }
 
   const handleMarkRead = useCallback(
     async (notification: Notification) => {
       try {
-        await markNotificationRead(n.id)
-        setUnreadCount(prev => Math.max(0, prev - 1))
-        setItems(prev =>
-          prev.map(item => (item.id === n.id ? { ...item, readAt: new Date().toISOString() } : item))
-        )
+        await markReadMutation.mutateAsync({ id: notification.id })
+        await notificationsQuery.refetch()
         setOpen(false)
 
-        const isFeedComment = n.type === 'FEED_COMMENT' || n.type === 'FEED_COMMENT_REPLY'
-        if (isFeedComment && n.relatedId) {
+        const isFeedComment = notification.type === 'FEED_COMMENT' || notification.type === 'FEED_COMMENT_REPLY'
+        if (isFeedComment && notification.relatedId) {
           navigate('/feed', {
             state: {
-              highlightPostId: n.relatedId,
-              highlightCommentId: n.commentId ?? undefined,
+              highlightPostId: notification.relatedId,
+              highlightCommentId: notification.commentId ?? undefined,
             },
           })
           return
         }
-        if (n.relatedId && !isFeedComment) {
+        if (notification.relatedId && !isFeedComment) {
           navigate('/leave')
         }
       } catch {
         // ignore
       }
     },
-    [navigate]
+    [navigate, markReadMutation, notificationsQuery]
   )
 
   const handleMarkAllRead = useCallback(async () => {
-    setLoading(true)
     try {
-      await markAllNotificationsRead()
-      setUnreadCount(0)
-      setItems(prev =>
-        prev.map(notification => ({
-          ...notification,
-          readAt: notification.readAt ?? new Date().toISOString(),
-        }))
-      )
+      await markAllReadMutation.mutateAsync(undefined as void)
+      await notificationsQuery.refetch()
     } catch {
       // ignore
-    } finally {
-      setLoading(false)
     }
-  }, [])
+  }, [markAllReadMutation, notificationsQuery])
 
   return (
     <DropdownMenu open={open} onOpenChange={handleOpenChange}>

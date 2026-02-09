@@ -1,7 +1,3 @@
-import dayjs from 'dayjs'
-import 'dayjs/locale/th'
-import * as React from 'react'
-
 import {
   Table as BaseTable,
   TableBody,
@@ -11,15 +7,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
+import * as React from 'react'
+
+import dayjs from 'dayjs'
+import 'dayjs/locale/th'
+
 dayjs.locale('th')
 
-type TableCellValue =
-  | string
-  | number
-  | boolean
-  | null
-  | Date
-  | React.ReactNode
+type TableCellValue = string | number | boolean | null | Date | React.ReactNode
 
 export interface TableRowData {
   id?: string | number | null | boolean
@@ -39,10 +34,24 @@ function formatDateDayMonthYear(val: string | number | Date): string {
 }
 
 function toReactNode(val: TableCellValue): React.ReactNode {
-  if (val === null || val === undefined) return val
-  if (typeof val === 'boolean' || (typeof val === 'object' && '$$typeof' in val)) return val
-  if (isDateLike(val) && dayjs(val).isValid()) return formatDateDayMonthYear(val)
-  return val
+  if (val === null || val === undefined) {
+    return null
+  }
+
+  if (React.isValidElement(val)) {
+    return val
+  }
+
+  if (typeof val === 'boolean') {
+    return val ? 'true' : 'false'
+  }
+
+  if (isDateLike(val) && dayjs(val).isValid()) {
+    return formatDateDayMonthYear(val)
+  }
+
+  // ที่เหลือจะเป็น string | number | ReactNode (ไม่ใช่ Date แล้ว)
+  return typeof val === 'string' || typeof val === 'number' ? val : String(val)
 }
 
 interface TableColumn {
@@ -59,7 +68,7 @@ interface TableProps {
 
 const Table = ({ columns, data, rowClick }: TableProps) => {
   return (
-    <div className="w-full overflow-auto rounded-md border border-border">
+    <div className="w-full overflow-auto rounded-md border border-border bg-card">
       <BaseTable>
         <TableHeader>
           <TableRow>

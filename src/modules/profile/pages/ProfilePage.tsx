@@ -1,15 +1,14 @@
 import { Camera } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useSetRecoilState } from 'recoil'
 import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
-import { getMe, updateProfile, uploadProfileImage } from 'core/apis/auth'
+import { useMe, useUpdateProfile, useUploadProfileImage } from 'core/apis/auth/queries'
 import { updateProfileRequestSchema } from 'core/apis/auth/schemas'
 import type { User } from 'core/apis/auth/types'
 import apiCaller from 'core/endpoints/apiCaller'
-import { authUserState } from 'core/stores/auth'
+import { useAuthActions } from 'core/stores/auth'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -23,26 +22,20 @@ function profileImageSrc(user: User | null): string | undefined {
 }
 
 const ProfilePage = () => {
-  const setUser = useSetRecoilState(authUserState)
-  const [profile, setProfile] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { setUser } = useAuthActions()
+  const meQuery = useMe()
+  const updateProfileMutation = useUpdateProfile()
+  const uploadProfileImageMutation = useUploadProfileImage()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const loadProfile = useCallback(async () => {
-    try {
-      const me = await getMe()
-      setProfile(me)
-      setUser(me)
-    } catch {
-      toast.error('โหลดโปรไฟล์ไม่สำเร็จ')
-    } finally {
-      setLoading(false)
-    }
-  }, [setUser])
+  const profile = meQuery.data ?? null
+  const loading = meQuery.isLoading
 
   useEffect(() => {
-    void loadProfile()
-  }, [loadProfile])
+    if (meQuery.data) {
+      setUser(meQuery.data)
+    }
+  }, [meQuery.data, setUser])
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -52,8 +45,8 @@ const ProfilePage = () => {
       return
     }
     try {
-      await uploadProfileImage(file)
-      await loadProfile()
+      await uploadProfileImageMutation.mutateAsync(file)
+      await meQuery.refetch()
       toast.success('อัปโหลดรูปโปรไฟล์สำเร็จ')
     } catch {
       toast.error('อัปโหลดรูปไม่สำเร็จ')
@@ -95,6 +88,8 @@ const ProfilePage = () => {
                     type="file"
                     accept="image/jpeg,image/png,image/gif,image/webp"
                     className="hidden"
+                    aria-label="เลือกไฟล์รูปโปรไฟล์"
+                    title="เลือกไฟล์รูปโปรไฟล์"
                     onChange={handleAvatarChange}
                   />
                 </div>
@@ -125,10 +120,13 @@ const ProfilePage = () => {
                     toast.error(parsed.error.errors.map(e => e.message).join(', '))
                     return
                   }
-                  const updated = await updateProfile(parsed.data)
-                  setProfile(updated)
-                  setUser(updated)
-                  toast.success('บันทึกโปรไฟล์สำเร็จ')
+                  try {
+                    const updated = await updateProfileMutation.mutateAsync(parsed.data)
+                    setUser(updated)
+                    toast.success('บันทึกโปรไฟล์สำเร็จ')
+                  } catch {
+                    toast.error('บันทึกโปรไฟล์ไม่สำเร็จ')
+                  }
                 }}
               >
                 <div className="grid gap-4 sm:grid-cols-2">

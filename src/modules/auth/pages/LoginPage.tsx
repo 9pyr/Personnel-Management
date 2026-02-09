@@ -1,19 +1,18 @@
 import { useNavigate } from 'react-router-dom'
-import { useSetRecoilState } from 'recoil'
 import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
-import { login } from 'core/apis/auth'
-import { authTokenState, authUserState, persistAuthAfterLogin } from 'core/stores/auth'
+import { useLogin } from 'core/apis/auth/queries'
+import { persistAuthAfterLogin, useAuthActions } from 'core/stores/auth'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const setToken = useSetRecoilState(authTokenState)
-  const setUser = useSetRecoilState(authUserState)
+  const { setToken, setUser } = useAuthActions()
+  const loginMutation = useLogin()
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -30,7 +29,7 @@ const LoginPage = () => {
             onSubmit={async values => {
               const { email, password } = values as { email: string; password: string }
               try {
-                const response = await login({ email, password })
+                const response = await loginMutation.mutateAsync({ email, password })
                 setToken(response.token)
                 setUser(response.user)
                 persistAuthAfterLogin(response.token, response.user)

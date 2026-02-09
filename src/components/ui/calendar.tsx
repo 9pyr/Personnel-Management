@@ -117,6 +117,8 @@ export interface CalendarSingleProps {
   fromYear?: number
   toYear?: number
   className?: string
+  minDate?: Date
+  maxDate?: Date
 }
 
 export function Calendar({
@@ -125,6 +127,8 @@ export function Calendar({
   fromYear = DEFAULT_FROM_YEAR,
   toYear = DEFAULT_TO_YEAR,
   className,
+  minDate,
+  maxDate,
 }: CalendarSingleProps) {
   const today = new Date()
 
@@ -134,8 +138,8 @@ export function Calendar({
         inline
         selected={selected ?? null}
         onChange={(d: Date | null) => onSelect?.(d ?? undefined)}
-        minDate={new Date(fromYear, 0, 1)}
-        maxDate={new Date(toYear, 11, 31)}
+        minDate={minDate ?? new Date(fromYear, 0, 1)}
+        maxDate={maxDate ?? new Date(toYear, 11, 31)}
         className="border-0 bg-transparent"
         calendarClassName="!border-0"
         renderCustomHeader={props => (

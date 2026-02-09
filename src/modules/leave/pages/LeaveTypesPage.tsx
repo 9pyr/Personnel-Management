@@ -3,7 +3,8 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import Table, { type TableRowData } from 'common/components/Table'
+import Table from 'common/components/Table'
+import type { TableRowData } from 'common/components/Table'
 import {
   createLeaveType,
   deleteLeaveType,

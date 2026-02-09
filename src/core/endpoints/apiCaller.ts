@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import { logger } from '../logger'
-import { clearAuthStorage, getStoredToken } from '../stores/auth'
+import { logger } from 'core/logger'
+import { clearAuthStorage, getStoredToken } from 'core/stores/auth'
 
 import { keysToCamelCase, keysToSnakeCase } from './caseTransform'
 

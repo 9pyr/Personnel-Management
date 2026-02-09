@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 
-/** Form Select – ผูกกับ react-hook-form ใช้ shadcn Select (Radix) ทั้งหมด */
+/** Base select component ที่ wrap shadcn ใช้ซ้ำได้ทั้งในฟอร์ม (react-hook-form) และนอกฟอร์ม */
 
 export interface SelectOption {
   value: string
@@ -23,53 +23,115 @@ export interface SelectOptionGroup {
   options: SelectOption[]
 }
 
+export interface SelectBaseProps {
+  id?: string
+  ariaLabel?: string
+  placeholder?: string
+  value: string
+  onChange: (value: string) => void
+  options: SelectOption[]
+  optionGroups?: SelectOptionGroup[]
+  disabled?: boolean
+  className?: string
+}
+
+export function SelectBase({
+  id,
+  ariaLabel,
+  placeholder,
+  value,
+  onChange,
+  options,
+  optionGroups,
+  disabled,
+  className,
+}: SelectBaseProps) {
+  return (
+    <Select disabled={disabled} value={value} onValueChange={onChange}>
+      <SelectTrigger
+        id={id}
+        aria-label={ariaLabel}
+        className={className}
+      >
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {optionGroups != null && optionGroups.length > 0
+          ? optionGroups.map((group, groupIndex) => (
+              <SelectGroup key={`select-group-${id ?? ''}-${groupIndex}`}>
+                <SelectLabel className="pl-2">{group.groupLabel}</SelectLabel>
+                {group.options.map((option, optionIndex) => (
+                  <SelectItem
+                    key={`select-option-${id ?? ''}-${groupIndex}-${optionIndex}`}
+                    value={option.value}
+                    className="pl-6"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))
+          : options.map((option, optionIndex) => (
+              <SelectItem
+                key={`select-option-${id ?? ''}-${optionIndex}`}
+                value={option.value}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
 interface SelectInputProps {
   name: string
   label: string
   options: SelectOption[]
   optionGroups?: SelectOptionGroup[]
   disabled?: boolean
+  required?: boolean
 }
 
-const SelectInput = ({ name, label, options, optionGroups, disabled }: SelectInputProps) => {
+const SelectInput = ({
+  name,
+  label,
+  options,
+  optionGroups,
+  disabled,
+  required,
+}: SelectInputProps) => {
   const { control } = useFormContext()
 
   return (
     <Controller
       control={control}
       name={name}
-      render={({ field }) => (
-        <div className="grid w-full gap-2">
-          <Label id={`select:${name}`}>{label}</Label>
-          <Select
-            disabled={disabled}
-            value={field.value ?? ''}
-            onValueChange={field.onChange}
-          >
-            <SelectTrigger id={`select:${name}`} aria-labelledby={`select:${name}`}>
-              <SelectValue placeholder={label} />
-            </SelectTrigger>
-            <SelectContent>
-              {optionGroups != null && optionGroups.length > 0
-                ? optionGroups.map((group, gi) => (
-                    <SelectGroup key={`group-${name}-${gi}`}>
-                      <SelectLabel className="pl-2">{group.groupLabel}</SelectLabel>
-                      {group.options.map((opt, oi) => (
-                        <SelectItem key={`${name}-${gi}-${oi}`} value={opt.value} className="pl-6">
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))
-                : options.map(({ value, label: optLabel }, index) => (
-                    <SelectItem key={`select-options-${name}:${index}`} value={value}>
-                      {optLabel}
-                    </SelectItem>
-                  ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      rules={required ? { required: `${label} จำเป็นต้องเลือก` } : undefined}
+      render={({ field, fieldState }) => {
+        const errorMessage = fieldState.error?.message
+        return (
+          <div className="grid w-full gap-2">
+            <Label id={`select:${name}`}>
+              {label}
+              {required && <span className="text-destructive"> *</span>}
+            </Label>
+            <SelectBase
+              id={`select:${name}`}
+              ariaLabel={label}
+              placeholder={label}
+              value={field.value ?? ''}
+              onChange={field.onChange}
+              options={options}
+              optionGroups={optionGroups}
+              disabled={disabled}
+            />
+            {errorMessage && (
+              <p className="text-xs text-destructive">{String(errorMessage)}</p>
+            )}
+          </div>
+        )
+      }}
     />
   )
 }

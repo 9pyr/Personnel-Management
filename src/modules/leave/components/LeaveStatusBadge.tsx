@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 
-import { getLeaveStatusBadgeVariant, getLeaveStatusLabel } from '../constants'
+import { getLeaveStatusBadgeVariant, getLeaveStatusLabel } from 'modules/leave/constants'
 
 interface LeaveStatusBadgeProps {
   statusKey: string | undefined | null

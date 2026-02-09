@@ -9,6 +9,9 @@ interface DatePickerInputProps {
   label: string
   disabled?: boolean
   placeholder?: string
+  required?: boolean
+  minDate?: Date
+  maxDate?: Date
 }
 
 const DatePickerInput = ({
@@ -16,6 +19,9 @@ const DatePickerInput = ({
   label,
   disabled,
   placeholder = 'เลือกวันที่',
+  required,
+  minDate,
+  maxDate,
 }: DatePickerInputProps) => {
   const { control } = useFormContext()
 
@@ -23,13 +29,18 @@ const DatePickerInput = ({
     <Controller
       control={control}
       name={name}
-      render={({ field }) => {
+      rules={required ? { required: `${label} จำเป็นต้องเลือก` } : undefined}
+      render={({ field, fieldState }) => {
         const value = field.value
         const dateValue =
           value && dayjs(value).isValid() ? dayjs(value).toDate() : undefined
+        const errorMessage = fieldState.error?.message
         return (
           <div className="grid w-full gap-2">
-            <Label htmlFor={`datepicker:${name}`}>{label}</Label>
+            <Label htmlFor={`datepicker:${name}`}>
+              {label}
+              {required && <span className="text-destructive"> *</span>}
+            </Label>
             <DatePickerSingle
               id={`datepicker:${name}`}
               value={dateValue}
@@ -39,7 +50,12 @@ const DatePickerInput = ({
               disabled={disabled}
               placeholder={placeholder}
               className="w-full"
+              minDate={minDate}
+              maxDate={maxDate}
             />
+            {errorMessage && (
+              <p className="text-xs text-destructive">{String(errorMessage)}</p>
+            )}
           </div>
         )
       }}

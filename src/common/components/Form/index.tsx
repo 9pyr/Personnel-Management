@@ -4,12 +4,17 @@ interface FormContextDefault {
   [key: string]: object
 }
 
-interface FormProps extends UseFormProps<FieldValues, FormContextDefault> {
-  onSubmit: SubmitHandler<FieldValues>
+interface FormProps<TFieldValues extends FieldValues = FieldValues>
+  extends UseFormProps<TFieldValues, FormContextDefault> {
+  onSubmit: SubmitHandler<TFieldValues>
 }
 
-const Form = ({ children, onSubmit, ...props }: React.PropsWithChildren<FormProps>) => {
-  const methods = useForm(props)
+function Form<TFieldValues extends FieldValues = FieldValues>({
+  children,
+  onSubmit,
+  ...props
+}: React.PropsWithChildren<FormProps<TFieldValues>>) {
+  const methods = useForm<TFieldValues, FormContextDefault>(props)
 
   return (
     <FormProvider {...methods}>
@@ -19,5 +24,4 @@ const Form = ({ children, onSubmit, ...props }: React.PropsWithChildren<FormProp
     </FormProvider>
   )
 }
-
 export default Form

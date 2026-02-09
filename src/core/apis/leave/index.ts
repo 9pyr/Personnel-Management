@@ -2,7 +2,7 @@ import apiCaller from 'core/endpoints/apiCaller'
 import { z } from 'zod'
 
 import { leaveCreatePayloadSchema, leaveSchema, leaveUpdatePayloadSchema } from './schemas'
-import type { Leave } from './types'
+import type { Leave, LeaveCreatePayload, LeaveUpdatePayload } from './types'
 
 function parseResponse<T>(data: object, schema: { parse: (v: object) => T }): T {
   return schema.parse(data)
@@ -42,6 +42,9 @@ function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
     (typeof raw.createdByName === 'string' && (raw.createdByName as string).trim()) ||
     (typeof raw.created_by_name === 'string' && (raw.created_by_name as string).trim()) ||
     ''
+  const durationType = (raw.durationType ?? raw.duration_type ?? 'FULL_DAY') as 'FULL_DAY' | 'HOURLY'
+  const startTime = (raw.startTime ?? raw.start_time) as string | undefined
+  const endTime = (raw.endTime ?? raw.end_time) as string | undefined
   return {
     id: typeof raw.id === 'string' ? raw.id : undefined,
     description: typeof raw.description === 'string' ? raw.description : '',
@@ -52,6 +55,9 @@ function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
     status: typeof raw.status === 'string' ? raw.status : undefined,
     createdByUserId: typeof raw.createdByUserId === 'string' ? raw.createdByUserId : undefined,
     createdByName,
+    durationType,
+    startTime,
+    endTime,
   }
 }
 
@@ -122,13 +128,13 @@ export const getLeaveById = async (id: string): Promise<Leave> => {
   return parseResponse(data, leaveSchema)
 }
 
-export const createLeave = async (payload: Leave): Promise<Leave> => {
+export const createLeave = async (payload: LeaveCreatePayload): Promise<Leave> => {
   const body = leaveCreatePayloadSchema.parse(payload)
   const { data } = await apiCaller.post<object>('/leaves/create', body)
   return parseResponse(data, leaveSchema)
 }
 
-export const updateLeaveById = async (payload: Leave): Promise<Leave> => {
+export const updateLeaveById = async (payload: LeaveUpdatePayload): Promise<Leave> => {
   const body = leaveUpdatePayloadSchema.parse(payload)
   const { data } = await apiCaller.put<object>('/leaves/update', body)
   return parseResponse(data, leaveSchema)

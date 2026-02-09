@@ -1,12 +1,13 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { useCallback, useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
-import { getFeed } from 'core/apis/feed'
+import { useFeed } from 'core/apis/feed/queries'
 import type { FeedPost } from 'core/apis/feed/types'
-import { getLeaveBalance, type LeaveBalanceItem } from 'core/apis/leave'
+import { useLeaveBalance } from 'core/apis/leave/queries'
+import type { LeaveBalanceItem } from 'core/apis/leave/types'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
@@ -33,41 +34,21 @@ function formatFeedTime(iso: string): string {
 }
 
 const DashboardPage = () => {
-  const [annualBalance, setAnnualBalance] = useState<LeaveBalanceItem | null>(null)
-  const [feedPosts, setFeedPosts] = useState<FeedPost[]>([])
-  const [loadingLeave, setLoadingLeave] = useState(true)
-  const [loadingFeed, setLoadingFeed] = useState(true)
+  const leaveBalanceQuery = useLeaveBalance()
+  const feedQuery = useFeed({ limit: 5 })
 
-  const loadLeaveBalance = useCallback(async () => {
-    try {
-      const balances = await getLeaveBalance()
-      const item = findAnnualBalance(Array.isArray(balances) ? balances : [])
-      setAnnualBalance(item)
-    } catch {
-      setAnnualBalance(null)
-    } finally {
-      setLoadingLeave(false)
-    }
-  }, [])
+  const annualBalance = useMemo(() => {
+    if (!leaveBalanceQuery.data) return null
+    return findAnnualBalance(Array.isArray(leaveBalanceQuery.data) ? leaveBalanceQuery.data : [])
+  }, [leaveBalanceQuery.data])
 
-  const loadFeed = useCallback(async () => {
-    try {
-      const list = await getFeed()
-      setFeedPosts(list.slice(0, 5))
-    } catch {
-      setFeedPosts([])
-    } finally {
-      setLoadingFeed(false)
-    }
-  }, [])
+  const feedPosts = useMemo(() => {
+    if (!feedQuery.data) return []
+    return feedQuery.data.slice(0, 5)
+  }, [feedQuery.data])
 
-  useEffect(() => {
-    void loadLeaveBalance()
-  }, [loadLeaveBalance])
-
-  useEffect(() => {
-    void loadFeed()
-  }, [loadFeed])
+  const loadingLeave = leaveBalanceQuery.isLoading
+  const loadingFeed = feedQuery.isLoading
 
   const maxDays = annualBalance?.maxDaysPerYear ?? 0
   const remaining = annualBalance?.remaining ?? 0

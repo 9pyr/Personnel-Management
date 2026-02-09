@@ -1,14 +1,16 @@
 import { Pencil } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import Form from 'common/components/Form'
-import Select, { type SelectOptionGroup } from 'common/components/Input/Select'
+import Select from 'common/components/Input/Select'
+import type { SelectOptionGroup } from 'common/components/Input/Select'
 import TextInput from 'common/components/Input/Text'
-import Table, { type TableRowData } from 'common/components/Table'
-import { createUser, getListUsers, updateUser } from 'core/apis/auth'
+import Table from 'common/components/Table'
+import type { TableRowData } from 'common/components/Table'
+import { useCreateUser, useListUsers, useUpdateUser } from 'core/apis/auth/queries'
 import {
   createUserRequestSchema,
   updateUserRequestSchema,
@@ -113,30 +115,21 @@ const getColumns = (onEditApprover: (row: TableRowData) => void): TableColumnDef
 const UserListPage = () => {
   const navigate = useNavigate()
   const currentUser = useContext(AuthContext)
-  const [users, setUsers] = useState<User[]>([])
   const [open, setOpen] = useState(false)
   const [editUser, setEditUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const usersQuery = useListUsers({ enabled: currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE' })
+  const createUserMutation = useCreateUser()
+  const updateUserMutation = useUpdateUser()
 
-  const fetchUsers = useCallback(async () => {
-    try {
-      const list = await getListUsers()
-      setUsers(list)
-    } catch {
-      toast.error('โหลดรายชื่อผู้ใช้ไม่สำเร็จ')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const users = usersQuery.data ?? []
+  const loading = usersQuery.isLoading
 
   useEffect(() => {
     const allowed = currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE'
     if (!allowed) {
       navigate('/', { replace: true })
-      return
     }
-    void fetchUsers()
-  }, [currentUser?.role, navigate, fetchUsers])
+  }, [currentUser?.role, navigate])
 
   const allowed = currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE'
   if (!allowed) {
@@ -198,10 +191,10 @@ const UserListPage = () => {
                 toast.error(parsed.error.errors.map(e => e.message).join(', '))
                 return
               }
-              await createUser(parsed.data)
+              await createUserMutation.mutateAsync(parsed.data)
               toast.success('เพิ่มผู้ใช้สำเร็จ')
               setOpen(false)
-              void fetchUsers()
+              await usersQuery.refetch()
             }}
           >
             <div className="grid gap-4 py-4">
@@ -250,10 +243,10 @@ const UserListPage = () => {
                   toast.error(parsed.error.errors.map(e => e.message).join(', '))
                   return
                 }
-                await updateUser(editUser.id, parsed.data)
+                await updateUserMutation.mutateAsync({ id: editUser.id, ...parsed.data })
                 toast.success('บันทึกแล้ว')
                 setEditUser(null)
-                void fetchUsers()
+                await usersQuery.refetch()
               }}
             >
               <div className="grid gap-4 py-4">

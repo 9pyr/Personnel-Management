@@ -6,7 +6,7 @@ import SideMenu from './components/SideMenu'
 
 const Layout = () => {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-muted">
       <NotificationListener />
       <SideMenu />
       <div className="flex flex-1 justify-center" style={{ marginLeft: drawerWidth }}>

@@ -1,31 +1,22 @@
 import { useEffect } from 'react'
-import { useRecoilValue, useSetRecoilState } from 'recoil'
 
-import { getMe } from 'core/apis/auth'
-import { authTokenState, authUserState } from 'core/stores/auth'
+import { useMe } from 'core/apis/auth/queries'
+import { useAuthActions, useAuthToken } from 'core/stores/auth'
 
 /**
- * เมื่อมี token จะดึง user/role ล่าสุดจาก DB (GET /auth/me) แล้วอัปเดต Recoil
+ * เมื่อมี token จะดึง user/role ล่าสุดจาก DB (GET /auth/me) แล้วอัปเดต Zustand
  * ทำให้ role และ user เป็น source of truth จาก DB หลัง refresh
  */
 const AuthInitializer = () => {
-  const token = useRecoilValue(authTokenState)
-  const setUser = useSetRecoilState(authUserState)
+  const token = useAuthToken()
+  const { setUser } = useAuthActions()
+  const meQuery = useMe({ enabled: Boolean(token) })
 
   useEffect(() => {
-    if (!token) return
-    let cancelled = false
-    getMe()
-      .then(me => {
-        if (!cancelled) setUser(me)
-      })
-      .catch(() => {
-        // 401 จัดการโดย apiCaller (clear + redirect)
-      })
-    return () => {
-      cancelled = true
+    if (meQuery.data) {
+      setUser(meQuery.data)
     }
-  }, [token, setUser])
+  }, [meQuery.data, setUser])
 
   return null
 }

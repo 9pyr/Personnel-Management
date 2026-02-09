@@ -20,6 +20,12 @@ const leaveSchemaBase = z.object({
   createdByUserId: z.string().optional(),
   createdByName: z.string().optional(),
   created_by_name: z.string().optional(),
+  durationType: z.enum(['FULL_DAY', 'HOURLY']).optional(),
+  duration_type: z.enum(['FULL_DAY', 'HOURLY']).nullish(),
+  startTime: z.string().nullish(),
+  start_time: z.string().nullish(),
+  endTime: z.string().nullish(),
+  end_time: z.string().nullish(),
 })
 
 function toYYYYMMDD(v: string | null | undefined): string {
@@ -29,7 +35,14 @@ function toYYYYMMDD(v: string | null | undefined): string {
 }
 
 export const leaveSchema = leaveSchemaBase.transform(obj => {
-  const raw = obj as { start_date?: string | null; end_date?: string | null; created_by_name?: string }
+  const raw = obj as { 
+    start_date?: string | null
+    end_date?: string | null
+    created_by_name?: string
+    duration_type?: 'FULL_DAY' | 'HOURLY' | null
+    start_time?: string | null
+    end_time?: string | null
+  }
   const startRaw =
     (typeof obj.startDate === 'string' && obj.startDate.trim()) ||
     (typeof raw.start_date === 'string' && raw.start_date.trim()) ||
@@ -43,22 +56,33 @@ export const leaveSchema = leaveSchemaBase.transform(obj => {
     startDate: toYYYYMMDD(startRaw) || startRaw.slice(0, 10) || '',
     endDate: toYYYYMMDD(endRaw) || endRaw.slice(0, 10) || '',
     createdByName: (obj.createdByName ?? raw.created_by_name ?? '').trim(),
+    durationType: (obj.durationType ?? raw.duration_type ?? 'FULL_DAY') as 'FULL_DAY' | 'HOURLY',
+    startTime: (obj.startTime ?? raw.start_time ?? undefined) as string | undefined,
+    endTime: (obj.endTime ?? raw.end_time ?? undefined) as string | undefined,
   }
 })
 
 export type Leave = z.infer<typeof leaveSchema>
 
+// Frontend uses camelCase for payload
 export const leaveCreatePayloadSchema = leaveSchemaBase.omit({
   id: true,
   status: true,
   createdByUserId: true,
   createdByName: true,
   created_by_name: true,
-}).extend({ leaveTypeId: z.string().min(1, 'กรุณาเลือกประเภทการลา') })
+}).extend({ 
+  leaveTypeId: z.string().min(1, 'กรุณาเลือกประเภทการลา'),
+  startDate: z.string().min(1),
+  endDate: z.string().min(1),
+  durationType: z.enum(['FULL_DAY', 'HOURLY']).optional().default('FULL_DAY'),
+})
 export type LeaveCreatePayload = z.infer<typeof leaveCreatePayloadSchema>
 
 export const leaveUpdatePayloadSchema = leaveSchemaBase.extend({
+  id: z.string().min(1),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  durationType: z.enum(['FULL_DAY', 'HOURLY']).optional(),
 })
 export type LeaveUpdatePayload = z.infer<typeof leaveUpdatePayloadSchema>

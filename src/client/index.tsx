@@ -1,5 +1,5 @@
 import { StrictMode, Suspense } from 'react'
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AuthInitializer from 'common/components/AuthInitializer'
 import Layout from 'common/components/Layout'
 import ProtectedRoute from 'common/components/ProtectedRoute'
@@ -9,8 +9,17 @@ import LoginPage from 'modules/auth/pages/LoginPage'
 import { Toaster } from 'sonner'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
 import { menuItems } from 'routes'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -28,7 +37,7 @@ export const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RecoilRoot>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AuthInitializer />
         <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
@@ -36,6 +45,6 @@ createRoot(document.getElementById('root')!).render(
           <RouterProvider router={router} />
         </Suspense>
       </AuthProvider>
-    </RecoilRoot>
+    </QueryClientProvider>
   </StrictMode>,
 )
