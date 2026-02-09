@@ -1,15 +1,17 @@
-import { StrictMode, Suspense } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+import { StrictMode, Suspense } from 'react'
+
 import AuthInitializer from 'common/components/AuthInitializer'
 import Layout from 'common/components/Layout'
 import ProtectedRoute from 'common/components/ProtectedRoute'
 import 'common/styles/index.css'
 import { AuthProvider } from 'core/contexts/AuthContext'
 import LoginPage from 'modules/auth/pages/LoginPage'
-import { Toaster } from 'sonner'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { menuItems } from 'routes'
+import { Toaster } from 'sonner'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,7 +42,9 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AuthInitializer />
-        <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+        <Suspense
+          fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}
+        >
           <Toaster position="top-right" richColors />
           <RouterProvider router={router} />
         </Suspense>

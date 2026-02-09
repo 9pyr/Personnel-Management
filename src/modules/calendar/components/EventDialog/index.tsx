@@ -13,7 +13,6 @@ import { TimePicker } from '@/components/ui/time-picker'
 
 import { SelectBase, SelectOption } from 'common/components/Input/Select'
 import dayjs from 'dayjs'
-
 import { EVENT_TYPE_OPTIONS } from 'modules/calendar/constants'
 import { EventFormData } from 'modules/calendar/types'
 

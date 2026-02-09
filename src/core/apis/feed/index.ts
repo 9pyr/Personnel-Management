@@ -63,7 +63,7 @@ export const getComments = async (postId: string): Promise<FeedComment[]> => {
 
 export const createComment = async (
   postId: string,
-  payload: CreateCommentRequest
+  payload: CreateCommentRequest,
 ): Promise<FeedComment> => {
   const body = createCommentRequestSchema.parse(payload)
   const { data } = await apiCaller.post<object>(`${FEED_BASE}/${postId}/comments`, body)
@@ -72,7 +72,7 @@ export const createComment = async (
 
 export const updateComment = async (
   id: string,
-  payload: UpdateCommentRequest
+  payload: UpdateCommentRequest,
 ): Promise<FeedComment> => {
   const body = updateCommentRequestSchema.parse(payload)
   const { data } = await apiCaller.put<object>(`${FEED_BASE}/comments/${id}`, body)

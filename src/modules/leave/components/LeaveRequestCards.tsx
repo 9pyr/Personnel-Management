@@ -1,16 +1,15 @@
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+
+import { useNextStateLeave, useRejectStateLeave } from 'core/apis/leave/queries'
+import type { Leave } from 'core/apis/leave/types'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import { toast } from 'sonner'
 
-dayjs.locale('th')
-
-import { useNextStateLeave, useRejectStateLeave } from 'core/apis/leave/queries'
-import type { Leave } from 'core/apis/leave/types'
-
 import LeaveStatusBadge from './LeaveStatusBadge'
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
+dayjs.locale('th')
 
 interface LeaveRequestCardsProps {
   leaves: Leave[]
@@ -44,16 +43,12 @@ function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
   const pending = leaves
 
   if (pending.length === 0) {
-    return (
-      <p className="text-muted-foreground">ไม่มีคำขอลาจากคนอื่นที่รอดำเนินการ</p>
-    )
+    return <p className="text-muted-foreground">ไม่มีคำขอลาจากคนอื่นที่รอดำเนินการ</p>
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-base font-semibold">
-        คำขอลาจากคนอื่นที่รอการอนุมัติ ({pending.length})
-      </p>
+      <p className="text-base font-semibold">คำขอลาจากคนอื่นที่รอการอนุมัติ ({pending.length})</p>
       <div className="flex flex-wrap gap-4">
         {pending.map(leave => (
           <Card key={leave.id} className="min-w-[280px] max-w-[360px] border">
@@ -62,7 +57,8 @@ function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
                 ขอลาโดย {leave.createdByName ?? '-'}
               </p>
               <p className="text-sm text-muted-foreground">
-                {dayjs(leave.startDate).format('D MMMM YYYY')} – {dayjs(leave.endDate).format('D MMMM YYYY')}
+                {dayjs(leave.startDate).format('D MMMM YYYY')} –{' '}
+                {dayjs(leave.endDate).format('D MMMM YYYY')}
               </p>
               <p className="mt-1 text-sm">{leave.description || '-'}</p>
               <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">

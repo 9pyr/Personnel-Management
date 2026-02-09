@@ -1,7 +1,9 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { useQueryClient } from '@tanstack/react-query'
+
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   useComments,
@@ -15,15 +17,12 @@ import {
 } from 'core/apis/feed/queries'
 import { feedPostListSchema } from 'core/apis/feed/schemas'
 import type { FeedComment, FeedPost } from 'core/apis/feed/types'
-import apiCaller from 'core/endpoints/apiCaller'
 import { AuthContext } from 'core/contexts/AuthContext'
-import { FEED_COMMENT_EVENT } from 'modules/feed/feedRealtime'
-import type { FeedCommentEventDetail } from 'modules/feed/feedRealtime'
+import apiCaller from 'core/endpoints/apiCaller'
 import { FeedCard } from 'modules/feed/components/FeedCard'
-
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
+import { FEED_COMMENT_EVENT, type FeedCommentEventDetail } from 'modules/feed/feedRealtime'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const FEED_PAGE_SIZE = 20
 
@@ -32,7 +31,6 @@ interface FeedCardWithCommentsProps {
   isOwner: boolean
   isEditing: boolean
   editingContent: string
-  comments: FeedComment[]
   currentUserId: string | undefined
   onStartEdit: (post: FeedPost) => void
   onEditingContentChange: (value: string) => void
@@ -48,10 +46,7 @@ interface FeedCardWithCommentsProps {
   onDeleteComment: (id: string) => Promise<void>
 }
 
-function FeedCardWithComments({
-  post,
-  ...rest
-}: FeedCardWithCommentsProps) {
+function FeedCardWithComments({ post, ...rest }: FeedCardWithCommentsProps) {
   const commentsQuery = useComments(post.id)
   const comments = commentsQuery.data ?? []
 
@@ -63,9 +58,7 @@ export interface FeedHighlightState {
   highlightCommentId?: string
 }
 
-function isFeedHighlightState(
-  state: object | null | undefined
-): state is FeedHighlightState {
+function isFeedHighlightState(state: object | null | undefined): state is FeedHighlightState {
   return (
     state != null &&
     typeof state === 'object' &&
@@ -83,9 +76,7 @@ const FeedPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const sentinelRef = useRef<HTMLDivElement>(null)
-  const highlightState = isFeedHighlightState(location.state)
-    ? location.state
-    : undefined
+  const highlightState = isFeedHighlightState(location.state) ? location.state : undefined
 
   const [offset, setOffset] = useState(0)
   const [content, setContent] = useState('')
@@ -103,8 +94,7 @@ const FeedPage = () => {
   const posts = useMemo(() => {
     if (!feedQuery.data) return []
     return [...feedQuery.data].sort(
-      (first, second) =>
-        new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+      (first, second) => new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime(),
     )
   }, [feedQuery.data])
 
@@ -148,7 +138,7 @@ const FeedPage = () => {
               commentItem.id === comment.id ||
               (commentItem.createdByUserId === comment.createdByUserId &&
                 commentItem.content === comment.content &&
-                commentItem.createdAt === comment.createdAt)
+                commentItem.createdAt === comment.createdAt),
           )
         ) {
           return old
@@ -167,7 +157,7 @@ const FeedPage = () => {
       entries => {
         if (entries[0]?.isIntersecting) void loadMore()
       },
-      { root: null, rootMargin: '200px', threshold: 0 }
+      { root: null, rootMargin: '200px', threshold: 0 },
     )
     observer.observe(sentinelElement)
     return () => observer.disconnect()
@@ -261,7 +251,7 @@ const FeedPage = () => {
   const handleAddComment = useCallback(
     async (
       postId: string,
-      payload: { content: string; parentId?: string | null; replyToUserId?: string | null }
+      payload: { content: string; parentId?: string | null; replyToUserId?: string | null },
     ) => {
       try {
         await createCommentMutation.mutateAsync({ postId, ...payload })
@@ -271,7 +261,7 @@ const FeedPage = () => {
         toast.error('แสดงความคิดเห็นไม่สำเร็จ')
       }
     },
-    [createCommentMutation, queryClient]
+    [createCommentMutation, queryClient],
   )
 
   const handleUpdateComment = useCallback(
@@ -284,7 +274,7 @@ const FeedPage = () => {
         toast.error('แก้ไขความคิดเห็นไม่สำเร็จ')
       }
     },
-    [updateCommentMutation, queryClient]
+    [updateCommentMutation, queryClient],
   )
 
   const handleDeleteComment = useCallback(
@@ -297,7 +287,7 @@ const FeedPage = () => {
         toast.error('ลบความคิดเห็นไม่สำเร็จ')
       }
     },
-    [deleteCommentMutation, queryClient]
+    [deleteCommentMutation, queryClient],
   )
 
   return (
@@ -352,16 +342,16 @@ const FeedPage = () => {
                     onSaveEdit={handleUpdatePost}
                     onDelete={handleDelete}
                     onAddComment={payload => handleAddComment(post.id, payload)}
-                    onUpdateComment={(commentId, content) => handleUpdateComment(post.id, commentId, content)}
+                    onUpdateComment={(commentId, content) =>
+                      handleUpdateComment(post.id, commentId, content)
+                    }
                     onDeleteComment={commentId => handleDeleteComment(post.id, commentId)}
                   />
                 </div>
               ))}
               <div ref={sentinelRef} className="h-px min-h-px" aria-hidden="true" />
               {loadingMore && (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  กำลังโหลด...
-                </p>
+                <p className="py-4 text-center text-sm text-muted-foreground">กำลังโหลด...</p>
               )}
             </div>
           )}

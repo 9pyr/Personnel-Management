@@ -1,17 +1,15 @@
-import dayjs from 'dayjs'
-import 'dayjs/locale/th'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-
-import { useFeed } from 'core/apis/feed/queries'
-import type { FeedPost } from 'core/apis/feed/types'
-import { useLeaveBalance } from 'core/apis/leave/queries'
-import type { LeaveBalanceItem } from 'core/apis/leave/types'
-
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+
+import { useMemo } from 'react'
+
+import { useFeed } from 'core/apis/feed/queries'
+import { type LeaveBalanceItem, useLeaveBalance } from 'core/apis/leave/queries'
+import dayjs from 'dayjs'
+import 'dayjs/locale/th'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { Link } from 'react-router-dom'
 
 dayjs.extend(relativeTime)
 dayjs.locale('th')
@@ -78,7 +76,10 @@ const DashboardPage = () => {
               </div>
               {maxDays > 0 && (
                 <>
-                  <Progress value={progressValue} className="h-3 [&>div:last-child]:bg-emerald-600 [&>div:last-child]:dark:bg-emerald-500" />
+                  <Progress
+                    value={progressValue}
+                    className="h-3 [&>div:last-child]:bg-emerald-600 [&>div:last-child]:dark:bg-emerald-500"
+                  />
                   <p className="mt-1 text-xs text-muted-foreground">ใช้ไปแล้ว {used} วัน</p>
                 </>
               )}
@@ -103,10 +104,7 @@ const DashboardPage = () => {
       <div>
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-base font-semibold">ประกาศล่าสุด</h3>
-          <Link
-            to="/feed"
-            className="text-sm text-primary underline-offset-4 hover:underline"
-          >
+          <Link to="/feed" className="text-sm text-primary underline-offset-4 hover:underline">
             ดูทั้งหมด
           </Link>
         </div>

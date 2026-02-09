@@ -14,17 +14,11 @@ function toSnakeCase(str: string): string {
 
 function isPlainObject(value: JsonLike): value is Record<string, JsonLike> {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value) &&
-    !(value instanceof Date)
+    typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Date)
   )
 }
 
-function convertKeys(
-  obj: JsonLike,
-  keyConverter: (key: string) => string
-): JsonLike {
+function convertKeys(obj: JsonLike, keyConverter: (key: string) => string): JsonLike {
   if (Array.isArray(obj)) {
     return obj.map(item => convertKeys(item, keyConverter))
   }

@@ -1,5 +1,4 @@
 import axios from 'axios'
-
 import { logger } from 'core/logger'
 import { clearAuthStorage, getStoredToken } from 'core/stores/auth'
 
@@ -15,7 +14,11 @@ const apiCaller = axios.create({
 apiCaller.interceptors.request.use(config => {
   const token = getStoredToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
-  if (config.data != null && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+  if (
+    config.data != null &&
+    typeof config.data === 'object' &&
+    !(config.data instanceof FormData)
+  ) {
     config.data = keysToSnakeCase(config.data)
   }
   return config
@@ -42,7 +45,7 @@ apiCaller.interceptors.response.use(
       status: err.response?.status,
     })
     return Promise.reject(err)
-  }
+  },
 )
 
 export default apiCaller

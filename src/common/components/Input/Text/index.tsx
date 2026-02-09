@@ -1,8 +1,8 @@
-import { Controller, useFormContext } from 'react-hook-form'
-
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+
+import { Controller, useFormContext } from 'react-hook-form'
 
 export interface TextInputProps {
   name: string
@@ -64,9 +64,7 @@ const TextInput = ({
                 {...field}
               />
             )}
-            {errorMessage && (
-              <p className="text-xs text-destructive">{String(errorMessage)}</p>
-            )}
+            {errorMessage && <p className="text-xs text-destructive">{String(errorMessage)}</p>}
           </div>
         )
       }}

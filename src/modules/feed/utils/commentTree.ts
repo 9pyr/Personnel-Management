@@ -22,13 +22,11 @@ export function buildCommentTree(comments: FeedComment[]): CommentTreeNode[] {
     }
   })
   roots.sort(
-    (first, second) =>
-      new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+    (first, second) => new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime(),
   )
   byId.forEach(node => {
     node.replies.sort(
-      (first, second) =>
-        new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime()
+      (first, second) => new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime(),
     )
   })
   return roots

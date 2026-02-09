@@ -1,19 +1,3 @@
-import { Trash2 } from 'lucide-react'
-import { useCallback, useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
-
-import Table from 'common/components/Table'
-import type { TableRowData } from 'common/components/Table'
-import {
-  createLeaveType,
-  deleteLeaveType,
-  getListLeaveTypes,
-  updateLeaveType,
-  type LeaveType,
-} from 'core/apis/leave/leaveTypes'
-import { AuthContext } from 'core/contexts/AuthContext'
-
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -25,6 +9,21 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+import { useCallback, useContext, useEffect, useState } from 'react'
+
+import Table, { type TableRowData } from 'common/components/Table'
+import {
+  type LeaveType,
+  createLeaveType,
+  deleteLeaveType,
+  getListLeaveTypes,
+  updateLeaveType,
+} from 'core/apis/leave/leaveTypes'
+import { AuthContext } from 'core/contexts/AuthContext'
+import { Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+
 interface ErrWithResponse {
   response?: { data?: object }
 }
@@ -33,20 +32,20 @@ function isErrWithResponse(x: object): x is ErrWithResponse {
   return 'response' in x
 }
 
-const COLUMNS = [
+const getColumns = (handleDelete: (id: string) => void) => [
   { label: 'รหัส', source: 'code' },
   { label: 'ชื่อประเภท', source: 'name' },
   { label: 'จำนวนวัน/ปี', source: 'maxDaysPerYearLabel' },
   {
     label: 'การดำเนินการ',
-    render: (row: TableRowData & { _onDelete?: () => void }) => (
+    render: (row: TableRowData) => (
       <Button
         variant="ghost"
         size="icon"
         className="h-8 w-8 text-destructive hover:text-destructive"
         onClick={e => {
           e.stopPropagation()
-          typeof row._onDelete === 'function' && row._onDelete()
+          if (row.id) handleDelete(String(row.id))
         }}
         aria-label="ลบ"
       >
@@ -148,12 +147,12 @@ const LeaveTypesPage = () => {
 
   if (!canManage) return null
 
-  const tableData = types.map(leaveType => ({
+  const tableData: TableRowData[] = types.map(leaveType => ({
     id: leaveType.id,
     code: leaveType.code,
     name: leaveType.name,
-    maxDaysPerYearLabel: (leaveType.maxDaysPerYear ?? 0) > 0 ? `${leaveType.maxDaysPerYear} วัน/ปี` : 'ไม่จำกัด',
-    _onDelete: () => handleDelete(leaveType.id),
+    maxDaysPerYearLabel:
+      (leaveType.maxDaysPerYear ?? 0) > 0 ? `${leaveType.maxDaysPerYear} วัน/ปี` : 'ไม่จำกัด',
   }))
 
   return (
@@ -165,7 +164,7 @@ const LeaveTypesPage = () => {
         </div>
         {!loading && (
           <Table
-            columns={COLUMNS}
+            columns={getColumns(handleDelete)}
             data={tableData}
             rowClick={rowId => {
               const foundType = rowId ? types.find(typeItem => typeItem.id === rowId) : undefined
@@ -183,11 +182,7 @@ const LeaveTypesPage = () => {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label>รหัส (เช่น SICK_LEAVE)</Label>
-              <Input
-                value={code}
-                onChange={e => setCode(e.target.value)}
-                disabled={!!editingId}
-              />
+              <Input value={code} onChange={e => setCode(e.target.value)} disabled={!!editingId} />
             </div>
             <div className="grid gap-2">
               <Label>ชื่อประเภท</Label>

@@ -1,14 +1,14 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
+
 import apiCaller from 'core/endpoints/apiCaller'
-import { useClientQuery } from 'core/hooks/useClientQuery'
 import { useClientMutation } from 'core/hooks/useClientMutation'
+import { useClientQuery } from 'core/hooks/useClientQuery'
+
 import {
   createCommentRequestSchema,
   createPostRequestSchema,
   feedCommentListSchema,
-  feedCommentSchema,
   feedPostListSchema,
-  feedPostSchema,
   updateCommentRequestSchema,
 } from './schemas'
 import type {
@@ -34,7 +34,7 @@ export function useFeed(params?: GetFeedParams) {
   return useClientQuery<FeedPost[]>({
     url: FEED_BASE,
     params: { limit, offset },
-    select: (data) => feedPostListSchema.parse(data),
+    select: data => feedPostListSchema.parse(data),
   })
 }
 
@@ -59,7 +59,7 @@ export function useComments(postId: string) {
   return useClientQuery<FeedComment[]>({
     url: `${FEED_BASE}/${postId}/comments`,
     enabled: Boolean(postId),
-    select: (data) => feedCommentListSchema.parse(data),
+    select: data => feedCommentListSchema.parse(data),
   })
 }
 
@@ -68,7 +68,7 @@ export function useCreatePost() {
     method: 'POST',
     url: FEED_BASE,
     invalidateQueries: [FEED_BASE],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = createPostRequestSchema.parse(variables)
       return body
     },
@@ -78,9 +78,9 @@ export function useCreatePost() {
 export function useUpdatePost() {
   return useClientMutation<FeedPost, { id: string } & CreatePostRequest>({
     method: 'PUT',
-    url: (variables) => `${FEED_BASE}/${variables.id}`,
+    url: variables => `${FEED_BASE}/${variables.id}`,
     invalidateQueries: [FEED_BASE],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = createPostRequestSchema.parse(variables)
       return { id: variables.id, ...body }
     },
@@ -90,7 +90,7 @@ export function useUpdatePost() {
 export function useDeletePost() {
   return useClientMutation<unknown, { id: string }>({
     method: 'DELETE',
-    url: (variables) => `${FEED_BASE}/${variables.id}`,
+    url: variables => `${FEED_BASE}/${variables.id}`,
     invalidateQueries: [FEED_BASE],
   })
 }
@@ -98,9 +98,9 @@ export function useDeletePost() {
 export function useCreateComment() {
   return useClientMutation<FeedComment, { postId: string } & CreateCommentRequest>({
     method: 'POST',
-    url: (variables) => `${FEED_BASE}/${variables.postId}/comments`,
+    url: variables => `${FEED_BASE}/${variables.postId}/comments`,
     invalidateQueries: [FEED_BASE],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = createCommentRequestSchema.parse(variables)
       return { postId: variables.postId, ...body }
     },
@@ -110,9 +110,9 @@ export function useCreateComment() {
 export function useUpdateComment() {
   return useClientMutation<FeedComment, { id: string } & UpdateCommentRequest>({
     method: 'PUT',
-    url: (variables) => `${FEED_BASE}/comments/${variables.id}`,
+    url: variables => `${FEED_BASE}/comments/${variables.id}`,
     invalidateQueries: [FEED_BASE],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = updateCommentRequestSchema.parse(variables)
       return { id: variables.id, ...body }
     },
@@ -122,7 +122,7 @@ export function useUpdateComment() {
 export function useDeleteComment() {
   return useClientMutation<unknown, { id: string }>({
     method: 'DELETE',
-    url: (variables) => `${FEED_BASE}/comments/${variables.id}`,
+    url: variables => `${FEED_BASE}/comments/${variables.id}`,
     invalidateQueries: [FEED_BASE],
   })
 }

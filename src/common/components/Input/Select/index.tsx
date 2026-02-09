@@ -1,5 +1,4 @@
-import { Controller, useFormContext } from 'react-hook-form'
-
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -9,7 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
+
+import { Controller, useFormContext } from 'react-hook-form'
 
 /** Base select component ที่ wrap shadcn ใช้ซ้ำได้ทั้งในฟอร์ม (react-hook-form) และนอกฟอร์ม */
 
@@ -48,11 +48,7 @@ export function SelectBase({
 }: SelectBaseProps) {
   return (
     <Select disabled={disabled} value={value} onValueChange={onChange}>
-      <SelectTrigger
-        id={id}
-        aria-label={ariaLabel}
-        className={className}
-      >
+      <SelectTrigger id={id} aria-label={ariaLabel} className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
@@ -72,10 +68,7 @@ export function SelectBase({
               </SelectGroup>
             ))
           : options.map((option, optionIndex) => (
-              <SelectItem
-                key={`select-option-${id ?? ''}-${optionIndex}`}
-                value={option.value}
-              >
+              <SelectItem key={`select-option-${id ?? ''}-${optionIndex}`} value={option.value}>
                 {option.label}
               </SelectItem>
             ))}
@@ -126,9 +119,7 @@ const SelectInput = ({
               optionGroups={optionGroups}
               disabled={disabled}
             />
-            {errorMessage && (
-              <p className="text-xs text-destructive">{String(errorMessage)}</p>
-            )}
+            {errorMessage && <p className="text-xs text-destructive">{String(errorMessage)}</p>}
           </div>
         )
       }}

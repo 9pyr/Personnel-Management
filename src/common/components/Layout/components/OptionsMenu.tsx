@@ -1,7 +1,3 @@
-import { LogOut, MoreVertical } from 'lucide-react'
-
-import { clearAuthStorage, useAuthActions } from 'core/stores/auth'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,10 +5,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+
+import { clearAuthStorage, useAuthActions } from 'core/stores/auth'
+import { LogOut, MoreVertical } from 'lucide-react'
+
 import MenuButton from './MenuButton'
 
 export default function OptionsMenu() {
-  const { setToken, setUser, clearAuth } = useAuthActions()
+  const { clearAuth } = useAuthActions()
 
   const handleLogout = () => {
     clearAuthStorage()

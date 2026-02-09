@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react'
+
 import { useCreateHoliday } from 'core/apis/holidays/queries'
 import dayjs from 'dayjs'
-import { toast } from 'sonner'
 import type { HolidayFormData } from 'modules/calendar/types'
+import { toast } from 'sonner'
 
 export function useHolidayForm(onSuccess: () => void) {
   const today = dayjs().format('YYYY-MM-DD')
@@ -31,5 +32,13 @@ export function useHolidayForm(onSuccess: () => void) {
     }
   }, [form, onSuccess, createHolidayMutation])
 
-  return { open, setOpen, form, setForm, submitting: createHolidayMutation.isPending, openDialog, handleSubmit }
+  return {
+    open,
+    setOpen,
+    form,
+    setForm,
+    submitting: createHolidayMutation.isPending,
+    openDialog,
+    handleSubmit,
+  }
 }

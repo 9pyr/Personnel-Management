@@ -1,6 +1,6 @@
+import type { Leave } from 'core/apis/leave/types'
 import dayjs from 'dayjs'
 import { groupBy, mapValues, range, sortBy } from 'lodash'
-import type { Leave } from 'core/apis/leave/types'
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 
@@ -103,7 +103,12 @@ export function eventsByDate<T extends EventWithDate>(events: T[]): Map<string, 
   }
 
   const grouped = groupBy(eventsWithDateKeys, 'dateKey')
-  const sorted = mapValues(grouped, items => sortBy(items.map(item => item.event), 'startTime'))
+  const sorted = mapValues(grouped, items =>
+    sortBy(
+      items.map(item => item.event),
+      'startTime',
+    ),
+  )
 
   return new Map(Object.entries(sorted))
 }

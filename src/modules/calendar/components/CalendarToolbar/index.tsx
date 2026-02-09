@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button'
 import { Calendar as DatePickerCalendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+
 import { useState } from 'react'
-import { SelectBase } from 'common/components/Input/Select'
-import type { SelectOption } from 'common/components/Input/Select'
+
+import { SelectBase, type SelectOption } from 'common/components/Input/Select'
 import type { User } from 'core/apis/auth/types'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { FILTER_ALL } from 'modules/calendar/constants'
@@ -47,7 +48,13 @@ export function CalendarToolbar({
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPrevMonth} aria-label="เดือนก่อน">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={onPrevMonth}
+          aria-label="เดือนก่อน"
+        >
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <Popover open={monthPickerOpen} onOpenChange={setMonthPickerOpen}>
@@ -70,7 +77,13 @@ export function CalendarToolbar({
             />
           </PopoverContent>
         </Popover>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onNextMonth} aria-label="เดือนถัดไป">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={onNextMonth}
+          aria-label="เดือนถัดไป"
+        >
           <ChevronRight className="h-5 w-5" />
         </Button>
       </div>

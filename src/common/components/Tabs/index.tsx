@@ -1,9 +1,9 @@
-import { useState } from 'react'
-
 import { Tabs as BaseTabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
+import { type ReactElement, useState } from 'react'
+
 interface TabsProps {
-  items: { label: string; element: JSX.Element }[]
+  items: { label: string; element: ReactElement }[]
 }
 
 export default function Tabs({ items }: TabsProps) {

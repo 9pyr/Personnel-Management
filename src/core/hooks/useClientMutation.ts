@@ -1,34 +1,40 @@
 import {
-  useMutation,
-  useQueryClient,
+  type MutationFunctionContext,
   type UseMutationOptions,
   type UseMutationResult,
+  useMutation,
+  useQueryClient,
 } from '@tanstack/react-query'
+
 import apiCaller from 'core/endpoints/apiCaller'
 
 interface UseClientMutationOptions<TData = unknown, TVariables = unknown, TError = Error>
-  extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn'> {
+  extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn' | 'onMutate'> {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   url: string | ((variables: TVariables) => string)
   invalidateQueries?: string[]
+  onMutate?: (variables: TVariables) => Promise<unknown> | unknown
 }
 
 export function useClientMutation<TData = unknown, TVariables = unknown, TError = Error>(
-  options: UseClientMutationOptions<TData, TVariables, TError>
+  options: UseClientMutationOptions<TData, TVariables, TError>,
 ): UseMutationResult<TData, TError, TVariables> {
-  const { method, url, invalidateQueries, ...mutationOptions } = options
+  const { method, url, invalidateQueries, onMutate, onSuccess, ...mutationOptions } = options
   const queryClient = useQueryClient()
 
-  return useMutation<TData, TError, TVariables>({
+  return useMutation<TData, TError, TVariables, unknown>({
     ...mutationOptions,
-    mutationFn: async (variables: TVariables) => {
+    onMutate: onMutate
+      ? async (variables: TVariables) => {
+          const result = await onMutate(variables)
+          return result
+        }
+      : undefined,
+    mutationFn: async (variables: TVariables, context?: unknown) => {
       const finalUrl = typeof url === 'function' ? url(variables) : url
       let response
 
-      let payload: unknown = variables
-      if (mutationOptions.onMutate) {
-        payload = await mutationOptions.onMutate(variables)
-      }
+      const payload: unknown = context !== undefined ? context : variables
 
       switch (method) {
         case 'POST':
@@ -49,14 +55,19 @@ export function useClientMutation<TData = unknown, TVariables = unknown, TError 
 
       return response.data
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: (
+      data: TData,
+      variables: TVariables,
+      context?: unknown,
+      mutation?: MutationFunctionContext,
+    ) => {
       if (invalidateQueries) {
         invalidateQueries.forEach(queryKey => {
           queryClient.invalidateQueries({ queryKey: [queryKey] })
         })
       }
-      if (mutationOptions.onSuccess) {
-        mutationOptions.onSuccess(data, variables, context)
+      if (onSuccess && mutation) {
+        onSuccess(data, variables, context, mutation)
       }
     },
   })

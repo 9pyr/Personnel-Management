@@ -28,21 +28,18 @@ function toYYYYMMDD(v: unknown): string {
 }
 
 function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
-  const startRaw =
-    raw.startDate ?? raw.start_date ?? ''
-  const endRaw =
-    raw.endDate ?? raw.end_date ?? ''
-  const start = toYYYYMMDD(startRaw) ||
-    (typeof startRaw === 'string' && startRaw.trim().slice(0, 10)) ||
-    ''
-  const end = toYYYYMMDD(endRaw) ||
-    (typeof endRaw === 'string' && endRaw.trim().slice(0, 10)) ||
-    ''
+  const startRaw = raw.startDate ?? raw.start_date ?? ''
+  const endRaw = raw.endDate ?? raw.end_date ?? ''
+  const start =
+    toYYYYMMDD(startRaw) || (typeof startRaw === 'string' && startRaw.trim().slice(0, 10)) || ''
+  const end = toYYYYMMDD(endRaw) || (typeof endRaw === 'string' && endRaw.trim().slice(0, 10)) || ''
   const createdByName =
     (typeof raw.createdByName === 'string' && (raw.createdByName as string).trim()) ||
     (typeof raw.created_by_name === 'string' && (raw.created_by_name as string).trim()) ||
     ''
-  const durationType = (raw.durationType ?? raw.duration_type ?? 'FULL_DAY') as 'FULL_DAY' | 'HOURLY'
+  const durationType = (raw.durationType ?? raw.duration_type ?? 'FULL_DAY') as
+    | 'FULL_DAY'
+    | 'HOURLY'
   const startTime = (raw.startTime ?? raw.start_time) as string | undefined
   const endTime = (raw.endTime ?? raw.end_time) as string | undefined
   return {
@@ -70,20 +67,19 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
   const url = qs ? `/leaves?${qs}` : '/leaves'
   const { data } = await apiCaller.get<object>(url)
   const obj = data as Record<string, unknown> | null | undefined
-  const raw =
-    Array.isArray(data)
-      ? data
-      : Array.isArray(obj?.data)
-        ? obj?.data
-        : Array.isArray(obj?.leaves)
-          ? obj?.leaves
-          : Array.isArray(obj?.result)
-            ? obj?.result
-            : Array.isArray(obj?.list)
-              ? obj?.list
-              : Array.isArray(obj?.items)
-                ? obj?.items
-                : []
+  const raw = Array.isArray(data)
+    ? data
+    : Array.isArray(obj?.data)
+      ? obj?.data
+      : Array.isArray(obj?.leaves)
+        ? obj?.leaves
+        : Array.isArray(obj?.result)
+          ? obj?.result
+          : Array.isArray(obj?.list)
+            ? obj?.list
+            : Array.isArray(obj?.items)
+              ? obj?.items
+              : []
   const list = Array.isArray(raw) ? raw : []
   const result: Leave[] = []
   for (const item of list) {
@@ -114,7 +110,10 @@ const leaveBalanceSchema = z.array(
     name: z.string(),
     maxDaysPerYear: z.number(),
     usedDaysThisYear: z.number(),
-    remaining: z.number().nullish().transform(v => v ?? null),
+    remaining: z
+      .number()
+      .nullish()
+      .transform(v => v ?? null),
   }),
 )
 

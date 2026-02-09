@@ -1,16 +1,12 @@
-import { useContext, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-
-import Table from 'common/components/Table'
-import { useListLeave } from 'core/apis/leave/queries'
-import type { Leave } from 'core/apis/leave/types'
-import { AuthContext } from 'core/contexts/AuthContext'
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-import type { TableRowData } from 'common/components/Table'
+import { useContext, useEffect } from 'react'
 
-import { leaveFields, LEAVE_STATUS } from 'modules/leave/constants'
+import Table, { type TableRowData } from 'common/components/Table'
+import { useListLeave } from 'core/apis/leave/queries'
+import { AuthContext } from 'core/contexts/AuthContext'
+import { LEAVE_STATUS, leaveFields } from 'modules/leave/constants'
+import { useNavigate } from 'react-router-dom'
 
 import LeaveRequestCards from './LeaveRequestCards'
 import LeaveStatusBadge from './LeaveStatusBadge'
@@ -28,9 +24,7 @@ const BASE_COLUMNS = [
   {
     label: 'สถานะ',
     source: leaveFields.status,
-    render: (row: TableRowData) => (
-      <LeaveStatusBadge statusKey={getStatusKey(row)} />
-    ),
+    render: (row: TableRowData) => <LeaveStatusBadge statusKey={getStatusKey(row)} />,
   },
 ]
 
@@ -52,8 +46,7 @@ const Inprogress = () => {
 
   const myLeaves = leaves.filter(leave => leave.createdByUserId === user?.id)
   const othersPending = leaves.filter(
-    leave =>
-      leave.createdByUserId !== user?.id && leave.status === LEAVE_STATUS.PENDING
+    leave => leave.createdByUserId !== user?.id && leave.status === LEAVE_STATUS.PENDING,
   )
 
   const tableData = myLeaves.map(leave => ({
@@ -70,9 +63,7 @@ const Inprogress = () => {
       <Tabs defaultValue="mine" className="mb-4">
         <TabsList>
           <TabsTrigger value="mine">การลาของฉัน</TabsTrigger>
-          {canApproveLeave && (
-            <TabsTrigger value="others">คำขอลาจากคนอื่น</TabsTrigger>
-          )}
+          {canApproveLeave && <TabsTrigger value="others">คำขอลาจากคนอื่น</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="mine">
@@ -94,7 +85,10 @@ const Inprogress = () => {
             {loading ? (
               <p className="text-muted-foreground">กำลังโหลด...</p>
             ) : (
-              <LeaveRequestCards leaves={othersPending} onActionDone={() => leavesQuery.refetch()} />
+              <LeaveRequestCards
+                leaves={othersPending}
+                onActionDone={() => leavesQuery.refetch()}
+              />
             )}
           </TabsContent>
         )}

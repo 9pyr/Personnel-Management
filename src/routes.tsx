@@ -1,3 +1,6 @@
+import type { ReactElement } from 'react'
+
+import type { Role } from 'core/apis/auth/types'
 import {
   Calendar,
   ClipboardList,
@@ -7,9 +10,6 @@ import {
   User,
   Users,
 } from 'lucide-react'
-
-import type { ReactElement } from 'react'
-import type { Role } from 'core/apis/auth/types'
 import CalendarPage from 'modules/calendar/pages/CalendarPage'
 import DashboardPage from 'modules/dashboard/page'
 import FeedPage from 'modules/feed/pages/FeedPage'

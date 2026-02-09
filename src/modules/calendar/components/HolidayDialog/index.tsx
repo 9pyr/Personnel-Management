@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { DatePickerSingle } from '@/components/ui/date-picker'
 import {
   Dialog,
   DialogContent,
@@ -6,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { DatePickerSingle } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
 import dayjs from 'dayjs'
 import type { HolidayFormData } from 'modules/calendar/types'
 
@@ -40,7 +41,9 @@ export function HolidayDialog({
             <Label>วันที่</Label>
             <DatePickerSingle
               value={form.date ? new Date(form.date) : undefined}
-              onChange={d => onFormChange({ ...form, date: d ? dayjs(d).format('YYYY-MM-DD') : '' })}
+              onChange={d =>
+                onFormChange({ ...form, date: d ? dayjs(d).format('YYYY-MM-DD') : '' })
+              }
               placeholder="เลือกวันที่"
             />
           </div>

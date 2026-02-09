@@ -1,10 +1,9 @@
-import { useClientQuery } from 'core/hooks/useClientQuery'
 import { useClientMutation } from 'core/hooks/useClientMutation'
+import { useClientQuery } from 'core/hooks/useClientQuery'
+
 import {
   createUserRequestSchema,
   loginRequestSchema,
-  loginResponseSchema,
-  profileImageUrlResponseSchema,
   updateProfileRequestSchema,
   updateUserRequestSchema,
   userListResponseSchema,
@@ -21,17 +20,19 @@ import type {
 
 const AUTH_BASE = '/auth'
 
-export function useMe() {
+export function useMe(options?: { enabled?: boolean }) {
   return useClientQuery<User>({
     url: `${AUTH_BASE}/me`,
-    select: (data) => userSchema.parse(data),
+    enabled: options?.enabled !== undefined ? options.enabled : true,
+    select: data => userSchema.parse(data),
   })
 }
 
-export function useListUsers() {
+export function useListUsers(options?: { enabled?: boolean }) {
   return useClientQuery<User[]>({
     url: '/users',
-    select: (data) => userListResponseSchema.parse(data),
+    enabled: options?.enabled !== undefined ? options.enabled : true,
+    select: data => userListResponseSchema.parse(data),
   })
 }
 
@@ -39,7 +40,7 @@ export function useLogin() {
   return useClientMutation<LoginResponse, LoginRequest>({
     method: 'POST',
     url: `${AUTH_BASE}/login`,
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = loginRequestSchema.parse(variables)
       return body
     },
@@ -51,7 +52,7 @@ export function useUpdateProfile() {
     method: 'PUT',
     url: `${AUTH_BASE}/profile`,
     invalidateQueries: [`${AUTH_BASE}/me`],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = updateProfileRequestSchema.parse(variables)
       return body
     },
@@ -63,7 +64,7 @@ export function useUploadProfileImage() {
     method: 'POST',
     url: `${AUTH_BASE}/profile/avatar`,
     invalidateQueries: [`${AUTH_BASE}/me`],
-    onMutate: async (file) => {
+    onMutate: async file => {
       const form = new FormData()
       form.append('avatar', file)
       return form
@@ -76,7 +77,7 @@ export function useCreateUser() {
     method: 'POST',
     url: '/users',
     invalidateQueries: ['/users'],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = createUserRequestSchema.parse(variables)
       return body
     },
@@ -86,9 +87,9 @@ export function useCreateUser() {
 export function useUpdateUser() {
   return useClientMutation<User, { id: string } & UpdateUserRequest>({
     method: 'PUT',
-    url: (variables) => `/users/${variables.id}`,
+    url: variables => `/users/${variables.id}`,
     invalidateQueries: ['/users'],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = updateUserRequestSchema.parse(variables)
       return { id: variables.id, ...body }
     },

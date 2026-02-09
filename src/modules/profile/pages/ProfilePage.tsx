@@ -1,6 +1,8 @@
-import { Camera } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+
+import { useEffect, useRef } from 'react'
 
 import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
@@ -9,10 +11,8 @@ import { updateProfileRequestSchema } from 'core/apis/auth/schemas'
 import type { User } from 'core/apis/auth/types'
 import apiCaller from 'core/endpoints/apiCaller'
 import { useAuthActions } from 'core/stores/auth'
-
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Camera } from 'lucide-react'
+import { toast } from 'sonner'
 
 function profileImageSrc(user: User | null): string | undefined {
   const url = user?.profileImageUrl

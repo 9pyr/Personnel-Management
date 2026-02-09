@@ -1,16 +1,12 @@
+import { Calendar, CalendarRange, type DateRange } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+
 import * as React from 'react'
+
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import { Calendar as CalendarIcon } from 'lucide-react'
-
-import { cn } from '@/lib/utils'
-import { Calendar, CalendarRange } from '@/components/ui/calendar'
-import type { DateRange } from '@/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 
 dayjs.locale('th')
 

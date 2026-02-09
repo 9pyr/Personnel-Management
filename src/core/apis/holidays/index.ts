@@ -2,10 +2,10 @@ import apiCaller from 'core/endpoints/apiCaller'
 import { z } from 'zod'
 
 import {
-  companyHolidaySchema,
-  createHolidayPayloadSchema,
   type CompanyHoliday,
   type CreateHolidayPayload,
+  companyHolidaySchema,
+  createHolidayPayloadSchema,
 } from './schemas'
 
 const listSchema = z.array(companyHolidaySchema)

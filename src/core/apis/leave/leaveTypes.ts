@@ -35,7 +35,7 @@ export const createLeaveType = async (payload: {
 
 export const updateLeaveType = async (
   id: string,
-  payload: { code?: string; name?: string; maxDaysPerYear?: number }
+  payload: { code?: string; name?: string; maxDaysPerYear?: number },
 ): Promise<LeaveType> => {
   const { data } = await apiCaller.put<object>(`${TYPES_BASE}/${id}`, payload)
   return parseResponse(data, leaveTypeSchema)

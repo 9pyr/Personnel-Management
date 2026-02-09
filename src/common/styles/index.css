@@ -47,7 +47,7 @@
     --ring: 174 63% 35%;
   }
   button:not(:disabled),
-  [role="button"]:not(:disabled) {
+  [role='button']:not(:disabled) {
     cursor: pointer;
   }
 }

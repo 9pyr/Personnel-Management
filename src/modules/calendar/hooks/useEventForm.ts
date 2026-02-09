@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react'
+
 import { useCreateEvent } from 'core/apis/events/queries'
 import dayjs from 'dayjs'
-import { toast } from 'sonner'
 import type { EventFormData } from 'modules/calendar/types'
+import { toast } from 'sonner'
 
 export function useEventForm(onSuccess: () => void) {
   const today = dayjs().format('YYYY-MM-DD')

@@ -1,7 +1,14 @@
-import { useClientQuery } from 'core/hooks/useClientQuery'
 import { useClientMutation } from 'core/hooks/useClientMutation'
-import { eventCreatePayloadSchema, eventSchema, eventUpdatePayloadSchema } from './schemas'
-import type { Event, EventCreatePayload, EventUpdatePayload } from './schemas'
+import { useClientQuery } from 'core/hooks/useClientQuery'
+
+import {
+  type Event,
+  type EventCreatePayload,
+  type EventUpdatePayload,
+  eventCreatePayloadSchema,
+  eventSchema,
+  eventUpdatePayloadSchema,
+} from './schemas'
 
 export interface GetEventsParams {
   from?: string
@@ -41,12 +48,14 @@ function parseEventList(data: unknown): Event[] {
 export function useEvents(params?: GetEventsParams) {
   return useClientQuery<Event[]>({
     url: '/events',
-    params: params ? {
-      from: params.from,
-      to: params.to,
-      user_id: params.userId,
-    } : undefined,
-    select: (data) => parseEventList(data),
+    params: params
+      ? {
+          from: params.from,
+          to: params.to,
+          user_id: params.userId,
+        }
+      : undefined,
+    select: data => parseEventList(data),
   })
 }
 
@@ -54,7 +63,7 @@ export function useEventById(id: string) {
   return useClientQuery<Event>({
     url: `/events/${id}`,
     enabled: Boolean(id),
-    select: (data) => {
+    select: data => {
       try {
         return eventSchema.parse(data)
       } catch {
@@ -69,7 +78,7 @@ export function useCreateEvent() {
     method: 'POST',
     url: '/events',
     invalidateQueries: ['/events'],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       return eventCreatePayloadSchema.parse(variables)
     },
   })
@@ -78,9 +87,9 @@ export function useCreateEvent() {
 export function useUpdateEvent() {
   return useClientMutation<Event, { id: string } & EventUpdatePayload>({
     method: 'PUT',
-    url: (variables) => `/events/${variables.id}`,
+    url: variables => `/events/${variables.id}`,
     invalidateQueries: ['/events'],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = eventUpdatePayloadSchema.parse(variables)
       const send: Record<string, string | number | boolean> = {}
       if (body.date != null) send.date = body.date
@@ -96,7 +105,7 @@ export function useUpdateEvent() {
 export function useDeleteEvent() {
   return useClientMutation<unknown, { id: string }>({
     method: 'DELETE',
-    url: (variables) => `/events/${variables.id}`,
+    url: variables => `/events/${variables.id}`,
     invalidateQueries: ['/events'],
   })
 }

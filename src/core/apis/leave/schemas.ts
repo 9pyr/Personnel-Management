@@ -35,7 +35,7 @@ function toYYYYMMDD(v: string | null | undefined): string {
 }
 
 export const leaveSchema = leaveSchemaBase.transform(obj => {
-  const raw = obj as { 
+  const raw = obj as {
     start_date?: string | null
     end_date?: string | null
     created_by_name?: string
@@ -65,18 +65,20 @@ export const leaveSchema = leaveSchemaBase.transform(obj => {
 export type Leave = z.infer<typeof leaveSchema>
 
 // Frontend uses camelCase for payload
-export const leaveCreatePayloadSchema = leaveSchemaBase.omit({
-  id: true,
-  status: true,
-  createdByUserId: true,
-  createdByName: true,
-  created_by_name: true,
-}).extend({ 
-  leaveTypeId: z.string().min(1, 'กรุณาเลือกประเภทการลา'),
-  startDate: z.string().min(1),
-  endDate: z.string().min(1),
-  durationType: z.enum(['FULL_DAY', 'HOURLY']).optional().default('FULL_DAY'),
-})
+export const leaveCreatePayloadSchema = leaveSchemaBase
+  .omit({
+    id: true,
+    status: true,
+    createdByUserId: true,
+    createdByName: true,
+    created_by_name: true,
+  })
+  .extend({
+    leaveTypeId: z.string().min(1, 'กรุณาเลือกประเภทการลา'),
+    startDate: z.string().min(1),
+    endDate: z.string().min(1),
+    durationType: z.enum(['FULL_DAY', 'HOURLY']).optional().default('FULL_DAY'),
+  })
 export type LeaveCreatePayload = z.infer<typeof leaveCreatePayloadSchema>
 
 export const leaveUpdatePayloadSchema = leaveSchemaBase.extend({

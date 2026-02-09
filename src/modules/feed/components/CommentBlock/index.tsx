@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+
+import { useState } from 'react'
+
 import type { CommentTreeNode } from 'modules/feed/utils/commentTree'
 import { formatPostTime } from 'modules/feed/utils/formatTime'
 
@@ -34,10 +36,7 @@ export function CommentBlock({
   }
 
   return (
-    <div
-      data-comment-id={node.id}
-      className={depth > 0 ? 'ml-6 mb-1.5' : 'mb-1.5'}
-    >
+    <div data-comment-id={node.id} className={depth > 0 ? 'ml-6 mb-1.5' : 'mb-1.5'}>
       <div className="flex flex-row items-start gap-2">
         <Avatar className="h-7 w-7 text-sm">
           <AvatarFallback>{node.authorName?.charAt(0) ?? '?'}</AvatarFallback>

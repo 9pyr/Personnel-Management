@@ -1,13 +1,12 @@
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
 import { useLogin } from 'core/apis/auth/queries'
 import { persistAuthAfterLogin, useAuthActions } from 'core/stores/auth'
-
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -18,12 +17,8 @@ const LoginPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="min-w-[360px] overflow-visible border">
         <CardContent className="p-6">
-          <h1 className="mb-2 text-center text-xl font-semibold text-primary">
-            ระบบจัดการบุคคล
-          </h1>
-          <p className="mb-4 text-center text-sm text-muted-foreground">
-            เข้าสู่ระบบ
-          </p>
+          <h1 className="mb-2 text-center text-xl font-semibold text-primary">ระบบจัดการบุคคล</h1>
+          <p className="mb-4 text-center text-sm text-muted-foreground">เข้าสู่ระบบ</p>
           <Form
             defaultValues={{ email: '', password: '' }}
             onSubmit={async values => {

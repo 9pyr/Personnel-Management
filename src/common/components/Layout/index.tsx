@@ -1,8 +1,8 @@
+import NotificationListener from 'common/components/NotificationListener'
 import { Outlet } from 'react-router-dom'
 
-import NotificationListener from 'common/components/NotificationListener'
-import { drawerWidth } from './styles'
 import SideMenu from './components/SideMenu'
+import { drawerWidth } from './styles'
 
 const Layout = () => {
   return (

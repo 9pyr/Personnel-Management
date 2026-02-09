@@ -1,14 +1,12 @@
-import { Bell } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   useMarkAllNotificationsRead,
@@ -16,6 +14,8 @@ import {
   useNotifications,
 } from 'core/apis/notifications/queries'
 import type { Notification } from 'core/apis/notifications/types'
+import { Bell } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const NOTIFICATIONS_REFRESH_EVENT = 'notifications-refresh'
 
@@ -64,7 +64,8 @@ export default function NotificationButton() {
         await notificationsQuery.refetch()
         setOpen(false)
 
-        const isFeedComment = notification.type === 'FEED_COMMENT' || notification.type === 'FEED_COMMENT_REPLY'
+        const isFeedComment =
+          notification.type === 'FEED_COMMENT' || notification.type === 'FEED_COMMENT_REPLY'
         if (isFeedComment && notification.relatedId) {
           navigate('/feed', {
             state: {
@@ -81,7 +82,7 @@ export default function NotificationButton() {
         // ignore
       }
     },
-    [navigate, markReadMutation, notificationsQuery]
+    [navigate, markReadMutation, notificationsQuery],
   )
 
   const handleMarkAllRead = useCallback(async () => {
@@ -96,7 +97,12 @@ export default function NotificationButton() {
   return (
     <DropdownMenu open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label={`การแจ้งเตือน${unreadCount > 0 ? ` ${unreadCount} รายการยังไม่อ่าน` : ''}`}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={`การแจ้งเตือน${unreadCount > 0 ? ` ${unreadCount} รายการยังไม่อ่าน` : ''}`}
+        >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
@@ -130,7 +136,9 @@ export default function NotificationButton() {
                     !notification.readAt ? 'border-l-4 border-l-primary bg-accent/50' : ''
                   }`}
                 >
-                  <span className={notification.readAt ? 'font-normal' : 'font-semibold'}>{notification.title}</span>
+                  <span className={notification.readAt ? 'font-normal' : 'font-semibold'}>
+                    {notification.title}
+                  </span>
                   <span className="text-muted-foreground">{notification.body}</span>
                   <span className="text-xs text-muted-foreground">
                     {formatNotificationTime(notification.createdAt)}

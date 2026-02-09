@@ -1,8 +1,18 @@
-import { z } from 'zod'
-import { useClientQuery } from 'core/hooks/useClientQuery'
 import { useClientMutation } from 'core/hooks/useClientMutation'
+import { useClientQuery } from 'core/hooks/useClientQuery'
+import { z } from 'zod'
+
 import { leaveCreatePayloadSchema, leaveSchema, leaveUpdatePayloadSchema } from './schemas'
-import type { Leave, LeaveCreatePayload, LeaveUpdatePayload, LeaveBalanceItem } from './types'
+import type { Leave, LeaveCreatePayload, LeaveUpdatePayload } from './types'
+
+export type LeaveBalanceItem = {
+  leaveTypeId: string
+  code: string
+  name: string
+  maxDaysPerYear: number
+  usedDaysThisYear: number
+  remaining: number | null
+}
 
 export interface GetListLeaveParams {
   from?: string
@@ -26,17 +36,16 @@ function toYYYYMMDD(v: unknown): string {
 function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
   const startRaw = raw.startDate ?? raw.start_date ?? ''
   const endRaw = raw.endDate ?? raw.end_date ?? ''
-  const start = toYYYYMMDD(startRaw) ||
-    (typeof startRaw === 'string' && startRaw.trim().slice(0, 10)) ||
-    ''
-  const end = toYYYYMMDD(endRaw) ||
-    (typeof endRaw === 'string' && endRaw.trim().slice(0, 10)) ||
-    ''
+  const start =
+    toYYYYMMDD(startRaw) || (typeof startRaw === 'string' && startRaw.trim().slice(0, 10)) || ''
+  const end = toYYYYMMDD(endRaw) || (typeof endRaw === 'string' && endRaw.trim().slice(0, 10)) || ''
   const createdByName =
     (typeof raw.createdByName === 'string' && (raw.createdByName as string).trim()) ||
     (typeof raw.created_by_name === 'string' && (raw.created_by_name as string).trim()) ||
     ''
-  const durationType = (raw.durationType ?? raw.duration_type ?? 'FULL_DAY') as 'FULL_DAY' | 'HOURLY'
+  const durationType = (raw.durationType ?? raw.duration_type ?? 'FULL_DAY') as
+    | 'FULL_DAY'
+    | 'HOURLY'
   const startTime = (raw.startTime ?? raw.start_time) as string | undefined
   const endTime = (raw.endTime ?? raw.end_time) as string | undefined
   return {
@@ -57,20 +66,19 @@ function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
 
 function parseLeaveList(data: unknown): Leave[] {
   const obj = data as Record<string, unknown> | null | undefined
-  const raw =
-    Array.isArray(data)
-      ? data
-      : Array.isArray(obj?.data)
-        ? obj?.data
-        : Array.isArray(obj?.leaves)
-          ? obj?.leaves
-          : Array.isArray(obj?.result)
-            ? obj?.result
-            : Array.isArray(obj?.list)
-              ? obj?.list
-              : Array.isArray(obj?.items)
-                ? obj?.items
-                : []
+  const raw = Array.isArray(data)
+    ? data
+    : Array.isArray(obj?.data)
+      ? obj?.data
+      : Array.isArray(obj?.leaves)
+        ? obj?.leaves
+        : Array.isArray(obj?.result)
+          ? obj?.result
+          : Array.isArray(obj?.list)
+            ? obj?.list
+            : Array.isArray(obj?.items)
+              ? obj?.items
+              : []
   const list = Array.isArray(raw) ? raw : []
   const result: Leave[] = []
   for (const item of list) {
@@ -92,30 +100,32 @@ const leaveBalanceSchema = z.array(
     name: z.string(),
     maxDaysPerYear: z.number(),
     usedDaysThisYear: z.number(),
-    remaining: z.number().nullish().transform(v => v ?? null),
+    remaining: z
+      .number()
+      .nullish()
+      .transform(v => v ?? null),
   }),
 )
 
 export function useListLeave(params?: GetListLeaveParams) {
   return useClientQuery<Leave[]>({
     url: '/leaves',
-    params: params ? {
-      from: params.from,
-      to: params.to,
-      user_id: params.userId,
-    } : undefined,
-    select: (data) => parseLeaveList(data),
+    params: params
+      ? {
+          from: params.from,
+          to: params.to,
+          user_id: params.userId,
+        }
+      : undefined,
+    select: data => parseLeaveList(data),
   })
 }
 
-export function useLeaveById(
-  id: string,
-  options?: { enabled?: boolean }
-) {
+export function useLeaveById(id: string, options?: { enabled?: boolean }) {
   return useClientQuery<Leave>({
     url: `/leaves/${id}`,
     enabled: options?.enabled !== undefined ? options.enabled : Boolean(id),
-    select: (data) => {
+    select: data => {
       try {
         return leaveSchema.parse(data)
       } catch {
@@ -128,7 +138,7 @@ export function useLeaveById(
 export function useLeaveBalance() {
   return useClientQuery<LeaveBalanceItem[]>({
     url: '/leaves/balance',
-    select: (data) => leaveBalanceSchema.parse(data),
+    select: data => leaveBalanceSchema.parse(data),
   })
 }
 
@@ -137,7 +147,7 @@ export function useCreateLeave() {
     method: 'POST',
     url: '/leaves/create',
     invalidateQueries: ['/leaves'],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = leaveCreatePayloadSchema.parse(variables)
       return body
     },
@@ -149,7 +159,7 @@ export function useUpdateLeave() {
     method: 'PUT',
     url: '/leaves/update',
     invalidateQueries: ['/leaves'],
-    onMutate: async (variables) => {
+    onMutate: async variables => {
       const body = leaveUpdatePayloadSchema.parse(variables)
       return body
     },
@@ -159,7 +169,7 @@ export function useUpdateLeave() {
 export function useNextStateLeave() {
   return useClientMutation<unknown, { id: string }>({
     method: 'PATCH',
-    url: (variables) => `/leaves/next/${variables.id}`,
+    url: variables => `/leaves/next/${variables.id}`,
     invalidateQueries: ['/leaves'],
   })
 }
@@ -167,7 +177,7 @@ export function useNextStateLeave() {
 export function useRejectStateLeave() {
   return useClientMutation<unknown, { id: string }>({
     method: 'PATCH',
-    url: (variables) => `/leaves/reject/${variables.id}`,
+    url: variables => `/leaves/reject/${variables.id}`,
     invalidateQueries: ['/leaves'],
   })
 }
@@ -175,7 +185,7 @@ export function useRejectStateLeave() {
 export function useCancelLeave() {
   return useClientMutation<unknown, { id: string }>({
     method: 'PATCH',
-    url: (variables) => `/leaves/${variables.id}/cancel`,
+    url: variables => `/leaves/${variables.id}/cancel`,
     invalidateQueries: ['/leaves'],
   })
 }

@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
 import dayjs from 'dayjs'
 import type { CalendarItemEvent } from 'modules/calendar/types'
 
@@ -41,11 +42,15 @@ export function EventDetailDialog({ event, onClose }: EventDetailDialogProps) {
             <>
               <div>
                 <p className="font-semibold">ผู้ลา</p>
-                <p className="text-muted-foreground">{event.leave.createdByName ?? 'ไม่ทราบชื่อ'}</p>
+                <p className="text-muted-foreground">
+                  {event.leave.createdByName ?? 'ไม่ทราบชื่อ'}
+                </p>
               </div>
               <div>
                 <p className="font-semibold">รายละเอียด</p>
-                <p className="text-muted-foreground">{(event.leave.description ?? '').trim() || '—'}</p>
+                <p className="text-muted-foreground">
+                  {(event.leave.description ?? '').trim() || '—'}
+                </p>
               </div>
             </>
           )}
@@ -61,7 +66,9 @@ export function EventDetailDialog({ event, onClose }: EventDetailDialogProps) {
             <>
               <div>
                 <p className="font-semibold">หัวข้อ</p>
-                <p className="text-muted-foreground">{(event.workEvent.title ?? '').trim() || '—'}</p>
+                <p className="text-muted-foreground">
+                  {(event.workEvent.title ?? '').trim() || '—'}
+                </p>
               </div>
               <div>
                 <p className="font-semibold">เวลา</p>

@@ -1,23 +1,3 @@
-import { Pencil } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
-
-import Form from 'common/components/Form'
-import Select from 'common/components/Input/Select'
-import type { SelectOptionGroup } from 'common/components/Input/Select'
-import TextInput from 'common/components/Input/Text'
-import Table from 'common/components/Table'
-import type { TableRowData } from 'common/components/Table'
-import { useCreateUser, useListUsers, useUpdateUser } from 'core/apis/auth/queries'
-import {
-  createUserRequestSchema,
-  updateUserRequestSchema,
-} from 'core/apis/auth/schemas'
-import type { Role, User } from 'core/apis/auth/types'
-import { AuthContext } from 'core/contexts/AuthContext'
-
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -26,6 +6,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
+import { type ReactNode, useContext, useEffect, useState } from 'react'
+
+import Form from 'common/components/Form'
+import Select, { type SelectOptionGroup } from 'common/components/Input/Select'
+import TextInput from 'common/components/Input/Text'
+import Table, { type TableRowData } from 'common/components/Table'
+import { useCreateUser, useListUsers, useUpdateUser } from 'core/apis/auth/queries'
+import { createUserRequestSchema, updateUserRequestSchema } from 'core/apis/auth/schemas'
+import type { Role, User } from 'core/apis/auth/types'
+import { AuthContext } from 'core/contexts/AuthContext'
+import { Pencil } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 const ROLE_OPTIONS: { label: string; value: Role }[] = [
   { label: 'Admin', value: 'ADMIN' },
@@ -45,13 +39,8 @@ const DEPARTMENT_OPTIONS = [
 
 const DEPARTMENT_ORDER = ['ฝ่ายบริหาร', 'ฝ่ายบุคคล', 'ฝ่ายการพยาบาล', 'ฝ่ายการแพทย์', 'ฝ่ายบัญชี']
 
-function buildApproverOptionGroups(
-  users: User[],
-  excludeUserId?: string
-): SelectOptionGroup[] {
-  const filtered = excludeUserId
-    ? users.filter(user => user.id !== excludeUserId)
-    : users
+function buildApproverOptionGroups(users: User[], excludeUserId?: string): SelectOptionGroup[] {
+  const filtered = excludeUserId ? users.filter(user => user.id !== excludeUserId) : users
   const noAssign = [{ groupLabel: 'ไม่ระบุ', options: [{ value: '', label: '-- ไม่ระบุ --' }] }]
   const byDept = DEPARTMENT_ORDER.map(department => ({
     groupLabel: department,
@@ -60,7 +49,7 @@ function buildApproverOptionGroups(
       .map(user => ({ value: user.id, label: `${user.name} (${user.email}) — ${user.role}` })),
   })).filter(group => group.options.length > 0)
   const others = filtered.filter(
-    user => !user.department || !DEPARTMENT_ORDER.includes(user.department)
+    user => !user.department || !DEPARTMENT_ORDER.includes(user.department),
   )
   const otherGroup =
     others.length > 0
@@ -85,13 +74,11 @@ const getColumns = (onEditApprover: (row: TableRowData) => void): TableColumnDef
   { label: 'บทบาท', source: 'role' },
   {
     label: 'แผนก/ฝ่าย',
-    render: (row): ReactNode =>
-      row.department != null ? String(row.department) : '-',
+    render: (row): ReactNode => (row.department != null ? String(row.department) : '-'),
   },
   {
     label: 'ผู้มีสิทธิอนุมัติ',
-    render: (row): ReactNode =>
-      row.managerId ? String(row.manager_name ?? row.managerId) : '-',
+    render: (row): ReactNode => (row.managerId ? String(row.manager_name ?? row.managerId) : '-'),
   },
   {
     label: 'จัดการ',
@@ -117,7 +104,9 @@ const UserListPage = () => {
   const currentUser = useContext(AuthContext)
   const [open, setOpen] = useState(false)
   const [editUser, setEditUser] = useState<User | null>(null)
-  const usersQuery = useListUsers({ enabled: currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE' })
+  const usersQuery = useListUsers({
+    enabled: currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE',
+  })
   const createUserMutation = useCreateUser()
   const updateUserMutation = useUpdateUser()
 
@@ -155,9 +144,7 @@ const UserListPage = () => {
         </div>
         {!loading && (
           <Table
-            columns={getColumns(row =>
-              setEditUser(users.find(user => user.id === row.id) ?? null)
-            )}
+            columns={getColumns(row => setEditUser(users.find(user => user.id === row.id) ?? null))}
             data={tableData}
             rowClick={() => {}}
           />
@@ -185,7 +172,8 @@ const UserListPage = () => {
                 name: values.name,
                 role: values.role,
                 department: values.department || undefined,
-                managerId: values.role === 'STAFF' && values.managerId ? values.managerId : undefined,
+                managerId:
+                  values.role === 'STAFF' && values.managerId ? values.managerId : undefined,
               })
               if (!parsed.success) {
                 toast.error(parsed.error.errors.map(e => e.message).join(', '))

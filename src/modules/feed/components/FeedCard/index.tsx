@@ -1,10 +1,12 @@
-import { Pencil, Trash2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+
+import { useMemo, useState } from 'react'
+
 import type { FeedComment, FeedPost } from 'core/apis/feed/types'
+import { Pencil, Trash2 } from 'lucide-react'
 import { CommentBlock } from 'modules/feed/components/CommentBlock'
 import { buildCommentTree } from 'modules/feed/utils/commentTree'
 import { formatPostTime } from 'modules/feed/utils/formatTime'
@@ -153,7 +155,9 @@ export function FeedCard({
           {replyTarget && (
             <div className="mb-2 flex items-center gap-2">
               <span className="text-sm text-muted-foreground">ตอบกลับ</span>
-              <span className="text-sm font-semibold text-primary">{replyTarget.replyToUserName}</span>
+              <span className="text-sm font-semibold text-primary">
+                {replyTarget.replyToUserName}
+              </span>
               <Button size="sm" variant="ghost" onClick={() => setReplyTarget(null)}>
                 ยกเลิก
               </Button>
@@ -162,7 +166,11 @@ export function FeedCard({
           <div className="flex gap-2 items-start">
             <Textarea
               className="min-h-[60px] flex-1"
-              placeholder={replyTarget ? `เขียนข้อความถึง ${replyTarget.replyToUserName}...` : 'เขียนความคิดเห็น...'}
+              placeholder={
+                replyTarget
+                  ? `เขียนข้อความถึง ${replyTarget.replyToUserName}...`
+                  : 'เขียนความคิดเห็น...'
+              }
               value={newCommentContent}
               onChange={e => setNewCommentContent(e.target.value)}
               rows={1}

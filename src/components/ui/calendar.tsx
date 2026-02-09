@@ -1,9 +1,3 @@
-import ReactDatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
-import './datepicker-theme.css'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -12,13 +6,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
+
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import ReactDatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+
+import './datepicker-theme.css'
 
 const DEFAULT_FROM_YEAR = new Date().getFullYear() - 10
 const DEFAULT_TO_YEAR = new Date().getFullYear() + 2
 
 const MONTH_LABELS = [
-  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม',
+  'มกราคม',
+  'กุมภาพันธ์',
+  'มีนาคม',
+  'เมษายน',
+  'พฤษภาคม',
+  'มิถุนายน',
+  'กรกฎาคม',
+  'สิงหาคม',
+  'กันยายน',
+  'ตุลาคม',
+  'พฤศจิกายน',
+  'ธันวาคม',
 ]
 
 interface CalendarHeaderProps {
@@ -46,10 +57,7 @@ function CalendarHeader({
 }: CalendarHeaderProps) {
   const month = monthDate.getMonth()
   const year = monthDate.getFullYear()
-  const yearOptions = Array.from(
-    { length: toYear - fromYear + 1 },
-    (_, i) => fromYear + i
-  )
+  const yearOptions = Array.from({ length: toYear - fromYear + 1 }, (_, i) => fromYear + i)
 
   return (
     <div className="flex items-center justify-center gap-2 py-2">
@@ -65,10 +73,7 @@ function CalendarHeader({
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <div className="flex gap-2">
-        <Select
-          value={String(month)}
-          onValueChange={v => changeMonth(Number(v))}
-        >
+        <Select value={String(month)} onValueChange={v => changeMonth(Number(v))}>
           <SelectTrigger className="h-8 min-w-[7rem] rounded-md border border-input bg-background px-2 text-sm">
             <SelectValue />
           </SelectTrigger>
@@ -80,10 +85,7 @@ function CalendarHeader({
             ))}
           </SelectContent>
         </Select>
-        <Select
-          value={String(year)}
-          onValueChange={v => changeYear(Number(v))}
-        >
+        <Select value={String(year)} onValueChange={v => changeYear(Number(v))}>
           <SelectTrigger className="h-8 min-w-[5rem] rounded-md border border-input bg-background px-2 text-sm">
             <SelectValue />
           </SelectTrigger>
@@ -143,11 +145,7 @@ export function Calendar({
         className="border-0 bg-transparent"
         calendarClassName="!border-0"
         renderCustomHeader={props => (
-          <CalendarHeader
-            {...props}
-            fromYear={fromYear}
-            toYear={toYear}
-          />
+          <CalendarHeader {...props} fromYear={fromYear} toYear={toYear} />
         )}
       />
       <div className="flex justify-between border-t border-border bg-muted/30 px-3 py-2">
@@ -214,11 +212,7 @@ export function CalendarRange({
         className="border-0 bg-transparent"
         calendarClassName="!border-0"
         renderCustomHeader={props => (
-          <CalendarHeader
-            {...props}
-            fromYear={fromYear}
-            toYear={toYear}
-          />
+          <CalendarHeader {...props} fromYear={fromYear} toYear={toYear} />
         )}
       />
       <div className="flex justify-between border-t border-border bg-muted/30 px-3 py-2">

@@ -1,14 +1,14 @@
-import { useContext } from 'react'
-
-import apiCaller from 'core/endpoints/apiCaller'
-import type { Role } from 'core/apis/auth/types'
-import { AuthContext } from 'core/contexts/AuthContext'
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
+import { useContext } from 'react'
+
 import { drawerWidth } from 'common/components/Layout/styles'
+import type { Role } from 'core/apis/auth/types'
+import { AuthContext } from 'core/contexts/AuthContext'
+import apiCaller from 'core/endpoints/apiCaller'
+
 import MenuContent from './MenuContent'
 import NotificationButton from './NotificationButton'
 import OptionsMenu from './OptionsMenu'
@@ -25,7 +25,7 @@ function UserProfileBlock() {
   const avatarSrc = user?.profileImageUrl
     ? `${apiCaller.defaults.baseURL ?? ''}${user.profileImageUrl}`
     : undefined
-  const roleLabel = user?.role ? ROLE_LABELS[user.role] ?? user.role : null
+  const roleLabel = user?.role ? (ROLE_LABELS[user.role] ?? user.role) : null
 
   return (
     <div className="flex flex-col gap-3 p-2">

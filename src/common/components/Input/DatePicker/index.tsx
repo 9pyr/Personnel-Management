@@ -1,8 +1,8 @@
-import dayjs from 'dayjs'
-import { Controller, useFormContext } from 'react-hook-form'
-
 import { DatePickerSingle } from '@/components/ui/date-picker'
 import { Label } from '@/components/ui/label'
+
+import dayjs from 'dayjs'
+import { Controller, useFormContext } from 'react-hook-form'
 
 interface DatePickerInputProps {
   name: string
@@ -32,8 +32,7 @@ const DatePickerInput = ({
       rules={required ? { required: `${label} จำเป็นต้องเลือก` } : undefined}
       render={({ field, fieldState }) => {
         const value = field.value
-        const dateValue =
-          value && dayjs(value).isValid() ? dayjs(value).toDate() : undefined
+        const dateValue = value && dayjs(value).isValid() ? dayjs(value).toDate() : undefined
         const errorMessage = fieldState.error?.message
         return (
           <div className="grid w-full gap-2">
@@ -53,9 +52,7 @@ const DatePickerInput = ({
               minDate={minDate}
               maxDate={maxDate}
             />
-            {errorMessage && (
-              <p className="text-xs text-destructive">{String(errorMessage)}</p>
-            )}
+            {errorMessage && <p className="text-xs text-destructive">{String(errorMessage)}</p>}
           </div>
         )
       }}

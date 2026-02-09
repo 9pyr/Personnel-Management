@@ -1,9 +1,8 @@
 import { useContext } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
 
 import type { Role } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
-
+import { NavLink, useLocation } from 'react-router-dom'
 import { menuItems } from 'routes'
 
 function canSeeMenuItem(roles: Role[] | undefined, userRole: Role | undefined): boolean {

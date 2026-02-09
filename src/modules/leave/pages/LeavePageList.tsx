@@ -1,8 +1,7 @@
-import { useNavigate } from 'react-router-dom'
-
 import { Button } from '@/components/ui/button'
 
 import Inprogress from 'modules/leave/components/Inprogress'
+import { useNavigate } from 'react-router-dom'
 
 const LeavePageList = () => {
   const navigate = useNavigate()

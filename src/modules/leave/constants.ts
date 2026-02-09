@@ -46,7 +46,7 @@ const LEAVE_STATUS_BADGE_VARIANT: Record<string, LeaveStatusBadgeVariant> = {
 }
 
 export function getLeaveStatusBadgeVariant(
-  statusKey: string | undefined | null
+  statusKey: string | undefined | null,
 ): LeaveStatusBadgeVariant | 'default' {
   if (statusKey == null || statusKey === '') return 'default'
   return LEAVE_STATUS_BADGE_VARIANT[statusKey] ?? 'default'

@@ -1,10 +1,13 @@
 import apiCaller from 'core/endpoints/apiCaller'
-import { z } from 'zod'
 
-import { eventCreatePayloadSchema, eventSchema, eventUpdatePayloadSchema } from './schemas'
-import type { Event, EventCreatePayload, EventUpdatePayload } from './schemas'
-
-const eventListSchema = z.array(eventSchema)
+import {
+  type Event,
+  type EventCreatePayload,
+  type EventUpdatePayload,
+  eventCreatePayloadSchema,
+  eventSchema,
+  eventUpdatePayloadSchema,
+} from './schemas'
 
 export interface GetEventsParams {
   from?: string

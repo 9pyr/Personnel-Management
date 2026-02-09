@@ -1,4 +1,5 @@
-import { useQuery, type UseQueryOptions, type UseQueryResult } from '@tanstack/react-query'
+import { type UseQueryOptions, type UseQueryResult, useQuery } from '@tanstack/react-query'
+
 import apiCaller from 'core/endpoints/apiCaller'
 
 interface UseClientQueryOptions<TData = unknown, TError = Error>
@@ -7,7 +8,10 @@ interface UseClientQueryOptions<TData = unknown, TError = Error>
   params?: Record<string, string | number | boolean | undefined>
 }
 
-function buildQueryKey(url: string, params?: Record<string, string | number | boolean | undefined>): string {
+function buildQueryKey(
+  url: string,
+  params?: Record<string, string | number | boolean | undefined>,
+): string {
   if (!params) return url
   const search = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -20,7 +24,7 @@ function buildQueryKey(url: string, params?: Record<string, string | number | bo
 }
 
 export function useClientQuery<TData = unknown, TError = Error>(
-  options: UseClientQueryOptions<TData, TError>
+  options: UseClientQueryOptions<TData, TError>,
 ): UseQueryResult<TData, TError> {
   const { url, params, ...queryOptions } = options
   const queryKey = buildQueryKey(url, params)

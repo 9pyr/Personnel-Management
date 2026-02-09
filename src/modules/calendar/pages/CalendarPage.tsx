@@ -1,15 +1,12 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+
 import { useCallback, useContext, useMemo, useState } from 'react'
+
 import { AuthContext } from 'core/contexts/AuthContext'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import { Plus } from 'lucide-react'
-import { LEAVE_STATUS } from 'modules/leave/constants'
-import { Calendar as BigCalendar, dayjsLocalizer } from 'react-big-calendar'
-import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { useNavigate } from 'react-router-dom'
-
 import { CalendarEventCell } from 'modules/calendar/components/CalendarEventCell'
 import { CalendarToolbar } from 'modules/calendar/components/CalendarToolbar'
 import { EventDetailDialog } from 'modules/calendar/components/EventDetailDialog'
@@ -22,6 +19,10 @@ import { useHolidayForm } from 'modules/calendar/hooks/useHolidayForm'
 import { useUsers } from 'modules/calendar/hooks/useUsers'
 import type { CalendarItemEvent } from 'modules/calendar/types'
 import { buildCalendarEvents, getEventStyle } from 'modules/calendar/utils/eventHelpers'
+import { LEAVE_STATUS } from 'modules/leave/constants'
+import { Calendar as BigCalendar, dayjsLocalizer } from 'react-big-calendar'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
+import { useNavigate } from 'react-router-dom'
 
 dayjs.locale('th')
 
@@ -137,7 +138,13 @@ export default function CalendarPage() {
                   เพิ่มวันหยุด
                 </Button>
               )}
-              <Button type="button" variant="outline" size="sm" disabled={loading} onClick={handleRefresh}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={loading}
+                onClick={handleRefresh}
+              >
                 {loading ? 'กำลังโหลด...' : 'โหลดใหม่'}
               </Button>
             </div>
@@ -182,13 +189,11 @@ export default function CalendarPage() {
                     }}
                   />
                 </div>
-                {displayLeaves.length === 0 &&
-                  events.length === 0 &&
-                  holidays.length === 0 && (
-                    <p className="mt-4 text-center text-sm text-muted-foreground">
-                      เดือนนี้ยังไม่มีใครลงกิจกรรม
-                    </p>
-                  )}
+                {displayLeaves.length === 0 && events.length === 0 && holidays.length === 0 && (
+                  <p className="mt-4 text-center text-sm text-muted-foreground">
+                    เดือนนี้ยังไม่มีใครลงกิจกรรม
+                  </p>
+                )}
               </>
             )}
           </CardContent>

@@ -1,7 +1,7 @@
-import dayjs from 'dayjs'
 import type { Event } from 'core/apis/events/schemas'
 import type { CompanyHoliday } from 'core/apis/holidays'
 import type { Leave } from 'core/apis/leave/types'
+import dayjs from 'dayjs'
 import { EVENT_STYLES } from 'modules/calendar/constants'
 import type { CalendarItemEvent } from 'modules/calendar/types'
 
@@ -47,7 +47,7 @@ export function formatEventTooltip(event: CalendarItemEvent): string {
 
       const title = (workEvent.title ?? '').trim() || 'งาน'
       const timeLabel = joinTooltipLines(
-        [workEvent.startTime, workEvent.endTime].filter(Boolean) as string[]
+        [workEvent.startTime, workEvent.endTime].filter(Boolean) as string[],
       ).replace('\n', '–')
 
       return joinTooltipLines([
@@ -119,9 +119,15 @@ export function buildCalendarEvents(
   holidays: CompanyHoliday[],
   events: Event[],
 ): CalendarItemEvent[] {
-  const leaveEvents = leaves.map(createLeaveEvent).filter((event): event is CalendarItemEvent => event !== null)
-  const holidayEvents = holidays.map(createHolidayEvent).filter((event): event is CalendarItemEvent => event !== null)
-  const workEvents = events.map(createWorkEvent).filter((event): event is CalendarItemEvent => event !== null)
+  const leaveEvents = leaves
+    .map(createLeaveEvent)
+    .filter((event): event is CalendarItemEvent => event !== null)
+  const holidayEvents = holidays
+    .map(createHolidayEvent)
+    .filter((event): event is CalendarItemEvent => event !== null)
+  const workEvents = events
+    .map(createWorkEvent)
+    .filter((event): event is CalendarItemEvent => event !== null)
 
   return [...leaveEvents, ...holidayEvents, ...workEvents]
 }

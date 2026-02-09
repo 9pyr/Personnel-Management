@@ -1,6 +1,6 @@
-import { z } from 'zod'
-import { useClientQuery } from 'core/hooks/useClientQuery'
 import { useClientMutation } from 'core/hooks/useClientMutation'
+import { useClientQuery } from 'core/hooks/useClientQuery'
+import { z } from 'zod'
 
 const leaveTypeSchema = z.object({
   id: z.string().min(1),
@@ -19,7 +19,7 @@ const TYPES_BASE = '/leaves/types'
 export function useListLeaveTypes() {
   return useClientQuery<LeaveType[]>({
     url: TYPES_BASE,
-    select: (data) => leaveTypeListSchema.parse(data),
+    select: data => leaveTypeListSchema.parse(data),
   })
 }
 
@@ -32,9 +32,12 @@ export function useCreateLeaveType() {
 }
 
 export function useUpdateLeaveType() {
-  return useClientMutation<LeaveType, { id: string; code?: string; name?: string; maxDaysPerYear?: number }>({
+  return useClientMutation<
+    LeaveType,
+    { id: string; code?: string; name?: string; maxDaysPerYear?: number }
+  >({
     method: 'PUT',
-    url: (variables) => `${TYPES_BASE}/${variables.id}`,
+    url: variables => `${TYPES_BASE}/${variables.id}`,
     invalidateQueries: [TYPES_BASE],
   })
 }
@@ -42,7 +45,7 @@ export function useUpdateLeaveType() {
 export function useDeleteLeaveType() {
   return useClientMutation<unknown, { id: string }>({
     method: 'DELETE',
-    url: (variables) => `${TYPES_BASE}/${variables.id}`,
+    url: variables => `${TYPES_BASE}/${variables.id}`,
     invalidateQueries: [TYPES_BASE],
   })
 }

@@ -1,9 +1,8 @@
-import { useWebSocket } from 'core/hooks/useWebSocket'
-import { toast } from 'sonner'
-
 import { dispatchNotificationsRefresh } from 'common/components/Layout/components/NotificationButton'
-import { dispatchFeedComment } from 'modules/feed/feedRealtime'
 import type { FeedComment } from 'core/apis/feed/types'
+import { useWebSocket } from 'core/hooks/useWebSocket'
+import { dispatchFeedComment } from 'modules/feed/feedRealtime'
+import { toast } from 'sonner'
 
 function NotificationListener() {
   useWebSocket(msg => {
