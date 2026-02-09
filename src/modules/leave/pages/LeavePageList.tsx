@@ -1,9 +1,9 @@
-import { useState } from 'react'
-
 import { Button } from '@/components/ui/button'
 
-import { LeaveFormModal } from 'modules/leave/components/LeaveFormModal'
+import { useState } from 'react'
+
 import Inprogress from 'modules/leave/components/Inprogress'
+import { LeaveFormModal } from 'modules/leave/components/LeaveFormModal'
 
 const LeavePageList = () => {
   const [modalOpen, setModalOpen] = useState(false)

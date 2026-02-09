@@ -1,9 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 import LeaveFormContent from '../LeaveFormContent'
 
@@ -14,12 +9,7 @@ interface LeaveFormModalProps {
   onSuccess?: () => void
 }
 
-export function LeaveFormModal({
-  open,
-  onOpenChange,
-  leaveId,
-  onSuccess,
-}: LeaveFormModalProps) {
+export function LeaveFormModal({ open, onOpenChange, leaveId, onSuccess }: LeaveFormModalProps) {
   const isNew = leaveId == null
 
   const handleSuccess = () => {
