@@ -29,6 +29,27 @@ const getWsUrl = (): string => {
   return base.replace(/^http/, 'ws') + '/ws'
 }
 
+import type { AnyValue } from 'core/endpoints/caseTransform'
+
+function convertAnyToAnyValue(value: AnyValue): AnyValue {
+  return value
+}
+
+function parseJSONToAnyValue(text: string): AnyValue {
+  const parsed = JSON.parse(text)
+  return convertAnyToAnyValue(parsed)
+}
+
+function parseJSONSafe(text: string): object | null {
+  try {
+    const parsed = parseJSONToAnyValue(text)
+    if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
 export function useWebSocket(onMessage: (message: WSMessage) => void) {
   const [connected, setConnected] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
@@ -55,11 +76,17 @@ export function useWebSocket(onMessage: (message: WSMessage) => void) {
     ws.onmessage = (event: MessageEvent) => {
       try {
         if (typeof event.data !== 'string') return
-        const parsed: unknown = JSON.parse(event.data)
-        if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return
+        const parsed = parseJSONSafe(event.data)
+        if (parsed == null) return
         if (isWSMessage(parsed)) onMessageRef.current(parsed)
       } catch (error) {
-        logger.error('Error: useWebSocket', error)
+        const err =
+          error instanceof Error
+            ? error
+            : error != null && typeof error === 'object'
+              ? error
+              : undefined
+        logger.error('Error: useWebSocket', err)
       }
     }
   }, [])

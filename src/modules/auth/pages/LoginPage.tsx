@@ -14,11 +14,11 @@ interface LoginFormValues extends FieldValues {
   password: string
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: object | null | undefined): value is Record<string, string | number | boolean | null | object> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
 
-function getErrorCode(error: unknown): string | undefined {
+function getErrorCode(error: Error | object | null | undefined): string | undefined {
   if (!isRecord(error)) return undefined
   const code = error['code']
   return typeof code === 'string' ? code : undefined
@@ -48,7 +48,13 @@ const LoginPage = () => {
                 navigate('/', { replace: true })
               } catch (error) {
                 let message = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
-                const code = getErrorCode(error)
+                const err =
+                  error instanceof Error
+                    ? error
+                    : error != null && typeof error === 'object'
+                      ? error
+                      : undefined
+                const code = getErrorCode(err)
                 if (code === 'ERR_NETWORK') {
                   message = 'เชื่อมต่อ server ไม่ได้ — กรุณารัน backend (port 8080)'
                 }

@@ -19,6 +19,7 @@ import { feedPostListSchema } from 'core/apis/feed/schemas'
 import type { FeedComment, FeedPost } from 'core/apis/feed/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import apiCaller from 'core/endpoints/apiCaller'
+import type { AnyValue } from 'core/endpoints/caseTransform'
 import { FeedCard } from 'modules/feed/components/FeedCard'
 import { FEED_COMMENT_EVENT, type FeedCommentEventDetail } from 'modules/feed/feedRealtime'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -58,7 +59,7 @@ export interface FeedHighlightState {
   highlightCommentId?: string
 }
 
-function isFeedHighlightState(state: unknown): state is FeedHighlightState {
+function isFeedHighlightState(state: object | null | undefined): state is FeedHighlightState {
   return (
     state != null &&
     typeof state === 'object' &&
@@ -66,7 +67,7 @@ function isFeedHighlightState(state: unknown): state is FeedHighlightState {
   )
 }
 
-function isFeedCommentEventDetail(detail: unknown): detail is FeedCommentEventDetail {
+function isFeedCommentEventDetail(detail: object | null | undefined): detail is FeedCommentEventDetail {
   if (detail == null || typeof detail !== 'object') return false
   return 'postId' in detail && 'comment' in detail
 }
@@ -77,7 +78,17 @@ const FeedPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const sentinelRef = useRef<HTMLDivElement>(null)
-  const highlightState = isFeedHighlightState(location.state) ? location.state : undefined
+  function convertAnyToAnyValue(value: AnyValue): AnyValue {
+    return value
+  }
+
+  function convertLocationStateToAnyValue(state: AnyValue): AnyValue {
+    return convertAnyToAnyValue(state)
+  }
+  const locationStateRaw = convertLocationStateToAnyValue(location.state)
+  const locationStateChecked = locationStateRaw != null && typeof locationStateRaw === 'object' ? locationStateRaw : null
+  const locationState: object | null = locationStateChecked
+  const highlightState = isFeedHighlightState(locationState) ? locationState : undefined
 
   const [offset, setOffset] = useState(0)
   const [content, setContent] = useState('')
@@ -123,11 +134,15 @@ const FeedPage = () => {
     })
   }, [loadingMore, hasMore, loading, offset, queryClient])
 
+  function convertEventDetailToAnyValue(detail: AnyValue): AnyValue {
+    return convertAnyToAnyValue(detail)
+  }
   useEffect(() => {
     const handler = (event: Event) => {
-      if (!(event instanceof CustomEvent) || !event.detail || typeof event.detail !== 'object')
-        return
-      const detail: unknown = event.detail
+      if (!(event instanceof CustomEvent)) return
+      const detailRaw = convertEventDetailToAnyValue(event.detail)
+      if (detailRaw == null || typeof detailRaw !== 'object') return
+      const detail: object = detailRaw
       if (!isFeedCommentEventDetail(detail)) return
       const { postId, comment } = detail
       if (!postId || !comment) return

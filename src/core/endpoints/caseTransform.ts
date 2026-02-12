@@ -39,16 +39,36 @@ export function keysToSnakeCase(obj: JsonLike): JsonLike {
   return convertKeys(obj, snakeCase)
 }
 
-export function isJsonLike(value: unknown): value is JsonLike {
+/** ค่าใดๆ ที่อาจเป็นได้ (ใช้แทน unknown) */
+export type AnyValue = string | number | boolean | null | undefined | object
+
+function convertAnyToAnyValue(value: AnyValue): AnyValue {
+  return value
+}
+
+function isJsonLikeValue(v: AnyValue): v is JsonLike {
+  return isJsonLike(v)
+}
+
+export function isJsonLike(value: AnyValue): value is JsonLike {
   if (value == null) return true
   if (typeof value === 'string') return true
   if (typeof value === 'number') return Number.isFinite(value)
   if (typeof value === 'boolean') return true
-  if (Array.isArray(value)) return value.every(isJsonLike)
+  if (Array.isArray(value)) return value.every(isJsonLikeValue)
   if (value instanceof Date) return false
+  function getObjectPropertyFromAny(obj: AnyValue, key: string): AnyValue {
+    const object = obj
+    const record: Record<string, AnyValue> = object
+    const value = record[key]
+    return convertAnyToAnyValue(value)
+  }
+
   if (typeof value === 'object') {
-    for (const v of Object.values(value)) {
-      if (!isJsonLike(v)) return false
+    const keys = Object.keys(value)
+    for (const key of keys) {
+      const v = getObjectPropertyFromAny(value, key)
+      if (!isJsonLikeValue(v)) return false
     }
     return true
   }

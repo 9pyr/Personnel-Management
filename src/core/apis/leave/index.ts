@@ -1,4 +1,5 @@
 import apiCaller from 'core/endpoints/apiCaller'
+import type { AnyValue, JsonLike } from 'core/endpoints/caseTransform'
 import { z } from 'zod'
 
 import { leaveCreatePayloadSchema, leaveSchema, leaveUpdatePayloadSchema } from './schemas'
@@ -14,11 +15,11 @@ export interface GetListLeaveParams {
   userId?: string
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: AnyValue): value is Record<string, JsonLike> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
 
-function toYYYYMMDD(v: unknown): string {
+function toYYYYMMDD(v: JsonLike): string {
   if (v == null) return ''
   if (typeof v === 'string') {
     const s = v.trim().slice(0, 10)
@@ -31,7 +32,7 @@ function toYYYYMMDD(v: unknown): string {
   return ''
 }
 
-function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
+function normalizeLeaveItem(raw: Record<string, JsonLike>): Leave {
   const startRaw = raw.startDate ?? ''
   const endRaw = raw.endDate ?? ''
   const start =
@@ -81,12 +82,45 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
               : []
   const list = Array.isArray(raw) ? raw : []
   const result: Leave[] = []
+  function convertAnyToAnyValue(value: AnyValue): AnyValue {
+    return value
+  }
+
+  function getObjectPropertyFromAny(obj: AnyValue, key: string): AnyValue {
+    const object = obj
+    const record: Record<string, AnyValue> = object
+    const value = record[key]
+    return convertAnyToAnyValue(value)
+  }
+
+  function toRecord(item: AnyValue): Record<string, AnyValue> | null {
+    if (typeof item !== 'object' || item == null || Array.isArray(item)) return null
+    const obj: Record<string, AnyValue> = {}
+    const keys = Object.keys(item)
+    for (const key of keys) {
+      const val = getObjectPropertyFromAny(item, key)
+      obj[key] = val
+    }
+    return obj
+  }
+
   for (const item of list) {
-    if (!isRecord(item)) continue
+    const itemObj = toRecord(item)
+    if (itemObj == null) continue
+    const record: Record<string, JsonLike> = {}
+    const keys = Object.keys(itemObj)
+    for (const key of keys) {
+      const value: AnyValue = itemObj[key]
+      if (value != null && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')) {
+        record[key] = value
+      } else if (value != null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+        record[key] = value
+      }
+    }
     try {
-      result.push(leaveSchema.parse(item))
+      result.push(leaveSchema.parse(record))
     } catch {
-      result.push(normalizeLeaveItem(item))
+      result.push(normalizeLeaveItem(record))
     }
   }
   return result

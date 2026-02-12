@@ -25,14 +25,14 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 interface ErrWithResponse {
-  response?: { data?: unknown }
+  response?: { data?: object }
 }
 
-function isErrWithResponse(x: unknown): x is ErrWithResponse {
+function isErrWithResponse(x: object | null | undefined): x is ErrWithResponse {
   return x != null && typeof x === 'object' && 'response' in x
 }
 
-function errorToMessage(errorData: unknown): string {
+function errorToMessage(errorData: object | string | null | undefined): string {
   if (typeof errorData === 'string') return errorData
   if (errorData != null && typeof errorData === 'object') {
     return JSON.stringify(errorData)
@@ -135,7 +135,9 @@ const LeaveTypesPage = () => {
       setOpen(false)
       void loadTypes()
     } catch (error) {
-      const errorData = isErrWithResponse(error) ? error.response?.data : undefined
+      const err =
+        error != null && typeof error === 'object' ? error : undefined
+      const errorData = isErrWithResponse(err) ? err.response?.data : undefined
       toast.error(errorToMessage(errorData))
     }
   }

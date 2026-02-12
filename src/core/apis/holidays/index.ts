@@ -1,4 +1,5 @@
 import apiCaller from 'core/endpoints/apiCaller'
+import type { AnyValue, JsonLike } from 'core/endpoints/caseTransform'
 import { z } from 'zod'
 
 import {
@@ -15,7 +16,7 @@ export interface GetHolidaysParams {
   to?: string
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: AnyValue): value is Record<string, JsonLike> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
 
@@ -25,7 +26,7 @@ export async function getHolidays(params?: GetHolidaysParams): Promise<CompanyHo
   if (params?.to) search.set('to', params.to)
   const qs = search.toString()
   const url = qs ? `/holidays?${qs}` : '/holidays'
-  const { data } = await apiCaller.get<unknown>(url)
+  const { data } = await apiCaller.get<JsonLike>(url)
   const raw = Array.isArray(data) ? data : isRecord(data) ? data['data'] : undefined
   const list = Array.isArray(raw) ? raw : []
   return listSchema.parse(list)

@@ -39,9 +39,12 @@ const DEPARTMENT_OPTIONS = [
 
 const DEPARTMENT_ORDER = ['ฝ่ายบริหาร', 'ฝ่ายบุคคล', 'ฝ่ายการพยาบาล', 'ฝ่ายการแพทย์', 'ฝ่ายบัญชี']
 
-function toTextOrDash(value: unknown): string {
+function toTextOrDash(
+  value: string | number | boolean | bigint | object | null | undefined,
+): string {
   if (typeof value === 'string' && value.trim().length > 0) return value
-  if (typeof value === 'number') return String(value)
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint')
+    return String(value)
   return '-'
 }
 

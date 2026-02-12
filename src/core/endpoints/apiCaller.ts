@@ -2,7 +2,7 @@ import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { logger } from 'core/logger'
 import { clearAuthStorage, getStoredToken } from 'core/stores/auth'
 
-import { isJsonLike, keysToCamelCase, keysToSnakeCase } from './caseTransform'
+import { type AnyValue, type JsonLike, isJsonLike, keysToCamelCase, keysToSnakeCase } from './caseTransform'
 
 const apiCaller = axios.create({
   baseURL: 'http://localhost:8080',
@@ -11,7 +11,7 @@ const apiCaller = axios.create({
   },
 })
 
-apiCaller.interceptors.request.use((config: InternalAxiosRequestConfig<unknown>) => {
+apiCaller.interceptors.request.use((config: InternalAxiosRequestConfig<JsonLike>) => {
   const token = getStoredToken()
   if (token) config.headers.set('Authorization', `Bearer ${token}`)
   if (
@@ -26,15 +26,39 @@ apiCaller.interceptors.request.use((config: InternalAxiosRequestConfig<unknown>)
   return config
 })
 
+function parseAxiosData(data: AnyValue): JsonLike | undefined {
+  if (data == null) return undefined
+  if (typeof data === 'string' || typeof data === 'number' || typeof data === 'boolean') {
+    return isJsonLike(data) ? data : undefined
+  }
+  if (typeof data === 'object' && !Array.isArray(data) && !(data instanceof Date)) {
+    return isJsonLike(data) ? data : undefined
+  }
+  return undefined
+}
+
+function convertJsonLikeToT<T>(value: JsonLike): T {
+  const jsonValue = value
+  const converted: T = jsonValue as T
+  return converted
+}
+
+function assignResponseData<T>(target: { data: T }, value: JsonLike): void {
+  const obj: { data: T } = target
+  const converted = convertJsonLikeToT<T>(value)
+  obj.data = converted
+}
+
 apiCaller.interceptors.response.use(
   res => {
-    const data: unknown = res.data
-    if (isJsonLike(data)) {
-      res.data = keysToCamelCase(data)
+    const parsed = parseAxiosData(res.data)
+    if (parsed != null) {
+      const converted = keysToCamelCase(parsed)
+      assignResponseData(res, converted)
     }
     return res
   },
-  (err: unknown) => {
+  (err: Error | object) => {
     if (!axios.isAxiosError(err)) {
       logger.error('API error (non-axios)', err)
       return Promise.reject(new Error('Unknown API error'))
@@ -46,9 +70,10 @@ apiCaller.interceptors.response.use(
     }
 
     if (err.response) {
-      const responseData: unknown = err.response.data
-      if (isJsonLike(responseData)) {
-        err.response.data = keysToCamelCase(responseData)
+      const parsed = parseAxiosData(err.response.data)
+      if (parsed != null) {
+        const converted = keysToCamelCase(parsed)
+        assignResponseData(err.response, converted)
       }
     }
 

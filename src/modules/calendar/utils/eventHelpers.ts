@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import { EVENT_STYLES } from 'modules/calendar/constants'
 import type { CalendarItemEvent } from 'modules/calendar/types'
 
-function isNonEmptyString(value: unknown): value is string {
+function isNonEmptyString(value: string | null | undefined): value is string {
   return typeof value === 'string' && value.trim().length > 0
 }
 

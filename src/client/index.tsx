@@ -32,8 +32,7 @@ export const router = createBrowserRouter([
         <Layout />
       </ProtectedRoute>
     ),
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    children: menuItems.map(({ name, icon, ...props }) => props),
+    children: menuItems.map(({ name: _name, icon: _icon, ...props }) => props),
   },
 ])
 

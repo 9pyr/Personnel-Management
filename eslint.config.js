@@ -33,13 +33,25 @@ export default tseslint.config(
       'no-duplicate-imports': 'error',
       // ห้ามใช้ any โดยเด็ดขาด
       '@typescript-eslint/no-explicit-any': 'error',
-      // ห้ามใช้ unknown เป็น type ทั่วไป (บังคับให้ใช้ type ที่เจาะจง)
+      // ห้ามใช้ unknown ทั้งโปรเจกต์
+      '@typescript-eslint/no-restricted-types': [
+        'error',
+        { types: { unknown: { message: 'ห้ามใช้ unknown ให้ใช้ type ที่เจาะจงแทน' } } },
+      ],
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/no-unsafe-argument': 'error',
       '@typescript-eslint/no-unsafe-member-access': 'error',
       '@typescript-eslint/no-unsafe-return': 'error',
       // ห้าม cast ด้วย as / angle-bracket
       '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
+      // ห้ามใช้ eslint-disable comments
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Program > :matches(ExpressionStatement, BlockStatement) > :matches(Literal[value=/eslint-disable/], Comment[value=/eslint-disable/])',
+          message: 'ห้ามใช้ eslint-disable ให้แก้ type errors แทน',
+        },
+      ],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
     },

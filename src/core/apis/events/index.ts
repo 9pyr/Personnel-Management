@@ -1,4 +1,5 @@
 import apiCaller from 'core/endpoints/apiCaller'
+import { type AnyValue, type JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
 
 import {
   type Event,
@@ -15,37 +16,50 @@ export interface GetEventsParams {
   userId?: string
 }
 
-interface EventRawShape {
-  id?: unknown
-  date?: unknown
-  title?: unknown
-  userId?: unknown
-  userName?: unknown
-  startTime?: unknown
-  endTime?: unknown
-  eventType?: unknown
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: AnyValue): value is Record<string, JsonLike> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
 
-function getNestedData(value: unknown): unknown {
-  if (Array.isArray(value)) return value
+function toAnyValueFromArray(item: AnyValue): AnyValue {
+  if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean' || item === null) {
+    return item
+  }
+  if (typeof item === 'object' && !Array.isArray(item) && !(item instanceof Date)) {
+    return item
+  }
+  return null
+}
+
+function convertAnyToAnyValue(value: AnyValue): AnyValue {
+  return value
+}
+
+function getArrayItemFromAny(arr: AnyValue, index: number): AnyValue {
+  const array = arr
+  const item = array[index]
+  return convertAnyToAnyValue(item)
+}
+
+function getNestedData(value: AnyValue): JsonLike | undefined {
+  if (Array.isArray(value)) {
+    const arr: JsonLike[] = []
+    for (let i = 0; i < value.length; i++) {
+      const item = getArrayItemFromAny(value, i)
+      const itemChecked = toAnyValueFromArray(item)
+      if (itemChecked != null && isJsonLike(itemChecked)) {
+        arr.push(itemChecked)
+      }
+    }
+    return arr.length === value.length ? arr : undefined
+  }
   if (!isRecord(value)) return undefined
   return value['data']
 }
 
-function toEventRawShape(rawInput: Record<string, unknown>): EventRawShape {
-  return rawInput
-}
-
-function normalizeEvent(rawInput: Record<string, unknown>): Event {
-  const raw = toEventRawShape(rawInput)
+function normalizeEvent(raw: Record<string, JsonLike>): Event {
   const dateSource =
     typeof raw.date === 'string' && raw.date.trim().length > 0 ? raw.date.trim().slice(0, 10) : ''
   const title = typeof raw.title === 'string' && raw.title.trim().length > 0 ? raw.title.trim() : ''
-
   const userId = typeof raw.userId === 'string' ? raw.userId : undefined
   const userName = typeof raw.userName === 'string' ? raw.userName : undefined
   const startTimeSource = typeof raw.startTime === 'string' ? raw.startTime : ''

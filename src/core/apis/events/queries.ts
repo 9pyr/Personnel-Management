@@ -1,6 +1,8 @@
 import { useClientMutation } from 'core/hooks/useClientMutation'
 import { useClientQuery } from 'core/hooks/useClientQuery'
 
+import { type AnyValue, type JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
+
 import {
   type Event,
   type EventCreatePayload,
@@ -16,47 +18,61 @@ export interface GetEventsParams {
   userId?: string
 }
 
-interface EventRawShape {
-  id?: unknown
-  date?: unknown
-  title?: unknown
-  userId?: unknown
-  userName?: unknown
-  startTime?: unknown
-  endTime?: unknown
-  eventType?: unknown
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
+function isRecord(value: AnyValue): value is Record<string, JsonLike> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
 
-function toEventRawShape(rawInput: Record<string, unknown>): EventRawShape {
-  return rawInput
+function toAnyValueFromArray(item: AnyValue): AnyValue {
+  if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean' || item === null) {
+    return item
+  }
+  if (typeof item === 'object' && !Array.isArray(item) && !(item instanceof Date)) {
+    return item
+  }
+  return null
 }
 
-function getNestedData(value: unknown): unknown {
-  if (Array.isArray(value)) return value
+function convertAnyToAnyValue(value: AnyValue): AnyValue {
+  return value
+}
+
+function getArrayItemFromAny(arr: AnyValue, index: number): AnyValue {
+  const array = arr
+  const item = array[index]
+  return convertAnyToAnyValue(item)
+}
+
+function getNestedData(value: AnyValue): JsonLike | undefined {
+  if (Array.isArray(value)) {
+    const arr: JsonLike[] = []
+    for (let i = 0; i < value.length; i++) {
+      const item = getArrayItemFromAny(value, i)
+      const itemChecked = toAnyValueFromArray(item)
+      if (itemChecked != null && isJsonLike(itemChecked)) {
+        arr.push(itemChecked)
+      }
+    }
+    return arr.length === value.length ? arr : undefined
+  }
   if (!isRecord(value)) return undefined
   return value['data']
 }
 
-function normalizeEvent(raw: Record<string, unknown>): Event {
-  const source = toEventRawShape(raw)
+function normalizeEvent(raw: Record<string, JsonLike>): Event {
   const date = (typeof raw.date === 'string' && raw.date.trim().slice(0, 10)) || ''
   return {
-    id: typeof source.id === 'string' ? source.id : undefined,
+    id: typeof raw.id === 'string' ? raw.id : undefined,
     date,
-    title: (typeof source.title === 'string' && source.title.trim()) || '',
-    userId: typeof source.userId === 'string' ? source.userId : undefined,
-    userName: typeof source.userName === 'string' ? source.userName : undefined,
-    startTime: typeof source.startTime === 'string' ? source.startTime : '',
-    endTime: typeof source.endTime === 'string' ? source.endTime : undefined,
-    eventType: typeof source.eventType === 'string' ? source.eventType : undefined,
+    title: (typeof raw.title === 'string' && raw.title.trim()) || '',
+    userId: typeof raw.userId === 'string' ? raw.userId : undefined,
+    userName: typeof raw.userName === 'string' ? raw.userName : undefined,
+    startTime: typeof raw.startTime === 'string' ? raw.startTime : '',
+    endTime: typeof raw.endTime === 'string' ? raw.endTime : undefined,
+    eventType: typeof raw.eventType === 'string' ? raw.eventType : undefined,
   }
 }
 
-function parseEventList(data: unknown): Event[] {
+function parseEventList(data: AnyValue): Event[] {
   const raw = getNestedData(data)
   const list = Array.isArray(raw) ? raw : []
   const result: Event[] = []

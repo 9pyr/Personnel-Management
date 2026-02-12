@@ -2,7 +2,7 @@ import { type UseQueryOptions, type UseQueryResult, useQuery } from '@tanstack/r
 
 import apiCaller from 'core/endpoints/apiCaller'
 
-interface UseClientQueryOptions<TData = unknown, TError = Error> extends Omit<
+interface UseClientQueryOptions<TData = object, TError = Error> extends Omit<
   UseQueryOptions<TData, TError>,
   'queryFn' | 'queryKey'
 > {
@@ -25,7 +25,7 @@ function buildQueryKey(
   return qs ? `${url}?${qs}` : url
 }
 
-export function useClientQuery<TData = unknown, TError = Error>(
+export function useClientQuery<TData = object, TError = Error>(
   options: UseClientQueryOptions<TData, TError>,
 ): UseQueryResult<TData, TError> {
   const { url, params, ...queryOptions } = options

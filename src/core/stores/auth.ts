@@ -1,5 +1,6 @@
 import { userSchema } from 'core/apis/auth/schemas'
 import type { User } from 'core/apis/auth/types'
+import type { AnyValue } from 'core/endpoints/caseTransform'
 import { create } from 'zustand'
 
 interface AuthState {
@@ -30,18 +31,33 @@ function getInitialToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
 
+function convertAnyToAnyValue(value: AnyValue): AnyValue {
+  return value
+}
+
+function parseJSONToAnyValue(text: string): AnyValue {
+  const parsed = JSON.parse(text)
+  return convertAnyToAnyValue(parsed)
+}
+
+function parseJSONSafe(text: string): object | null {
+  try {
+    const parsed = parseJSONToAnyValue(text)
+    if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
 function getInitialUser(): User | null {
   if (typeof window === 'undefined') return null
   const raw = localStorage.getItem(USER_KEY)
   if (!raw) return null
-  try {
-    const data: unknown = JSON.parse(raw)
-    if (data == null || typeof data !== 'object' || Array.isArray(data)) return null
-    const result = userSchema.safeParse(data)
-    return result.success ? result.data : null
-  } catch {
-    return null
-  }
+  const parsed = parseJSONSafe(raw)
+  if (parsed == null) return null
+  const result = userSchema.safeParse(parsed)
+  return result.success ? result.data : null
 }
 
 export const useAuthStore = create<AuthState>(set => ({

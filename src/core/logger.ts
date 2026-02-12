@@ -21,7 +21,7 @@ function shouldLog(level: LogLevel): boolean {
 }
 
 function formatPayload(level: LogLevel, message: string, meta?: object): string {
-  const payload: Record<string, unknown> = {
+  const payload: Record<string, string | number | boolean | null | object> = {
     level,
     message,
     time: new Date().toISOString(),
@@ -55,7 +55,7 @@ export const logger = {
   warn(message: string, meta?: object): void {
     log('warn', message, meta)
   },
-  error(message: string, error?: unknown, meta?: object): void {
+  error(message: string, error?: Error | object, meta?: object): void {
     const errMeta =
       error instanceof Error
         ? { ...meta, errorName: error.name, errorMessage: error.message, stack: error.stack }

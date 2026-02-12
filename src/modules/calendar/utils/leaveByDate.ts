@@ -12,7 +12,7 @@ function normalizeDateKey(value: string | null | undefined): string | null {
   return parsed.isValid() ? parsed.format(DATE_FORMAT) : null
 }
 
-function extractDateValue(value: unknown): string | null {
+function extractDateValue(value: string | null | undefined): string | null {
   if (typeof value === 'string') {
     return normalizeDateKey(value)
   }
