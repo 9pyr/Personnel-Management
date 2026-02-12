@@ -48,11 +48,8 @@ function toEventRawShape(rawInput: Record<string, unknown>): EventRawShape {
 function normalizeEvent(rawInput: Record<string, unknown>): Event {
   const raw = toEventRawShape(rawInput)
   const dateSource =
-    typeof raw.date === 'string' && raw.date.trim().length > 0
-      ? raw.date.trim().slice(0, 10)
-      : ''
-  const title =
-    typeof raw.title === 'string' && raw.title.trim().length > 0 ? raw.title.trim() : ''
+    typeof raw.date === 'string' && raw.date.trim().length > 0 ? raw.date.trim().slice(0, 10) : ''
+  const title = typeof raw.title === 'string' && raw.title.trim().length > 0 ? raw.title.trim() : ''
 
   const userId =
     typeof raw.userId === 'string'

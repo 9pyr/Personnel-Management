@@ -48,9 +48,9 @@ export const leaveSchema = leaveSchemaBase.transform(obj => {
     startDate: toYYYYMMDD(startRaw) || startRaw.slice(0, 10) || '',
     endDate: toYYYYMMDD(endRaw) || endRaw.slice(0, 10) || '',
     createdByName: (obj.createdByName ?? obj.created_by_name ?? '').trim(),
-    durationType: (obj.durationType ?? obj.duration_type ?? 'FULL_DAY'),
-    startTime: (obj.startTime ?? obj.start_time ?? undefined) ?? undefined,
-    endTime: (obj.endTime ?? obj.end_time ?? undefined) ?? undefined,
+    durationType: obj.durationType ?? obj.duration_type ?? 'FULL_DAY',
+    startTime: obj.startTime ?? obj.start_time ?? undefined,
+    endTime: obj.endTime ?? obj.end_time ?? undefined,
   }
 })
 

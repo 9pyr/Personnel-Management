@@ -50,7 +50,9 @@ export function formatEventTooltip(event: CalendarItemEvent): string {
       if (!workEvent) return joinTooltipLines([`งาน`, `วันที่: ${dateRange}`])
 
       const title = (workEvent.title ?? '').trim() || 'งาน'
-      const timeLabel = joinTooltipLines([workEvent.startTime, workEvent.endTime].filter(isNonEmptyString)).replace('\n', '–')
+      const timeLabel = joinTooltipLines(
+        [workEvent.startTime, workEvent.endTime].filter(isNonEmptyString),
+      ).replace('\n', '–')
 
       return joinTooltipLines([
         `งาน: ${title}`,

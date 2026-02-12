@@ -35,8 +35,7 @@ const LoginPage = () => {
         <CardContent className="p-6">
           <h1 className="mb-2 text-center text-xl font-semibold text-primary">ระบบจัดการบุคคล</h1>
           <p className="mb-4 text-center text-sm text-muted-foreground">เข้าสู่ระบบ</p>
-          <Form
-            <LoginFormValues>
+          <Form<LoginFormValues>
             defaultValues={{ email: '', password: '' }}
             onSubmit={async values => {
               const { email, password } = values

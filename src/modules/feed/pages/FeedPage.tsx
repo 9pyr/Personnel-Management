@@ -60,7 +60,9 @@ export interface FeedHighlightState {
 
 function isFeedHighlightState(state: unknown): state is FeedHighlightState {
   return (
-    state != null && typeof state === 'object' && ('highlightPostId' in state || 'highlightCommentId' in state)
+    state != null &&
+    typeof state === 'object' &&
+    ('highlightPostId' in state || 'highlightCommentId' in state)
   )
 }
 
