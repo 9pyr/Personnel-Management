@@ -1,16 +1,6 @@
-/**
- * snake_case <-> camelCase key conversion for API request/response
- */
+import { camelCase, snakeCase } from 'lodash'
 
 type JsonLike = object | string | number | boolean | null
-
-function toCamelCase(str: string): string {
-  return str.replace(/_([a-z])/g, (_match, character) => character.toUpperCase())
-}
-
-function toSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, character => `_${character.toLowerCase()}`)
-}
 
 function isPlainObject(value: JsonLike): value is Record<string, JsonLike> {
   return (
@@ -34,9 +24,9 @@ function convertKeys(obj: JsonLike, keyConverter: (key: string) => string): Json
 }
 
 export function keysToCamelCase(obj: JsonLike): JsonLike {
-  return convertKeys(obj, toCamelCase)
+  return convertKeys(obj, camelCase)
 }
 
 export function keysToSnakeCase(obj: JsonLike): JsonLike {
-  return convertKeys(obj, toSnakeCase)
+  return convertKeys(obj, snakeCase)
 }

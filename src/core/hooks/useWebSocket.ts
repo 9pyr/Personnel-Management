@@ -1,3 +1,5 @@
+import { logger } from '@/core/logger'
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import apiCaller from 'core/endpoints/apiCaller'
@@ -47,14 +49,16 @@ export function useWebSocket(onMessage: (message: WSMessage) => void) {
       wsRef.current = null
       reconnectTimeoutRef.current = setTimeout(connect, 3000)
     }
-    ws.onerror = () => {}
+    ws.onerror = (event: Event) => {
+      logger.error('Error: useWebSocket', event)
+    }
     ws.onmessage = (event: MessageEvent) => {
       try {
         if (typeof event.data !== 'string') return
         const parsed: object = JSON.parse(event.data)
         if (isWSMessage(parsed)) onMessageRef.current(parsed)
-      } catch {
-        // ignore invalid JSON
+      } catch (error) {
+        logger.error('Error: useWebSocket', error)
       }
     }
   }, [])
