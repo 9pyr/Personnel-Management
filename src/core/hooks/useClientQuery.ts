@@ -2,8 +2,10 @@ import { type UseQueryOptions, type UseQueryResult, useQuery } from '@tanstack/r
 
 import apiCaller from 'core/endpoints/apiCaller'
 
-interface UseClientQueryOptions<TData = unknown, TError = Error>
-  extends Omit<UseQueryOptions<TData, TError>, 'queryFn' | 'queryKey'> {
+interface UseClientQueryOptions<TData = unknown, TError = Error> extends Omit<
+  UseQueryOptions<TData, TError>,
+  'queryFn' | 'queryKey'
+> {
   url: string
   params?: Record<string, string | number | boolean | undefined>
 }

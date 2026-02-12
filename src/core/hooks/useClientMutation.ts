@@ -8,8 +8,11 @@ import {
 
 import apiCaller from 'core/endpoints/apiCaller'
 
-interface UseClientMutationOptions<TData = unknown, TVariables = unknown, TError = Error>
-  extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn' | 'onMutate'> {
+interface UseClientMutationOptions<
+  TData = unknown,
+  TVariables = unknown,
+  TError = Error,
+> extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn' | 'onMutate'> {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   url: string | ((variables: TVariables) => string)
   invalidateQueries?: string[]

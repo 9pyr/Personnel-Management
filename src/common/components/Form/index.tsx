@@ -4,8 +4,10 @@ interface FormContextDefault {
   [key: string]: object
 }
 
-interface FormProps<TFieldValues extends FieldValues = FieldValues>
-  extends UseFormProps<TFieldValues, FormContextDefault> {
+interface FormProps<TFieldValues extends FieldValues = FieldValues> extends UseFormProps<
+  TFieldValues,
+  FormContextDefault
+> {
   onSubmit: SubmitHandler<TFieldValues>
 }
 
