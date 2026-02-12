@@ -1,6 +1,6 @@
 import apiCaller from 'core/endpoints/apiCaller'
 
-import { leaveTypeListSchema, leaveTypeSchema, LeaveType } from './schemas'
+import { LeaveType, leaveTypeListSchema, leaveTypeSchema } from './schemas'
 
 export type { LeaveType }
 

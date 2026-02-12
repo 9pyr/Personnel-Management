@@ -168,7 +168,9 @@ export const createLeave = async (payload: LeaveCreatePayloadType): Promise<Leav
   return parseResponse(data, leaveSchema)
 }
 
-export const updateLeaveById = async (payload: LeaveUpdatePayloadType): Promise<LeaveRecordType> => {
+export const updateLeaveById = async (
+  payload: LeaveUpdatePayloadType,
+): Promise<LeaveRecordType> => {
   const body = leaveUpdatePayloadSchema.parse(payload)
   const { data } = await apiCaller.put<object>('/leaves/update', body)
   return parseResponse(data, leaveSchema)

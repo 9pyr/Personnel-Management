@@ -3,8 +3,8 @@ import { useClientMutation } from 'core/hooks/useClientMutation'
 import { useClientQuery } from 'core/hooks/useClientQuery'
 
 import {
-  EventType,
   EventCreatePayloadType,
+  EventType,
   EventUpdatePayloadType,
   eventCreatePayloadSchema,
   eventSchema,

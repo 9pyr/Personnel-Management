@@ -5,7 +5,10 @@ import { AuthContext } from 'core/contexts/AuthContext'
 import { NavLink } from 'react-router-dom'
 import { menuItems } from 'routes'
 
-function canSeeMenuItem(roles: RoleType[] | undefined, userRoleType: RoleType | undefined): boolean {
+function canSeeMenuItem(
+  roles: RoleType[] | undefined,
+  userRoleType: RoleType | undefined,
+): boolean {
   if (!roles || roles.length === 0) return true
   return Boolean(userRoleType && roles.includes(userRoleType))
 }

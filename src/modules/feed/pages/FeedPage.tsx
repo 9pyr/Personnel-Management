@@ -149,21 +149,24 @@ const FeedPage = () => {
       if (!isFeedCommentTypeEventDetail(detailRaw)) return
       const { postId, comment } = detailRaw
       if (!postId || !comment) return
-      queryClient.setQueryData([`/feed/${postId}/comments`], (old: FeedCommentType[] | undefined) => {
-        if (!old) return [comment]
-        if (
-          old.some(
-            commentItem =>
-              commentItem.id === comment.id ||
-              (commentItem.createdByUserId === comment.createdByUserId &&
-                commentItem.content === comment.content &&
-                commentItem.createdAt === comment.createdAt),
-          )
-        ) {
-          return old
-        }
-        return [...old, comment]
-      })
+      queryClient.setQueryData(
+        [`/feed/${postId}/comments`],
+        (old: FeedCommentType[] | undefined) => {
+          if (!old) return [comment]
+          if (
+            old.some(
+              commentItem =>
+                commentItem.id === comment.id ||
+                (commentItem.createdByUserId === comment.createdByUserId &&
+                  commentItem.content === comment.content &&
+                  commentItem.createdAt === comment.createdAt),
+            )
+          ) {
+            return old
+          }
+          return [...old, comment]
+        },
+      )
     }
     window.addEventListener(FEED_COMMENT_EVENT, handler)
     return () => window.removeEventListener(FEED_COMMENT_EVENT, handler)

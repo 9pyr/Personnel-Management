@@ -23,7 +23,11 @@ import {
   useLeaveById,
   useUpdateLeave,
 } from 'core/apis/leave/queries'
-import { LeaveRecordType, LeaveCreatePayloadType, LeaveUpdatePayloadType } from 'core/apis/leave/types'
+import {
+  LeaveCreatePayloadType,
+  LeaveRecordType,
+  LeaveUpdatePayloadType,
+} from 'core/apis/leave/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { LEAVE_STATUS, leaveFields } from 'modules/leave/constants'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'

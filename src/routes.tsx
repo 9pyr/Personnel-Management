@@ -21,49 +21,50 @@ import { RouteObject } from 'react-router-dom'
 
 const iconClass = 'h-5 w-5'
 
-export const menuItems: ({ name: string; icon: ReactElement; roles?: RoleType[] } & RouteObject)[] = [
-  {
-    name: 'หน้าหลัก',
-    icon: <LayoutDashboard className={iconClass} />,
-    element: <DashboardPage />,
-    index: true,
-  },
-  {
-    path: '/profile',
-    name: 'โปรไฟล์',
-    icon: <User className={iconClass} />,
-    element: <ProfilePage />,
-  },
-  {
-    path: '/feed',
-    name: 'ประกาศ',
-    icon: <FileText className={iconClass} />,
-    element: <FeedPage />,
-  },
-  {
-    path: '/leave',
-    name: 'การลา',
-    icon: <Sailboat className={iconClass} />,
-    element: <LeavePageList />,
-  },
-  {
-    path: '/calendar',
-    name: 'ปฏิทิน',
-    icon: <Calendar className={iconClass} />,
-    element: <CalendarPage />,
-  },
-  {
-    path: '/leave-types',
-    name: 'จัดการประเภทการลา',
-    icon: <ClipboardList className={iconClass} />,
-    roles: ['PEOPLE', 'ADMIN'],
-    element: <LeaveTypesPage />,
-  },
-  {
-    path: '/users',
-    name: 'จัดการผู้ใช้',
-    icon: <Users className={iconClass} />,
-    roles: ['ADMIN', 'PEOPLE'],
-    element: <UserListPage />,
-  },
-]
+export const menuItems: ({ name: string; icon: ReactElement; roles?: RoleType[] } & RouteObject)[] =
+  [
+    {
+      name: 'หน้าหลัก',
+      icon: <LayoutDashboard className={iconClass} />,
+      element: <DashboardPage />,
+      index: true,
+    },
+    {
+      path: '/profile',
+      name: 'โปรไฟล์',
+      icon: <User className={iconClass} />,
+      element: <ProfilePage />,
+    },
+    {
+      path: '/feed',
+      name: 'ประกาศ',
+      icon: <FileText className={iconClass} />,
+      element: <FeedPage />,
+    },
+    {
+      path: '/leave',
+      name: 'การลา',
+      icon: <Sailboat className={iconClass} />,
+      element: <LeavePageList />,
+    },
+    {
+      path: '/calendar',
+      name: 'ปฏิทิน',
+      icon: <Calendar className={iconClass} />,
+      element: <CalendarPage />,
+    },
+    {
+      path: '/leave-types',
+      name: 'จัดการประเภทการลา',
+      icon: <ClipboardList className={iconClass} />,
+      roles: ['PEOPLE', 'ADMIN'],
+      element: <LeaveTypesPage />,
+    },
+    {
+      path: '/users',
+      name: 'จัดการผู้ใช้',
+      icon: <Users className={iconClass} />,
+      roles: ['ADMIN', 'PEOPLE'],
+      element: <UserListPage />,
+    },
+  ]

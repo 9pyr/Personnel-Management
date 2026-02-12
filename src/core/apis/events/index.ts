@@ -2,8 +2,8 @@ import apiCaller from 'core/endpoints/apiCaller'
 import { AnyValue, JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
 
 import {
-  EventType,
   EventCreatePayloadType,
+  EventType,
   EventUpdatePayloadType,
   eventCreatePayloadSchema,
   eventSchema,

@@ -46,7 +46,10 @@ export const createPost = async (payload: CreatePostRequestType): Promise<FeedPo
   return parseResponse(data, feedPostSchema)
 }
 
-export const updatePost = async (id: string, payload: CreatePostRequestType): Promise<FeedPostType> => {
+export const updatePost = async (
+  id: string,
+  payload: CreatePostRequestType,
+): Promise<FeedPostType> => {
   const body = createPostRequestSchema.parse(payload)
   const { data } = await apiCaller.put<object>(`${FEED_BASE}/${id}`, body)
   return parseResponse(data, feedPostSchema)

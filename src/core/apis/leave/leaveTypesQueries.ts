@@ -1,7 +1,7 @@
 import { useClientMutation } from 'core/hooks/useClientMutation'
 import { useClientQuery } from 'core/hooks/useClientQuery'
 
-import { leaveTypeListSchema, LeaveType } from './schemas'
+import { LeaveType, leaveTypeListSchema } from './schemas'
 
 const TYPES_BASE = '/leaves/types'
 

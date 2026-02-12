@@ -19,7 +19,9 @@ function extractDateValue(value: string | null | undefined): string | null {
   return null
 }
 
-function getLeaveRecordTypeDateRange(leave: LeaveRecordType): { start: string; end: string } | null {
+function getLeaveRecordTypeDateRange(
+  leave: LeaveRecordType,
+): { start: string; end: string } | null {
   const start = extractDateValue(leave.startDate)
   const end = extractDateValue(leave.endDate)
 

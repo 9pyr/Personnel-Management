@@ -32,7 +32,9 @@ export async function getHolidays(params?: GetHolidaysParams): Promise<CompanyHo
   return listSchema.parse(list)
 }
 
-export async function createHoliday(payload: CreateHolidayPayloadType): Promise<CompanyHolidayType> {
+export async function createHoliday(
+  payload: CreateHolidayPayloadType,
+): Promise<CompanyHolidayType> {
   const body = createHolidayPayloadSchema.parse(payload)
   const { data } = await apiCaller.post<object>('/holidays', { date: body.date, name: body.name })
   return companyHolidaySchema.parse(data)
