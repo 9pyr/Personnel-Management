@@ -8,7 +8,7 @@ import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
 import { useMe, useUpdateProfile, useUploadProfileImage } from 'core/apis/auth/queries'
 import { updateProfileRequestSchema } from 'core/apis/auth/schemas'
-import type { User } from 'core/apis/auth/types'
+import { User } from 'core/apis/auth/types'
 import apiCaller from 'core/endpoints/apiCaller'
 import { useAuthActions } from 'core/stores/auth'
 import { Camera } from 'lucide-react'
@@ -37,8 +37,8 @@ const ProfilePage = () => {
     }
   }, [meQuery.data, setUser])
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleAvatarChange = async (evt: React.ChangeEvent<HTMLInputElement>) => {
+    const file = evt.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) {
       toast.error('กรุณาเลือกไฟล์รูปภาพ')
@@ -51,7 +51,7 @@ const ProfilePage = () => {
     } catch {
       toast.error('อัปโหลดรูปไม่สำเร็จ')
     }
-    e.target.value = ''
+    evt.target.value = ''
   }
 
   if (loading || !profile) {
@@ -121,7 +121,7 @@ const ProfilePage = () => {
                   phone: values.phone || undefined,
                 })
                 if (!parsed.success) {
-                  toast.error(parsed.error.errors.map(e => e.message).join(', '))
+                  toast.error(parsed.error.errors.map(errItem => errItem.message).join(', '))
                   return
                 }
                 try {

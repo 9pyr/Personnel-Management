@@ -14,7 +14,7 @@ export type FeedPost = z.infer<typeof feedPostSchema>
 
 export const feedPostListSchema = z
   .union([z.array(feedPostSchema), z.null(), z.undefined()])
-  .transform(v => v ?? [])
+  .transform(val => val ?? [])
 export type FeedPostList = z.infer<typeof feedPostListSchema>
 
 export const createPostRequestSchema = z.object({
@@ -39,7 +39,7 @@ export type FeedComment = z.infer<typeof feedCommentSchema>
 
 export const feedCommentListSchema = z
   .union([z.array(feedCommentSchema), z.null(), z.undefined()])
-  .transform(v => v ?? [])
+  .transform(val => val ?? [])
 
 export type FeedCommentList = z.infer<typeof feedCommentListSchema>
 

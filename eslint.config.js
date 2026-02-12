@@ -44,6 +44,10 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'error',
       // ห้าม cast ด้วย as / angle-bracket
       '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
+      // ห้าม import type / import { type ... } ให้ใช้ import ... from ...
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'no-type-imports' }],
+      // ห้ามใช้ชื่อตัวแปรแบบย่อ (อย่างน้อย 2 ตัวอักษร, ยกเว้น loop index และ unused)
+      'id-length': ['error', { min: 2, properties: 'never', exceptions: ['i', 'j', 'k', '_'] }],
       // ห้ามใช้ eslint-disable comments
       'no-restricted-syntax': [
         'error',
@@ -54,6 +58,15 @@ export default tseslint.config(
       ],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  {
+    files: ['src/core/endpoints/parseJson.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
 )

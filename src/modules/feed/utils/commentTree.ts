@@ -1,4 +1,4 @@
-import type { FeedComment } from 'core/apis/feed/types'
+import { FeedComment } from 'core/apis/feed/types'
 
 export interface CommentTreeNode extends FeedComment {
   replies: CommentTreeNode[]

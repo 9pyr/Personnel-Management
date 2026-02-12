@@ -7,15 +7,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 
-import { type ReactNode, useContext, useEffect, useState } from 'react'
+import { ReactNode, useContext, useEffect, useState } from 'react'
 
 import Form from 'common/components/Form'
-import Select, { type SelectOptionGroup } from 'common/components/Input/Select'
+import Select, { SelectOptionGroup } from 'common/components/Input/Select'
 import TextInput from 'common/components/Input/Text'
-import Table, { type TableRowData } from 'common/components/Table'
+import Table, { TableRowData } from 'common/components/Table'
 import { useCreateUser, useListUsers, useUpdateUser } from 'core/apis/auth/queries'
 import { createUserRequestSchema, updateUserRequestSchema } from 'core/apis/auth/schemas'
-import type { Role, User } from 'core/apis/auth/types'
+import { Role, User } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { Pencil } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -188,7 +188,7 @@ const UserListPage = () => {
                   values.role === 'STAFF' && values.managerId ? values.managerId : undefined,
               })
               if (!parsed.success) {
-                toast.error(parsed.error.errors.map(e => e.message).join(', '))
+                toast.error(parsed.error.errors.map(errItem => errItem.message).join(', '))
                 return
               }
               await createUserMutation.mutateAsync(parsed.data)
@@ -240,7 +240,7 @@ const UserListPage = () => {
                   managerId: values.managerId === '' ? undefined : values.managerId,
                 })
                 if (!parsed.success) {
-                  toast.error(parsed.error.errors.map(e => e.message).join(', '))
+                  toast.error(parsed.error.errors.map(errItem => errItem.message).join(', '))
                   return
                 }
                 await updateUserMutation.mutateAsync({ id: editUser.id, ...parsed.data })

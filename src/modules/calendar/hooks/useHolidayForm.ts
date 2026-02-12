@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { useCreateHoliday } from 'core/apis/holidays/queries'
 import dayjs from 'dayjs'
-import type { HolidayFormData } from 'modules/calendar/types'
+import { HolidayFormData } from 'modules/calendar/types'
 import { toast } from 'sonner'
 
 export function useHolidayForm(onSuccess: () => void) {

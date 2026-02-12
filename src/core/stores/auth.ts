@@ -1,6 +1,6 @@
 import { userSchema } from 'core/apis/auth/schemas'
-import type { User } from 'core/apis/auth/types'
-import type { AnyValue } from 'core/endpoints/caseTransform'
+import { User } from 'core/apis/auth/types'
+import { parseJSONToAnyValue } from 'core/endpoints/parseJson'
 import { create } from 'zustand'
 
 interface AuthState {
@@ -29,15 +29,6 @@ function persistUser(value: User | null): void {
 function getInitialToken(): string | null {
   if (typeof window === 'undefined') return null
   return localStorage.getItem(TOKEN_KEY)
-}
-
-function convertAnyToAnyValue(value: AnyValue): AnyValue {
-  return value
-}
-
-function parseJSONToAnyValue(text: string): AnyValue {
-  const parsed = JSON.parse(text)
-  return convertAnyToAnyValue(parsed)
 }
 
 function parseJSONSafe(text: string): object | null {

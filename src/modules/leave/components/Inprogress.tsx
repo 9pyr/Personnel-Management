@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { useContext, useEffect } from 'react'
 
-import Table, { type TableRowData } from 'common/components/Table'
+import Table, { TableRowData } from 'common/components/Table'
 import { useListLeave } from 'core/apis/leave/queries'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { LEAVE_STATUS, leaveFields } from 'modules/leave/constants'

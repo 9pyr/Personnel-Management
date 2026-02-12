@@ -1,8 +1,8 @@
-import axios, { type InternalAxiosRequestConfig } from 'axios'
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import { logger } from 'core/logger'
 import { clearAuthStorage, getStoredToken } from 'core/stores/auth'
 
-import { type AnyValue, type JsonLike, isJsonLike, keysToCamelCase, keysToSnakeCase } from './caseTransform'
+import { AnyValue, JsonLike, isJsonLike, keysToCamelCase, keysToSnakeCase } from './caseTransform'
 
 const apiCaller = axios.create({
   baseURL: 'http://localhost:8080',
@@ -37,24 +37,11 @@ function parseAxiosData(data: AnyValue): JsonLike | undefined {
   return undefined
 }
 
-function convertJsonLikeToT<T>(value: JsonLike): T {
-  const jsonValue = value
-  const converted: T = jsonValue as T
-  return converted
-}
-
-function assignResponseData<T>(target: { data: T }, value: JsonLike): void {
-  const obj: { data: T } = target
-  const converted = convertJsonLikeToT<T>(value)
-  obj.data = converted
-}
-
 apiCaller.interceptors.response.use(
-  res => {
+  (res: AxiosResponse<AnyValue>) => {
     const parsed = parseAxiosData(res.data)
     if (parsed != null) {
-      const converted = keysToCamelCase(parsed)
-      assignResponseData(res, converted)
+      res.data = keysToCamelCase(parsed)
     }
     return res
   },
@@ -69,11 +56,15 @@ apiCaller.interceptors.response.use(
       window.location.href = '/login'
     }
 
-    if (err.response) {
+    function hasResponseWithAnyValue(
+      error: AxiosError,
+    ): error is AxiosError & { response: AxiosResponse<AnyValue> } {
+      return error.response != null
+    }
+    if (hasResponseWithAnyValue(err)) {
       const parsed = parseAxiosData(err.response.data)
       if (parsed != null) {
-        const converted = keysToCamelCase(parsed)
-        assignResponseData(err.response, converted)
+        err.response.data = keysToCamelCase(parsed)
       }
     }
 

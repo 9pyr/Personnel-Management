@@ -1,10 +1,10 @@
 import apiCaller from 'core/endpoints/apiCaller'
-import { type AnyValue, type JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
+import { AnyValue, JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
 
 import {
-  type Event,
-  type EventCreatePayload,
-  type EventUpdatePayload,
+  Event,
+  EventCreatePayload,
+  EventUpdatePayload,
   eventCreatePayloadSchema,
   eventSchema,
   eventUpdatePayloadSchema,
@@ -21,7 +21,12 @@ function isRecord(value: AnyValue): value is Record<string, JsonLike> {
 }
 
 function toAnyValueFromArray(item: AnyValue): AnyValue {
-  if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean' || item === null) {
+  if (
+    typeof item === 'string' ||
+    typeof item === 'number' ||
+    typeof item === 'boolean' ||
+    item === null
+  ) {
     return item
   }
   if (typeof item === 'object' && !Array.isArray(item) && !(item instanceof Date)) {
@@ -34,9 +39,13 @@ function convertAnyToAnyValue(value: AnyValue): AnyValue {
   return value
 }
 
+function isAnyValueArray(value: AnyValue): value is AnyValue[] {
+  return Array.isArray(value)
+}
+
 function getArrayItemFromAny(arr: AnyValue, index: number): AnyValue {
-  const array = arr
-  const item = array[index]
+  if (!isAnyValueArray(arr)) return undefined
+  const item = arr[index]
   return convertAnyToAnyValue(item)
 }
 

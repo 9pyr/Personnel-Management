@@ -1,4 +1,4 @@
-import { type UseQueryOptions, type UseQueryResult, useQuery } from '@tanstack/react-query'
+import { UseQueryOptions, UseQueryResult, useQuery } from '@tanstack/react-query'
 
 import apiCaller from 'core/endpoints/apiCaller'
 

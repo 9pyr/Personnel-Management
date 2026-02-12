@@ -9,7 +9,7 @@ import {
   feedPostSchema,
   updateCommentRequestSchema,
 } from './schemas'
-import type {
+import {
   CreateCommentRequest,
   CreatePostRequest,
   FeedComment,

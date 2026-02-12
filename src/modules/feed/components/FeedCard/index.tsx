@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { useMemo, useState } from 'react'
 
-import type { FeedComment, FeedPost } from 'core/apis/feed/types'
+import { FeedComment, FeedPost } from 'core/apis/feed/types'
 import { Pencil, Trash2 } from 'lucide-react'
 import { CommentBlock } from 'modules/feed/components/CommentBlock'
 import { buildCommentTree } from 'modules/feed/utils/commentTree'
@@ -114,7 +114,7 @@ export function FeedCard({
                 <Textarea
                   className="min-h-[80px] w-full"
                   value={editingContent}
-                  onChange={e => onEditingContentChange(e.target.value)}
+                  onChange={evt => onEditingContentChange(evt.target.value)}
                 />
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={onCancelEdit}>
@@ -172,7 +172,7 @@ export function FeedCard({
                   : 'เขียนความคิดเห็น...'
               }
               value={newCommentContent}
-              onChange={e => setNewCommentContent(e.target.value)}
+              onChange={evt => setNewCommentContent(evt.target.value)}
               rows={1}
             />
             <Button

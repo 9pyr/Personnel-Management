@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { useCreateEvent } from 'core/apis/events/queries'
 import dayjs from 'dayjs'
-import type { EventFormData } from 'modules/calendar/types'
+import { EventFormData } from 'modules/calendar/types'
 import { toast } from 'sonner'
 
 export function useEventForm(onSuccess: () => void) {

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog'
 
 import dayjs from 'dayjs'
-import type { CalendarItemEvent } from 'modules/calendar/types'
+import { CalendarItemEvent } from 'modules/calendar/types'
 
 interface EventDetailDialogProps {
   event: CalendarItemEvent | null

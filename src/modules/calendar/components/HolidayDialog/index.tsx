@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 import dayjs from 'dayjs'
-import type { HolidayFormData } from 'modules/calendar/types'
+import { HolidayFormData } from 'modules/calendar/types'
 
 interface HolidayDialogProps {
   open: boolean
@@ -41,8 +41,8 @@ export function HolidayDialog({
             <Label>วันที่</Label>
             <DatePickerSingle
               value={form.date ? new Date(form.date) : undefined}
-              onChange={d =>
-                onFormChange({ ...form, date: d ? dayjs(d).format('YYYY-MM-DD') : '' })
+              onChange={date =>
+                onFormChange({ ...form, date: date ? dayjs(date).format('YYYY-MM-DD') : '' })
               }
               placeholder="เลือกวันที่"
             />
@@ -51,7 +51,7 @@ export function HolidayDialog({
             <Label>ชื่อวันหยุด</Label>
             <Input
               value={form.name}
-              onChange={e => onFormChange({ ...form, name: e.target.value })}
+              onChange={evt => onFormChange({ ...form, name: evt.target.value })}
               placeholder="เช่น วันปีใหม่, วันสงกรานต์"
             />
           </div>

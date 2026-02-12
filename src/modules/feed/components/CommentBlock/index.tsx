@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { useState } from 'react'
 
-import type { CommentTreeNode } from 'modules/feed/utils/commentTree'
+import { CommentTreeNode } from 'modules/feed/utils/commentTree'
 import { formatPostTime } from 'modules/feed/utils/formatTime'
 
 interface CommentBlockProps {
@@ -59,7 +59,7 @@ export function CommentBlock({
               <Textarea
                 className="min-h-[60px] w-full"
                 value={editContent}
-                onChange={e => setEditContent(e.target.value)}
+                onChange={evt => setEditContent(evt.target.value)}
               />
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={() => setEditing(false)}>

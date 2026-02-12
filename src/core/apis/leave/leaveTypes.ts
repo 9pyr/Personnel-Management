@@ -11,7 +11,7 @@ export type LeaveType = z.infer<typeof leaveTypeSchema>
 
 const leaveTypeListSchema = z
   .union([z.array(leaveTypeSchema), z.null(), z.undefined()])
-  .transform((v): LeaveType[] => v ?? [])
+  .transform((val): LeaveType[] => val ?? [])
 
 function parseResponse<T>(data: object, schema: { parse: (v: object) => T }): T {
   return schema.parse(data)

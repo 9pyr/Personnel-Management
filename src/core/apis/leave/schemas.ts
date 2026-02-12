@@ -5,7 +5,7 @@ const uuidLike = z.string().min(1).optional()
 const dateField = z
   .union([z.string(), z.null()])
   .optional()
-  .transform((v): string => (v == null || typeof v !== 'string' ? '' : v.trim()))
+  .transform((val): string => (val == null || typeof val !== 'string' ? '' : val.trim()))
 
 const leaveSchemaBase = z.object({
   id: uuidLike,
@@ -22,10 +22,10 @@ const leaveSchemaBase = z.object({
   endTime: z.string().nullish(),
 })
 
-function toYYYYMMDD(v: string | null | undefined): string {
-  if (v == null || typeof v !== 'string') return ''
-  const s = v.trim().slice(0, 10)
-  return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ''
+function toYYYYMMDD(value: string | null | undefined): string {
+  if (value == null || typeof value !== 'string') return ''
+  const str = value.trim().slice(0, 10)
+  return /^\d{4}-\d{2}-\d{2}$/.test(str) ? str : ''
 }
 
 export const leaveSchema = leaveSchemaBase.transform(obj => {

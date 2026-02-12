@@ -1,5 +1,5 @@
 import { dispatchNotificationsRefresh } from 'common/components/Layout/components/notificationsRefresh'
-import type { FeedComment } from 'core/apis/feed/types'
+import { FeedComment } from 'core/apis/feed/types'
 import { useWebSocket } from 'core/hooks/useWebSocket'
 import { dispatchFeedComment } from 'modules/feed/feedRealtime'
 import { toast } from 'sonner'

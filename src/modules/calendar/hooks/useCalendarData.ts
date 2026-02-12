@@ -17,7 +17,7 @@ export function useCalendarData(year: number, month: number, filterUserId: strin
   const leaves = useMemo(() => {
     if (!leavesQuery.data) return []
     if (leavesQuery.data.length === 0 && from && to) {
-      return leavesQuery.data.filter(l => l.startDate <= to && l.endDate >= from)
+      return leavesQuery.data.filter(leave => leave.startDate <= to && leave.endDate >= from)
     }
     return leavesQuery.data
   }, [leavesQuery.data, from, to])
@@ -26,7 +26,7 @@ export function useCalendarData(year: number, month: number, filterUserId: strin
     if (!eventsQuery.data) return []
     if (eventsQuery.data.length === 0 && from && to) {
       return eventsQuery.data.filter(
-        e => (e.date ?? '').slice(0, 10) >= from && (e.date ?? '').slice(0, 10) <= to,
+        evt => (evt.date ?? '').slice(0, 10) >= from && (evt.date ?? '').slice(0, 10) <= to,
       )
     }
     return eventsQuery.data

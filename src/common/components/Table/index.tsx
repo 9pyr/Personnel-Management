@@ -27,10 +27,10 @@ function isDateLike(val: TableCellValue): val is string | number | Date {
 
 /** แปลงเป็น วัน เดือน ปี (ไทย) เช่น 9 กุมภาพันธ์ 2026 */
 function formatDateDayMonthYear(val: string | number | Date): string {
-  const s = typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val) ? val.slice(0, 10) : val
-  const d = dayjs(s)
-  if (!d.isValid()) return String(val)
-  return d.locale('th').format('D MMMM YYYY')
+  const str = typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val) ? val.slice(0, 10) : val
+  const dayjsVal = dayjs(str)
+  if (!dayjsVal.isValid()) return String(val)
+  return dayjsVal.locale('th').format('D MMMM YYYY')
 }
 
 function toReactNode(val: TableCellValue): React.ReactNode {
@@ -87,7 +87,7 @@ const Table = ({ columns, data, rowClick }: TableProps) => {
                 <TableCell
                   key={`table-body-row-cell:${index}-${colIndex}`}
                   className={col.render ? '' : 'cursor-pointer'}
-                  onClick={col.render ? e => e.stopPropagation() : undefined}
+                  onClick={col.render ? evt => evt.stopPropagation() : undefined}
                 >
                   {col.render
                     ? col.render(row)

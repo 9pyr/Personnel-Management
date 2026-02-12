@@ -1,6 +1,6 @@
 import {
-  type UseMutationOptions,
-  type UseMutationResult,
+  UseMutationOptions,
+  UseMutationResult,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'

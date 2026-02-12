@@ -1,10 +1,10 @@
 import apiCaller from 'core/endpoints/apiCaller'
-import type { AnyValue, JsonLike } from 'core/endpoints/caseTransform'
+import { AnyValue, JsonLike } from 'core/endpoints/caseTransform'
 import { z } from 'zod'
 
 import {
-  type CompanyHoliday,
-  type CreateHolidayPayload,
+  CompanyHoliday,
+  CreateHolidayPayload,
   companyHolidaySchema,
   createHolidayPayloadSchema,
 } from './schemas'

@@ -5,7 +5,7 @@ import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
 import { useLogin } from 'core/apis/auth/queries'
 import { persistAuthAfterLogin, useAuthActions } from 'core/stores/auth'
-import type { FieldValues } from 'react-hook-form'
+import { FieldValues } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -14,7 +14,9 @@ interface LoginFormValues extends FieldValues {
   password: string
 }
 
-function isRecord(value: object | null | undefined): value is Record<string, string | number | boolean | null | object> {
+function isRecord(
+  value: object | null | undefined,
+): value is Record<string, string | number | boolean | null | object> {
   return value != null && typeof value === 'object' && !Array.isArray(value)
 }
 

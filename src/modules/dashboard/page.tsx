@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { useMemo } from 'react'
 
 import { useFeed } from 'core/apis/feed/queries'
-import { type LeaveBalanceItem, useLeaveBalance } from 'core/apis/leave/queries'
+import { LeaveBalanceItem, useLeaveBalance } from 'core/apis/leave/queries'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -24,11 +24,11 @@ function findAnnualBalance(balances: LeaveBalanceItem[]): LeaveBalanceItem | nul
 }
 
 function formatFeedTime(iso: string): string {
-  const d = dayjs(iso)
-  const diffDays = dayjs().diff(d, 'day')
-  if (diffDays === 0) return d.fromNow()
-  if (diffDays < 7) return d.fromNow()
-  return d.format('D MMM YYYY')
+  const date = dayjs(iso)
+  const diffDays = dayjs().diff(date, 'day')
+  if (diffDays === 0) return date.fromNow()
+  if (diffDays < 7) return date.fromNow()
+  return date.format('D MMM YYYY')
 }
 
 const DashboardPage = () => {

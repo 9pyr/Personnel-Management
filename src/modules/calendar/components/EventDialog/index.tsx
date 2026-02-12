@@ -48,8 +48,8 @@ export function EventDialog({
             <Label>วันที่</Label>
             <DatePickerSingle
               value={form.date ? new Date(form.date) : undefined}
-              onChange={d => {
-                const nextDate = d ? dayjs(d).format('YYYY-MM-DD') : ''
+              onChange={date => {
+                const nextDate = date ? dayjs(date).format('YYYY-MM-DD') : ''
                 onFormChange({ ...form, date: nextDate })
               }}
               placeholder="เลือกวันที่"
@@ -62,7 +62,7 @@ export function EventDialog({
               <TimePicker
                 step={300}
                 value={form.startTime}
-                onChange={v => onFormChange({ ...form, startTime: v })}
+                onChange={val => onFormChange({ ...form, startTime: val })}
               />
             </div>
             <div className="grid gap-2">
@@ -70,7 +70,7 @@ export function EventDialog({
               <TimePicker
                 step={300}
                 value={form.endTime}
-                onChange={v => onFormChange({ ...form, endTime: v })}
+                onChange={val => onFormChange({ ...form, endTime: val })}
               />
             </div>
           </div>
@@ -78,8 +78,8 @@ export function EventDialog({
             <Label>หัวข้อ / รายละเอียด</Label>
             <Input
               value={form.title}
-              onChange={e => {
-                const nextTitle = e.target.value
+              onChange={evt => {
+                const nextTitle = evt.target.value
                 onFormChange({ ...form, title: nextTitle })
               }}
               placeholder="เช่น พบคนไข้, เฝ้าตรวจ, นัดผ่าตัด 09:00"

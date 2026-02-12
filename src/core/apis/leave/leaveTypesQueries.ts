@@ -12,7 +12,7 @@ export type LeaveType = z.infer<typeof leaveTypeSchema>
 
 const leaveTypeListSchema = z
   .union([z.array(leaveTypeSchema), z.null(), z.undefined()])
-  .transform((v): LeaveType[] => v ?? [])
+  .transform((val): LeaveType[] => val ?? [])
 
 const TYPES_BASE = '/leaves/types'
 

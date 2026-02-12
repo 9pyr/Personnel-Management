@@ -3,6 +3,7 @@ import { logger } from '@/core/logger'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import apiCaller from 'core/endpoints/apiCaller'
+import { parseJSONToAnyValue } from 'core/endpoints/parseJson'
 import { getStoredToken } from 'core/stores/auth'
 
 export interface WSMessage {
@@ -27,17 +28,6 @@ function isWSMessage(payload: object): payload is WSMessage {
 const getWsUrl = (): string => {
   const base = apiCaller.defaults.baseURL ?? ''
   return base.replace(/^http/, 'ws') + '/ws'
-}
-
-import type { AnyValue } from 'core/endpoints/caseTransform'
-
-function convertAnyToAnyValue(value: AnyValue): AnyValue {
-  return value
-}
-
-function parseJSONToAnyValue(text: string): AnyValue {
-  const parsed = JSON.parse(text)
-  return convertAnyToAnyValue(parsed)
 }
 
 function parseJSONSafe(text: string): object | null {

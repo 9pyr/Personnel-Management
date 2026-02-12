@@ -73,7 +73,7 @@ function CalendarHeader({
         <ChevronLeft className="h-4 w-4" />
       </Button>
       <div className="flex gap-2">
-        <Select value={String(month)} onValueChange={v => changeMonth(Number(v))}>
+        <Select value={String(month)} onValueChange={val => changeMonth(Number(val))}>
           <SelectTrigger className="h-8 min-w-[7rem] rounded-md border border-input bg-background px-2 text-sm">
             <SelectValue />
           </SelectTrigger>
@@ -85,14 +85,14 @@ function CalendarHeader({
             ))}
           </SelectContent>
         </Select>
-        <Select value={String(year)} onValueChange={v => changeYear(Number(v))}>
+        <Select value={String(year)} onValueChange={val => changeYear(Number(val))}>
           <SelectTrigger className="h-8 min-w-[5rem] rounded-md border border-input bg-background px-2 text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent position="popper" sideOffset={4}>
-            {yearOptions.map(y => (
-              <SelectItem key={y} value={String(y)}>
-                {y}
+            {yearOptions.map(yearVal => (
+              <SelectItem key={yearVal} value={String(yearVal)}>
+                {yearVal}
               </SelectItem>
             ))}
           </SelectContent>
@@ -139,7 +139,7 @@ export function Calendar({
       <ReactDatePicker
         inline
         selected={selected ?? null}
-        onChange={(d: Date | null) => onSelect?.(d ?? undefined)}
+        onChange={(date: Date | null) => onSelect?.(date ?? undefined)}
         minDate={minDate ?? new Date(fromYear, 0, 1)}
         maxDate={maxDate ?? new Date(toYear, 11, 31)}
         className="border-0 bg-transparent"

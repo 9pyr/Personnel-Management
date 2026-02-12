@@ -16,12 +16,12 @@ import {
   useUpdatePost,
 } from 'core/apis/feed/queries'
 import { feedPostListSchema } from 'core/apis/feed/schemas'
-import type { FeedComment, FeedPost } from 'core/apis/feed/types'
+import { FeedComment, FeedPost } from 'core/apis/feed/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import apiCaller from 'core/endpoints/apiCaller'
-import type { AnyValue } from 'core/endpoints/caseTransform'
+import { AnyValue } from 'core/endpoints/caseTransform'
 import { FeedCard } from 'modules/feed/components/FeedCard'
-import { FEED_COMMENT_EVENT, type FeedCommentEventDetail } from 'modules/feed/feedRealtime'
+import { FEED_COMMENT_EVENT, FeedCommentEventDetail } from 'modules/feed/feedRealtime'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -67,7 +67,9 @@ function isFeedHighlightState(state: object | null | undefined): state is FeedHi
   )
 }
 
-function isFeedCommentEventDetail(detail: object | null | undefined): detail is FeedCommentEventDetail {
+function isFeedCommentEventDetail(
+  detail: object | null | undefined,
+): detail is FeedCommentEventDetail {
   if (detail == null || typeof detail !== 'object') return false
   return 'postId' in detail && 'comment' in detail
 }
@@ -78,15 +80,15 @@ const FeedPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const sentinelRef = useRef<HTMLDivElement>(null)
-  function convertAnyToAnyValue(value: AnyValue): AnyValue {
-    return value
-  }
 
-  function convertLocationStateToAnyValue(state: AnyValue): AnyValue {
-    return convertAnyToAnyValue(state)
+  function acceptLocationState<T>(state: T): AnyValue {
+    if (state == null) return null
+    if (typeof state === 'object') return state
+    return null
   }
-  const locationStateRaw = convertLocationStateToAnyValue(location.state)
-  const locationStateChecked = locationStateRaw != null && typeof locationStateRaw === 'object' ? locationStateRaw : null
+  const locationStateRaw = acceptLocationState(location.state)
+  const locationStateChecked =
+    locationStateRaw != null && typeof locationStateRaw === 'object' ? locationStateRaw : null
   const locationState: object | null = locationStateChecked
   const highlightState = isFeedHighlightState(locationState) ? locationState : undefined
 
@@ -134,13 +136,15 @@ const FeedPage = () => {
     })
   }, [loadingMore, hasMore, loading, offset, queryClient])
 
-  function convertEventDetailToAnyValue(detail: AnyValue): AnyValue {
-    return convertAnyToAnyValue(detail)
-  }
+  const acceptEventDetail = useCallback(function <T>(detail: T): AnyValue {
+    if (detail == null) return null
+    if (typeof detail === 'object') return detail
+    return null
+  }, [])
   useEffect(() => {
     const handler = (event: Event) => {
       if (!(event instanceof CustomEvent)) return
-      const detailRaw = convertEventDetailToAnyValue(event.detail)
+      const detailRaw = acceptEventDetail(event.detail)
       if (detailRaw == null || typeof detailRaw !== 'object') return
       const detail: object = detailRaw
       if (!isFeedCommentEventDetail(detail)) return
@@ -164,7 +168,7 @@ const FeedPage = () => {
     }
     window.addEventListener(FEED_COMMENT_EVENT, handler)
     return () => window.removeEventListener(FEED_COMMENT_EVENT, handler)
-  }, [queryClient])
+  }, [queryClient, acceptEventDetail])
 
   useEffect(() => {
     const sentinelElement = sentinelRef.current
@@ -323,7 +327,7 @@ const FeedPage = () => {
                 className="mb-4 min-h-[80px] w-full"
                 placeholder="มีอะไรบางอย่างไหม?"
                 value={content}
-                onChange={e => setContent(e.target.value)}
+                onChange={evt => setContent(evt.target.value)}
                 rows={3}
               />
               <div className="flex justify-end">

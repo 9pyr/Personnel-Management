@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 
 import { useNextStateLeave, useRejectStateLeave } from 'core/apis/leave/queries'
-import type { Leave } from 'core/apis/leave/types'
+import { Leave } from 'core/apis/leave/types'
 import dayjs from 'dayjs'
 import 'dayjs/locale/th'
 import { toast } from 'sonner'

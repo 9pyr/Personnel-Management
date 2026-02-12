@@ -1,6 +1,6 @@
 import { Tabs as BaseTabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-import { type ReactElement, useState } from 'react'
+import { ReactElement, useState } from 'react'
 
 interface TabsProps {
   items: { label: string; element: ReactElement }[]
@@ -10,7 +10,7 @@ export default function Tabs({ items }: TabsProps) {
   const [value, setValue] = useState(0)
 
   return (
-    <BaseTabs value={String(value)} onValueChange={v => setValue(Number(v))} className="w-full">
+    <BaseTabs value={String(value)} onValueChange={val => setValue(Number(val))} className="w-full">
       <TabsList>
         {items.map(({ label }, index) => (
           <TabsTrigger key={index} value={String(index)}>

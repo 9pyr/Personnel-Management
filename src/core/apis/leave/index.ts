@@ -1,9 +1,9 @@
 import apiCaller from 'core/endpoints/apiCaller'
-import type { AnyValue, JsonLike } from 'core/endpoints/caseTransform'
+import { AnyValue, JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
 import { z } from 'zod'
 
 import { leaveCreatePayloadSchema, leaveSchema, leaveUpdatePayloadSchema } from './schemas'
-import type { Leave, LeaveCreatePayload, LeaveUpdatePayload } from './types'
+import { Leave, LeaveCreatePayload, LeaveUpdatePayload } from './types'
 
 function parseResponse<T>(data: object, schema: { parse: (v: object) => T }): T {
   return schema.parse(data)
@@ -15,19 +15,23 @@ export interface GetListLeaveParams {
   userId?: string
 }
 
-function isRecord(value: AnyValue): value is Record<string, JsonLike> {
-  return value != null && typeof value === 'object' && !Array.isArray(value)
+interface LeaveListResponseShape {
+  data?: AnyValue[]
+  leaves?: AnyValue[]
+  result?: AnyValue[]
+  list?: AnyValue[]
+  items?: AnyValue[]
 }
 
-function toYYYYMMDD(v: JsonLike): string {
-  if (v == null) return ''
-  if (typeof v === 'string') {
-    const s = v.trim().slice(0, 10)
-    return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ''
+function toYYYYMMDD(value: JsonLike): string {
+  if (value == null) return ''
+  if (typeof value === 'string') {
+    const str = value.trim().slice(0, 10)
+    return /^\d{4}-\d{2}-\d{2}$/.test(str) ? str : ''
   }
-  if (typeof v === 'number' && !Number.isNaN(v)) {
-    const s = new Date(v).toISOString().slice(0, 10)
-    return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ''
+  if (typeof value === 'number' && !Number.isNaN(value)) {
+    const str = new Date(value).toISOString().slice(0, 10)
+    return /^\d{4}-\d{2}-\d{2}$/.test(str) ? str : ''
   }
   return ''
 }
@@ -58,6 +62,13 @@ function normalizeLeaveItem(raw: Record<string, JsonLike>): Leave {
   }
 }
 
+function getLeavesListFromResponse(data: AnyValue[] | LeaveListResponseShape): AnyValue[] {
+  if (Array.isArray(data)) return [...data]
+  const raw = data.data ?? data.leaves ?? data.result ?? data.list ?? data.items
+  if (!Array.isArray(raw)) return []
+  return [...raw]
+}
+
 export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]> => {
   const search = new URLSearchParams()
   if (params?.from) search.set('from', params.from)
@@ -65,32 +76,21 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
   if (params?.userId) search.set('userId', params.userId)
   const qs = search.toString()
   const url = qs ? `/leaves?${qs}` : '/leaves'
-  const { data } = await apiCaller.get<object>(url)
-  const obj = isRecord(data) ? data : undefined
-  const raw = Array.isArray(data)
-    ? data
-    : Array.isArray(obj?.data)
-      ? obj?.data
-      : Array.isArray(obj?.leaves)
-        ? obj?.leaves
-        : Array.isArray(obj?.result)
-          ? obj?.result
-          : Array.isArray(obj?.list)
-            ? obj?.list
-            : Array.isArray(obj?.items)
-              ? obj?.items
-              : []
-  const list = Array.isArray(raw) ? raw : []
+  const { data } = await apiCaller.get<AnyValue[] | LeaveListResponseShape>(url)
+  const list = getLeavesListFromResponse(data)
   const result: Leave[] = []
-  function convertAnyToAnyValue(value: AnyValue): AnyValue {
-    return value
+  function isRecordLike(obj: AnyValue): obj is Record<string, AnyValue> {
+    return typeof obj === 'object' && obj !== null && !Array.isArray(obj)
   }
 
-  function getObjectPropertyFromAny(obj: AnyValue, key: string): AnyValue {
-    const object = obj
-    const record: Record<string, AnyValue> = object
-    const value = record[key]
-    return convertAnyToAnyValue(value)
+  function getObjectPropertyFromAny(obj: AnyValue, key: string): AnyValue | undefined {
+    if (!isRecordLike(obj)) return undefined
+    const val = obj[key]
+    if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') return val
+    if (val === null || val === undefined) return val
+    if (Array.isArray(val) || (typeof val === 'object' && val !== null && !(val instanceof Date)))
+      return val
+    return undefined
   }
 
   function toRecord(item: AnyValue): Record<string, AnyValue> | null {
@@ -110,10 +110,13 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
     const record: Record<string, JsonLike> = {}
     const keys = Object.keys(itemObj)
     for (const key of keys) {
-      const value: AnyValue = itemObj[key]
-      if (value != null && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')) {
+      const value = getObjectPropertyFromAny(itemObj, key)
+      if (
+        value != null &&
+        (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+      ) {
         record[key] = value
-      } else if (value != null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+      } else if (value != null && isJsonLike(value)) {
         record[key] = value
       }
     }
@@ -145,7 +148,7 @@ const leaveBalanceSchema = z.array(
     remaining: z
       .number()
       .nullish()
-      .transform(v => v ?? null),
+      .transform(val => val ?? null),
   }),
 )
 

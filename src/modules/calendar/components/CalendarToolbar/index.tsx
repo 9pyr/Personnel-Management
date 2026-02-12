@@ -4,8 +4,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 import { useState } from 'react'
 
-import { SelectBase, type SelectOption } from 'common/components/Input/Select'
-import type { User } from 'core/apis/auth/types'
+import { SelectBase, SelectOption } from 'common/components/Input/Select'
+import { User } from 'core/apis/auth/types'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { FILTER_ALL } from 'modules/calendar/constants'
 import { formatMonthTitle } from 'modules/calendar/utils/eventHelpers'
@@ -40,10 +40,10 @@ export function CalendarToolbar({
     { value: FILTER_ALL, label: 'ทั้งหมด (ทุกคน)' },
     ...(currentUser?.id ? [{ value: currentUser.id, label: 'ตัวฉัน' } satisfies SelectOption] : []),
     ...users
-      .filter(u => u.id != null && u.id !== '')
-      .map<SelectOption>(u => ({
-        value: u.id,
-        label: `${u.name}${u.department ? ` (${u.department})` : ''}`,
+      .filter(user => user.id != null && user.id !== '')
+      .map<SelectOption>(user => ({
+        value: user.id,
+        label: `${user.name}${user.department ? ` (${user.department})` : ''}`,
       })),
   ]
 

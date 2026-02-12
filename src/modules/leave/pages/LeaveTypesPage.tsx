@@ -11,9 +11,9 @@ import { Label } from '@/components/ui/label'
 
 import { useCallback, useContext, useEffect, useState } from 'react'
 
-import Table, { type TableRowData } from 'common/components/Table'
+import Table, { TableRowData } from 'common/components/Table'
 import {
-  type LeaveType,
+  LeaveType,
   createLeaveType,
   deleteLeaveType,
   getListLeaveTypes,
@@ -28,8 +28,8 @@ interface ErrWithResponse {
   response?: { data?: object }
 }
 
-function isErrWithResponse(x: object | null | undefined): x is ErrWithResponse {
-  return x != null && typeof x === 'object' && 'response' in x
+function isErrWithResponse(value: object | null | undefined): value is ErrWithResponse {
+  return value != null && typeof value === 'object' && 'response' in value
 }
 
 function errorToMessage(errorData: object | string | null | undefined): string {
@@ -51,8 +51,8 @@ const getColumns = (handleDelete: (id: string) => void) => [
         variant="ghost"
         size="icon"
         className="h-8 w-8 text-destructive hover:text-destructive"
-        onClick={e => {
-          e.stopPropagation()
+        onClick={evt => {
+          evt.stopPropagation()
           if (row.id) handleDelete(String(row.id))
         }}
         aria-label="ลบ"
@@ -135,8 +135,7 @@ const LeaveTypesPage = () => {
       setOpen(false)
       void loadTypes()
     } catch (error) {
-      const err =
-        error != null && typeof error === 'object' ? error : undefined
+      const err = error != null && typeof error === 'object' ? error : undefined
       const errorData = isErrWithResponse(err) ? err.response?.data : undefined
       toast.error(errorToMessage(errorData))
     }
@@ -194,11 +193,15 @@ const LeaveTypesPage = () => {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label>รหัส (เช่น SICK_LEAVE)</Label>
-              <Input value={code} onChange={e => setCode(e.target.value)} disabled={!!editingId} />
+              <Input
+                value={code}
+                onChange={evt => setCode(evt.target.value)}
+                disabled={!!editingId}
+              />
             </div>
             <div className="grid gap-2">
               <Label>ชื่อประเภท</Label>
-              <Input value={name} onChange={e => setName(e.target.value)} />
+              <Input value={name} onChange={evt => setName(evt.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label>จำนวนวันต่อปี (0 = ไม่จำกัด)</Label>
@@ -206,7 +209,9 @@ const LeaveTypesPage = () => {
                 type="number"
                 min={0}
                 value={maxDaysPerYear}
-                onChange={e => setMaxDaysPerYear(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                onChange={evt =>
+                  setMaxDaysPerYear(Math.max(0, parseInt(evt.target.value, 10) || 0))
+                }
               />
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Calendar, CalendarRange, type DateRange } from '@/components/ui/calendar'
+import { Calendar, CalendarRange, DateRange } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
@@ -13,8 +13,8 @@ dayjs.locale('th')
 const TRIGGER_CLASS =
   'flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer hover:bg-accent/50 transition-colors'
 
-function formatDate(d: Date): string {
-  return dayjs(d).format('DD/MM/YYYY')
+function formatDate(date: Date): string {
+  return dayjs(date).format('DD/MM/YYYY')
 }
 
 export interface DatePickerSingleProps {

@@ -11,7 +11,7 @@ import {
   feedPostListSchema,
   updateCommentRequestSchema,
 } from './schemas'
-import type {
+import {
   CreateCommentRequest,
   CreatePostRequest,
   FeedComment,

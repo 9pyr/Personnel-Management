@@ -46,8 +46,8 @@ export function SelectBase({
   disabled,
   className,
 }: SelectBaseProps) {
-  const safeOptions = (opts: SelectOption[]) => opts.filter(o => o.value !== '')
-  const safeGroupOptions = (opts: SelectOption[]) => opts.filter(o => o.value !== '')
+  const safeOptions = (opts: SelectOption[]) => opts.filter(opt => opt.value !== '')
+  const safeGroupOptions = (opts: SelectOption[]) => opts.filter(opt => opt.value !== '')
 
   return (
     <Select disabled={disabled} value={value} onValueChange={onChange}>

@@ -17,7 +17,7 @@ import { useCalendarData } from 'modules/calendar/hooks/useCalendarData'
 import { useEventForm } from 'modules/calendar/hooks/useEventForm'
 import { useHolidayForm } from 'modules/calendar/hooks/useHolidayForm'
 import { useUsers } from 'modules/calendar/hooks/useUsers'
-import type { CalendarItemEvent } from 'modules/calendar/types'
+import { CalendarItemEvent } from 'modules/calendar/types'
 import { buildCalendarEvents, getEventStyle } from 'modules/calendar/utils/eventHelpers'
 import { LEAVE_STATUS } from 'modules/leave/constants'
 import { Calendar as BigCalendar, dayjsLocalizer } from 'react-big-calendar'
@@ -48,7 +48,7 @@ export default function CalendarPage() {
   const { users } = useUsers()
 
   const displayLeaves = useMemo(
-    () => leaves.filter(l => (l.status ?? '') !== LEAVE_STATUS.CANCELLED),
+    () => leaves.filter(leave => (leave.status ?? '') !== LEAVE_STATUS.CANCELLED),
     [leaves],
   )
 

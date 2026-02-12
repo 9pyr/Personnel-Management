@@ -10,7 +10,7 @@ import {
   userListResponseSchema,
   userSchema,
 } from './schemas'
-import type {
+import {
   CreateUserRequest,
   LoginRequest,
   LoginResponse,

@@ -1,6 +1,6 @@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-import type { CalendarItemEvent } from 'modules/calendar/types'
+import { CalendarItemEvent } from 'modules/calendar/types'
 import { formatEventTooltip } from 'modules/calendar/utils/eventHelpers'
 
 interface CalendarEventCellProps {

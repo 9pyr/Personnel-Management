@@ -10,8 +10,8 @@ const TRIGGER_CLASS =
 
 function parseTime(value: string | undefined): { hour: number; minute: number } {
   if (!value) return { hour: 0, minute: 0 }
-  const [h, m] = value.split(':').map(Number)
-  return { hour: Number.isFinite(h) ? h : 0, minute: Number.isFinite(m) ? m : 0 }
+  const [hour, minute] = value.split(':').map(Number)
+  return { hour: Number.isFinite(hour) ? hour : 0, minute: Number.isFinite(minute) ? minute : 0 }
 }
 
 function formatTime(hour: number, minute: number): string {
@@ -20,7 +20,7 @@ function formatTime(hour: number, minute: number): string {
 
 function getMinuteOptions(stepMinutes: number): number[] {
   const options: number[] = []
-  for (let m = 0; m < 60; m += stepMinutes) options.push(m)
+  for (let minVal = 0; minVal < 60; minVal += stepMinutes) options.push(minVal)
   return options
 }
 

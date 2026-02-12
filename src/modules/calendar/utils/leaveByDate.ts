@@ -1,4 +1,4 @@
-import type { Leave } from 'core/apis/leave/types'
+import { Leave } from 'core/apis/leave/types'
 import dayjs from 'dayjs'
 import { groupBy, mapValues, range, sortBy } from 'lodash'
 

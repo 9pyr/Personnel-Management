@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import type { Role } from 'core/apis/auth/types'
+import { Role } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { NavLink } from 'react-router-dom'
 import { menuItems } from 'routes'

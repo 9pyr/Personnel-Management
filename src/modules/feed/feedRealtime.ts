@@ -1,4 +1,4 @@
-import type { FeedComment } from 'core/apis/feed/types'
+import { FeedComment } from 'core/apis/feed/types'
 
 export const FEED_COMMENT_EVENT = 'feed-comment'
 

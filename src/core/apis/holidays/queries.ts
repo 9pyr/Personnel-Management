@@ -3,8 +3,8 @@ import { useClientQuery } from 'core/hooks/useClientQuery'
 import { z } from 'zod'
 
 import {
-  type CompanyHoliday,
-  type CreateHolidayPayload,
+  CompanyHoliday,
+  CreateHolidayPayload,
   companyHolidaySchema,
   createHolidayPayloadSchema,
 } from './schemas'

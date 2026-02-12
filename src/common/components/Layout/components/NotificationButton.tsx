@@ -13,7 +13,7 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from 'core/apis/notifications/queries'
-import type { Notification } from 'core/apis/notifications/types'
+import { Notification } from 'core/apis/notifications/types'
 import { Bell } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -21,15 +21,15 @@ import { NOTIFICATIONS_REFRESH_EVENT } from './notificationsRefresh'
 
 function formatNotificationTime(createdAt: string): string {
   try {
-    const d = new Date(createdAt)
+    const date = new Date(createdAt)
     const now = new Date()
-    const diffMs = now.getTime() - d.getTime()
+    const diffMs = now.getTime() - date.getTime()
     const diffMins = Math.floor(diffMs / 60000)
     if (diffMins < 1) return 'เมื่อสักครู่'
     if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`
     const diffHours = Math.floor(diffMins / 60)
     if (diffHours < 24) return `${diffHours} ชม. ที่แล้ว`
-    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
+    return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
   } catch {
     return ''
   }

@@ -1,6 +1,6 @@
-import type { ReactElement } from 'react'
+import { ReactElement } from 'react'
 
-import type { Role } from 'core/apis/auth/types'
+import { Role } from 'core/apis/auth/types'
 import {
   Calendar,
   ClipboardList,

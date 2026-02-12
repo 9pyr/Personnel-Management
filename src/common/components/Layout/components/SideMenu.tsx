@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator'
 
 import { useContext } from 'react'
 
-import type { Role } from 'core/apis/auth/types'
+import { Role } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import apiCaller from 'core/endpoints/apiCaller'
 
