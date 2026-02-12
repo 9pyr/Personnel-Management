@@ -1,9 +1,9 @@
 export type {
-  CreateCommentRequest,
-  CreatePostRequest,
-  FeedComment,
-  FeedCommentList,
-  FeedPost,
-  FeedPostList,
-  UpdateCommentRequest,
+  CreateCommentRequestType,
+  CreatePostRequestType,
+  FeedCommentListType,
+  FeedCommentType,
+  FeedPostListType,
+  FeedPostType,
+  UpdateCommentRequestType,
 } from './schemas'

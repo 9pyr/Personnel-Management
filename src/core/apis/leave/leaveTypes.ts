@@ -1,17 +1,8 @@
 import apiCaller from 'core/endpoints/apiCaller'
-import { z } from 'zod'
 
-const leaveTypeSchema = z.object({
-  id: z.string().min(1),
-  code: z.string(),
-  name: z.string(),
-  maxDaysPerYear: z.number().int().min(0).optional().default(0),
-})
-export type LeaveType = z.infer<typeof leaveTypeSchema>
+import { leaveTypeListSchema, leaveTypeSchema, LeaveType } from './schemas'
 
-const leaveTypeListSchema = z
-  .union([z.array(leaveTypeSchema), z.null(), z.undefined()])
-  .transform((val): LeaveType[] => val ?? [])
+export type { LeaveType }
 
 function parseResponse<T>(data: object, schema: { parse: (v: object) => T }): T {
   return schema.parse(data)

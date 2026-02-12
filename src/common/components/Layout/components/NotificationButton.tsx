@@ -13,13 +13,13 @@ import {
   useMarkNotificationRead,
   useNotifications,
 } from 'core/apis/notifications/queries'
-import { Notification } from 'core/apis/notifications/types'
+import { NotificationType } from 'core/apis/notifications/types'
 import { Bell } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { NOTIFICATIONS_REFRESH_EVENT } from './notificationsRefresh'
 
-function formatNotificationTime(createdAt: string): string {
+function formatNotificationTypeTime(createdAt: string): string {
   try {
     const date = new Date(createdAt)
     const now = new Date()
@@ -58,7 +58,7 @@ export default function NotificationButton() {
   }
 
   const handleMarkRead = useCallback(
-    async (notification: Notification) => {
+    async (notification: NotificationType) => {
       try {
         await markReadMutation.mutateAsync({ id: notification.id })
         await notificationsQuery.refetch()
@@ -146,7 +146,7 @@ export default function NotificationButton() {
                   </span>
                   <span className="text-muted-foreground">{notification.body}</span>
                   <span className="text-xs text-muted-foreground">
-                    {formatNotificationTime(notification.createdAt)}
+                    {formatNotificationTypeTime(notification.createdAt)}
                   </span>
                 </button>
               ))}

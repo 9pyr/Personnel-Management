@@ -1,4 +1,4 @@
-import { Leave } from 'core/apis/leave/types'
+import { LeaveRecordType } from 'core/apis/leave/types'
 import dayjs from 'dayjs'
 import { groupBy, mapValues, range, sortBy } from 'lodash'
 
@@ -19,7 +19,7 @@ function extractDateValue(value: string | null | undefined): string | null {
   return null
 }
 
-function getLeaveDateRange(leave: Leave): { start: string; end: string } | null {
+function getLeaveRecordTypeDateRange(leave: LeaveRecordType): { start: string; end: string } | null {
   const start = extractDateValue(leave.startDate)
   const end = extractDateValue(leave.endDate)
 
@@ -43,16 +43,16 @@ function datesBetween(start: string, end: string): string[] {
   return range(0, daysDiff + 1).map(offset => startDate.add(offset, 'day').format(DATE_FORMAT))
 }
 
-export interface LeaveOnDate {
-  leave: Leave
+export interface LeaveRecordTypeOnDate {
+  leave: LeaveRecordType
   date: string
 }
 
-export function leavesByDate(leaves: Leave[]): Map<string, LeaveOnDate[]> {
-  const items: LeaveOnDate[] = []
+export function leavesByDate(leaves: LeaveRecordType[]): Map<string, LeaveRecordTypeOnDate[]> {
+  const items: LeaveRecordTypeOnDate[] = []
 
   for (const leave of leaves) {
-    const range = getLeaveDateRange(leave)
+    const range = getLeaveRecordTypeDateRange(leave)
     if (!range) continue
 
     for (const date of datesBetween(range.start, range.end)) {

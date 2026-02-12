@@ -4,7 +4,7 @@ import { useClientQuery } from 'core/hooks/useClientQuery'
 import { z } from 'zod'
 
 import { leaveCreatePayloadSchema, leaveSchema, leaveUpdatePayloadSchema } from './schemas'
-import { Leave, LeaveCreatePayload, LeaveUpdatePayload } from './types'
+import { LeaveCreatePayloadType, LeaveRecordType, LeaveUpdatePayloadType } from './types'
 
 export type LeaveBalanceItem = {
   leaveTypeId: string
@@ -38,7 +38,7 @@ function toYYYYMMDD(value: JsonLike): string {
   return ''
 }
 
-function normalizeLeaveItem(raw: Record<string, JsonLike>): Leave {
+function normalizeLeaveItem(raw: Record<string, JsonLike>): LeaveRecordType {
   const startRaw = raw.startDate ?? ''
   const endRaw = raw.endDate ?? ''
   const start =
@@ -77,9 +77,9 @@ function getLeavesListFromPayload(data: AnyValue): AnyValue[] {
   return [...raw]
 }
 
-function parseLeaveList(data: AnyValue): Leave[] {
+function parseLeaveList(data: AnyValue): LeaveRecordType[] {
   const list = getLeavesListFromPayload(data)
-  const result: Leave[] = []
+  const result: LeaveRecordType[] = []
   function isRecordLike(obj: AnyValue): obj is Record<string, AnyValue> {
     return typeof obj === 'object' && obj !== null && !Array.isArray(obj)
   }
@@ -145,7 +145,7 @@ const leaveBalanceSchema = z.array(
 )
 
 export function useListLeave(params?: GetListLeaveParams) {
-  return useClientQuery<Leave[]>({
+  return useClientQuery<LeaveRecordType[]>({
     url: '/leaves',
     params: params
       ? {
@@ -159,7 +159,7 @@ export function useListLeave(params?: GetListLeaveParams) {
 }
 
 export function useLeaveById(id: string, options?: { enabled?: boolean }) {
-  return useClientQuery<Leave>({
+  return useClientQuery<LeaveRecordType>({
     url: `/leaves/${id}`,
     enabled: options?.enabled !== undefined ? options.enabled : Boolean(id),
     select: data => {
@@ -180,7 +180,7 @@ export function useLeaveBalance() {
 }
 
 export function useCreateLeave() {
-  return useClientMutation<Leave, LeaveCreatePayload>({
+  return useClientMutation<LeaveRecordType, LeaveCreatePayloadType>({
     method: 'POST',
     url: '/leaves/create',
     invalidateQueries: ['/leaves'],
@@ -189,7 +189,7 @@ export function useCreateLeave() {
 }
 
 export function useUpdateLeave() {
-  return useClientMutation<Leave, LeaveUpdatePayload>({
+  return useClientMutation<LeaveRecordType, LeaveUpdatePayloadType>({
     method: 'PUT',
     url: '/leaves/update',
     invalidateQueries: ['/leaves'],

@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
+import namingSuffixRule from './eslint-rules/naming-suffix.js'
 
 export default tseslint.config(
   { ignores: ['dist', 'vite.config.ts'] },
@@ -21,6 +22,11 @@ export default tseslint.config(
     plugins: {
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
+      'local-naming': {
+        rules: {
+          'naming-suffix': namingSuffixRule,
+        },
+      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -58,6 +64,7 @@ export default tseslint.config(
       ],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+      'local-naming/naming-suffix': 'error',
     },
   },
   {

@@ -1,7 +1,7 @@
 import { dispatchNotificationsRefresh } from 'common/components/Layout/components/notificationsRefresh'
-import { FeedComment } from 'core/apis/feed/types'
+import { FeedCommentType } from 'core/apis/feed/types'
 import { useWebSocket } from 'core/hooks/useWebSocket'
-import { dispatchFeedComment } from 'modules/feed/feedRealtime'
+import { dispatchFeedCommentType } from 'modules/feed/feedRealtime'
 import { toast } from 'sonner'
 
 function NotificationListener() {
@@ -39,7 +39,7 @@ function NotificationListener() {
           msg.createdAt &&
           msg.authorName != null
         ) {
-          const comment: FeedComment = {
+          const comment: FeedCommentType = {
             id: msg.id,
             postId: msg.postId,
             parentId: msg.parentId ?? undefined,
@@ -50,7 +50,7 @@ function NotificationListener() {
             authorName: msg.authorName,
             replyToUserName: msg.replyToUserName,
           }
-          dispatchFeedComment(msg.postId, comment)
+          dispatchFeedCommentType(msg.postId, comment)
         }
         break
       case 'FEED_COMMENT':

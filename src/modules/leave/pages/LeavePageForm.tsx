@@ -24,7 +24,7 @@ import {
   useLeaveById,
   useUpdateLeave,
 } from 'core/apis/leave/queries'
-import { Leave, LeaveCreatePayload, LeaveUpdatePayload } from 'core/apis/leave/types'
+import { LeaveRecordType, LeaveCreatePayloadType, LeaveUpdatePayloadType } from 'core/apis/leave/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { LEAVE_STATUS, leaveFields } from 'modules/leave/constants'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
@@ -33,7 +33,7 @@ import { toast } from 'sonner'
 
 type LeaveDurationType = 'FULL_DAY' | 'HOURLY'
 
-type LeaveFormDefaults = Partial<Leave> & {
+type LeaveFormDefaults = Partial<LeaveRecordType> & {
   leaveTypeId: string
   description: string
   startDate: string
@@ -166,7 +166,7 @@ const LeavePageForm = () => {
         return
       }
 
-      const createPayload: LeaveCreatePayload = {
+      const createPayload: LeaveCreatePayloadType = {
         leaveTypeId: values.leaveTypeId ?? '',
         description: String(values.description ?? ''),
         startDate,
@@ -192,7 +192,7 @@ const LeavePageForm = () => {
         return
       }
 
-      const updatePayload: LeaveUpdatePayload = {
+      const updatePayload: LeaveUpdatePayloadType = {
         id: values.id,
         leaveTypeId: values.leaveTypeId ?? '',
         description: String(values.description ?? ''),

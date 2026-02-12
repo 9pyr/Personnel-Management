@@ -10,18 +10,13 @@ export const feedPostSchema = z.object({
   authorName: z.string(),
 })
 
-export type FeedPost = z.infer<typeof feedPostSchema>
-
 export const feedPostListSchema = z
   .union([z.array(feedPostSchema), z.null(), z.undefined()])
   .transform(val => val ?? [])
-export type FeedPostList = z.infer<typeof feedPostListSchema>
 
 export const createPostRequestSchema = z.object({
   content: z.string().min(1, 'กรุณากรอกข้อความ'),
 })
-
-export type CreatePostRequest = z.infer<typeof createPostRequestSchema>
 
 export const feedCommentSchema = z.object({
   id: uuidLike,
@@ -35,13 +30,9 @@ export const feedCommentSchema = z.object({
   replyToUserName: z.string().optional(),
 })
 
-export type FeedComment = z.infer<typeof feedCommentSchema>
-
 export const feedCommentListSchema = z
   .union([z.array(feedCommentSchema), z.null(), z.undefined()])
   .transform(val => val ?? [])
-
-export type FeedCommentList = z.infer<typeof feedCommentListSchema>
 
 export const createCommentRequestSchema = z.object({
   content: z.string().min(1, 'กรุณากรอกข้อความ'),
@@ -49,10 +40,14 @@ export const createCommentRequestSchema = z.object({
   replyToUserId: z.string().uuid().optional().nullable(),
 })
 
-export type CreateCommentRequest = z.infer<typeof createCommentRequestSchema>
-
 export const updateCommentRequestSchema = z.object({
   content: z.string().min(1, 'กรุณากรอกข้อความ'),
 })
 
-export type UpdateCommentRequest = z.infer<typeof updateCommentRequestSchema>
+export type FeedPostType = z.infer<typeof feedPostSchema>
+export type FeedPostListType = z.infer<typeof feedPostListSchema>
+export type CreatePostRequestType = z.infer<typeof createPostRequestSchema>
+export type FeedCommentType = z.infer<typeof feedCommentSchema>
+export type FeedCommentListType = z.infer<typeof feedCommentListSchema>
+export type CreateCommentRequestType = z.infer<typeof createCommentRequestSchema>
+export type UpdateCommentRequestType = z.infer<typeof updateCommentRequestSchema>

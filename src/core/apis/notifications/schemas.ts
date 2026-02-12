@@ -17,5 +17,5 @@ export const notificationsListResponseSchema = z.object({
   unreadCount: z.number().int().min(0),
 })
 
-export type Notification = z.infer<typeof notificationSchema>
-export type NotificationsListResponse = z.infer<typeof notificationsListResponseSchema>
+export type NotificationType = z.infer<typeof notificationSchema>
+export type NotificationsListResponseType = z.infer<typeof notificationsListResponseSchema>

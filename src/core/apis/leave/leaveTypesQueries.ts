@@ -1,18 +1,7 @@
 import { useClientMutation } from 'core/hooks/useClientMutation'
 import { useClientQuery } from 'core/hooks/useClientQuery'
-import { z } from 'zod'
 
-const leaveTypeSchema = z.object({
-  id: z.string().min(1),
-  code: z.string(),
-  name: z.string(),
-  maxDaysPerYear: z.number().int().min(0).optional().default(0),
-})
-export type LeaveType = z.infer<typeof leaveTypeSchema>
-
-const leaveTypeListSchema = z
-  .union([z.array(leaveTypeSchema), z.null(), z.undefined()])
-  .transform((val): LeaveType[] => val ?? [])
+import { leaveTypeListSchema, LeaveType } from './schemas'
 
 const TYPES_BASE = '/leaves/types'
 

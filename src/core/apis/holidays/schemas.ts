@@ -7,11 +7,10 @@ export const companyHolidaySchema = z.object({
   createdAt: z.string().optional(),
 })
 
-export type CompanyHoliday = z.infer<typeof companyHolidaySchema>
-
 export const createHolidayPayloadSchema = z.object({
   date: z.string().min(1, 'กรุณาเลือกวันที่'),
   name: z.string().min(1, 'กรุณากรอกชื่อวันหยุด'),
 })
 
-export type CreateHolidayPayload = z.infer<typeof createHolidayPayloadSchema>
+export type CompanyHolidayType = z.infer<typeof companyHolidaySchema>
+export type CreateHolidayPayloadType = z.infer<typeof createHolidayPayloadSchema>

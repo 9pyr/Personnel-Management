@@ -1,13 +1,13 @@
 import { userSchema } from 'core/apis/auth/schemas'
-import { User } from 'core/apis/auth/types'
+import { UserType } from 'core/apis/auth/types'
 import { parseJSONToAnyValue } from 'core/endpoints/parseJson'
 import { create } from 'zustand'
 
 interface AuthState {
   token: string | null
-  user: User | null
+  user: UserType | null
   setToken: (value: string | null) => void
-  setUser: (value: User | null) => void
+  setUser: (value: UserType | null) => void
   clearAuth: () => void
 }
 
@@ -20,7 +20,7 @@ function persistToken(value: string | null): void {
   else localStorage.removeItem(TOKEN_KEY)
 }
 
-function persistUser(value: User | null): void {
+function persistUser(value: UserType | null): void {
   if (typeof window === 'undefined') return
   if (value) localStorage.setItem(USER_KEY, JSON.stringify(value))
   else localStorage.removeItem(USER_KEY)
@@ -41,7 +41,7 @@ function parseJSONSafe(text: string): object | null {
   }
 }
 
-function getInitialUser(): User | null {
+function getInitialUser(): UserType | null {
   if (typeof window === 'undefined') return null
   const raw = localStorage.getItem(USER_KEY)
   if (!raw) return null
@@ -74,7 +74,7 @@ export function getStoredToken(): string | null {
 }
 
 /** ใช้หลัง login — เขียน token/user ลง localStorage ทันที เพื่อไม่ให้ getMe() ใน AuthInitializer เรียกก่อน effect จะรัน */
-export function persistAuthAfterLogin(token: string, user: User): void {
+export function persistAuthAfterLogin(token: string, user: UserType): void {
   if (typeof window === 'undefined') return
   localStorage.setItem(TOKEN_KEY, token)
   localStorage.setItem(USER_KEY, JSON.stringify(user))
@@ -90,13 +90,13 @@ export function useAuthToken(): string | null {
   return useAuthStore(state => state.token)
 }
 
-export function useAuthUser(): User | null {
+export function useAuthUser(): UserType | null {
   return useAuthStore(state => state.user)
 }
 
 export function useAuthActions(): {
   setToken: (value: string | null) => void
-  setUser: (value: User | null) => void
+  setUser: (value: UserType | null) => void
   clearAuth: () => void
 } {
   const setToken = useAuthStore(state => state.setToken)

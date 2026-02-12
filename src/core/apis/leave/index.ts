@@ -3,7 +3,7 @@ import { AnyValue, JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
 import { z } from 'zod'
 
 import { leaveCreatePayloadSchema, leaveSchema, leaveUpdatePayloadSchema } from './schemas'
-import { Leave, LeaveCreatePayload, LeaveUpdatePayload } from './types'
+import { LeaveCreatePayloadType, LeaveRecordType, LeaveUpdatePayloadType } from './types'
 
 function parseResponse<T>(data: object, schema: { parse: (v: object) => T }): T {
   return schema.parse(data)
@@ -36,7 +36,7 @@ function toYYYYMMDD(value: JsonLike): string {
   return ''
 }
 
-function normalizeLeaveItem(raw: Record<string, JsonLike>): Leave {
+function normalizeLeaveItem(raw: Record<string, JsonLike>): LeaveRecordType {
   const startRaw = raw.startDate ?? ''
   const endRaw = raw.endDate ?? ''
   const start =
@@ -69,7 +69,7 @@ function getLeavesListFromResponse(data: AnyValue[] | LeaveListResponseShape): A
   return [...raw]
 }
 
-export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]> => {
+export const getListLeave = async (params?: GetListLeaveParams): Promise<LeaveRecordType[]> => {
   const search = new URLSearchParams()
   if (params?.from) search.set('from', params.from)
   if (params?.to) search.set('to', params.to)
@@ -78,7 +78,7 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
   const url = qs ? `/leaves?${qs}` : '/leaves'
   const { data } = await apiCaller.get<AnyValue[] | LeaveListResponseShape>(url)
   const list = getLeavesListFromResponse(data)
-  const result: Leave[] = []
+  const result: LeaveRecordType[] = []
   function isRecordLike(obj: AnyValue): obj is Record<string, AnyValue> {
     return typeof obj === 'object' && obj !== null && !Array.isArray(obj)
   }
@@ -157,18 +157,18 @@ export const getLeaveBalance = async (): Promise<LeaveBalanceItem[]> => {
   return leaveBalanceSchema.parse(data)
 }
 
-export const getLeaveById = async (id: string): Promise<Leave> => {
+export const getLeaveById = async (id: string): Promise<LeaveRecordType> => {
   const { data } = await apiCaller.get<object>(`/leaves/${id}`)
   return parseResponse(data, leaveSchema)
 }
 
-export const createLeave = async (payload: LeaveCreatePayload): Promise<Leave> => {
+export const createLeave = async (payload: LeaveCreatePayloadType): Promise<LeaveRecordType> => {
   const body = leaveCreatePayloadSchema.parse(payload)
   const { data } = await apiCaller.post<object>('/leaves/create', body)
   return parseResponse(data, leaveSchema)
 }
 
-export const updateLeaveById = async (payload: LeaveUpdatePayload): Promise<Leave> => {
+export const updateLeaveById = async (payload: LeaveUpdatePayloadType): Promise<LeaveRecordType> => {
   const body = leaveUpdatePayloadSchema.parse(payload)
   const { data } = await apiCaller.put<object>('/leaves/update', body)
   return parseResponse(data, leaveSchema)

@@ -1,6 +1,6 @@
-import { Event } from 'core/apis/events/schemas'
-import { CompanyHoliday } from 'core/apis/holidays'
-import { Leave } from 'core/apis/leave/types'
+import { EventType } from 'core/apis/events/schemas'
+import { CompanyHolidayType } from 'core/apis/holidays'
+import { LeaveRecordType } from 'core/apis/leave/types'
 import dayjs from 'dayjs'
 import { EVENT_STYLES } from 'modules/calendar/constants'
 import { CalendarItemEvent } from 'modules/calendar/types'
@@ -72,7 +72,7 @@ export function formatMonthTitle(year: number, month: number): string {
   return dayjs(new Date(year, month - 1, 1)).format('MMMM YYYY')
 }
 
-function createLeaveEvent(leave: Leave): CalendarItemEvent | null {
+function createLeaveEvent(leave: LeaveRecordType): CalendarItemEvent | null {
   const start = leave.startDate ? new Date(leave.startDate) : null
   const end = leave.endDate ? new Date(leave.endDate) : start
   if (!start || !end) return null
@@ -88,7 +88,7 @@ function createLeaveEvent(leave: Leave): CalendarItemEvent | null {
   }
 }
 
-function createHolidayEvent(holiday: CompanyHoliday): CalendarItemEvent | null {
+function createHolidayEvent(holiday: CompanyHolidayType): CalendarItemEvent | null {
   const date = holiday.date ? new Date(holiday.date) : null
   if (!date) return null
 
@@ -103,7 +103,7 @@ function createHolidayEvent(holiday: CompanyHoliday): CalendarItemEvent | null {
   }
 }
 
-function createWorkEvent(workEvent: Event): CalendarItemEvent | null {
+function createWorkEvent(workEvent: EventType): CalendarItemEvent | null {
   const baseDate = workEvent.date ? new Date(workEvent.date) : null
   if (!baseDate) return null
 
@@ -119,9 +119,9 @@ function createWorkEvent(workEvent: Event): CalendarItemEvent | null {
 }
 
 export function buildCalendarEvents(
-  leaves: Leave[],
-  holidays: CompanyHoliday[],
-  events: Event[],
+  leaves: LeaveRecordType[],
+  holidays: CompanyHolidayType[],
+  events: EventType[],
 ): CalendarItemEvent[] {
   const leaveEvents = leaves
     .map(createLeaveEvent)

@@ -10,11 +10,11 @@ import {
   updateCommentRequestSchema,
 } from './schemas'
 import {
-  CreateCommentRequest,
-  CreatePostRequest,
-  FeedComment,
-  FeedPost,
-  UpdateCommentRequest,
+  CreateCommentRequestType,
+  CreatePostRequestType,
+  FeedCommentType,
+  FeedPostType,
+  UpdateCommentRequestType,
 } from './types'
 
 const FEED_BASE = '/feed'
@@ -31,7 +31,7 @@ export interface GetFeedParams {
 }
 
 /** ดึงรายการโพสต์จาก Backend (GET /feed) รองรับ pagination */
-export const getFeed = async (params?: GetFeedParams): Promise<FeedPost[]> => {
+export const getFeed = async (params?: GetFeedParams): Promise<FeedPostType[]> => {
   const limit = params?.limit ?? DEFAULT_FEED_LIMIT
   const offset = params?.offset ?? 0
   const { data } = await apiCaller.get<object>(FEED_BASE, {
@@ -40,13 +40,13 @@ export const getFeed = async (params?: GetFeedParams): Promise<FeedPost[]> => {
   return parseResponse(data, feedPostListSchema)
 }
 
-export const createPost = async (payload: CreatePostRequest): Promise<FeedPost> => {
+export const createPost = async (payload: CreatePostRequestType): Promise<FeedPostType> => {
   const body = createPostRequestSchema.parse(payload)
   const { data } = await apiCaller.post<object>(FEED_BASE, body)
   return parseResponse(data, feedPostSchema)
 }
 
-export const updatePost = async (id: string, payload: CreatePostRequest): Promise<FeedPost> => {
+export const updatePost = async (id: string, payload: CreatePostRequestType): Promise<FeedPostType> => {
   const body = createPostRequestSchema.parse(payload)
   const { data } = await apiCaller.put<object>(`${FEED_BASE}/${id}`, body)
   return parseResponse(data, feedPostSchema)
@@ -56,15 +56,15 @@ export const deletePost = async (id: string): Promise<void> => {
   await apiCaller.delete(`${FEED_BASE}/${id}`)
 }
 
-export const getComments = async (postId: string): Promise<FeedComment[]> => {
+export const getComments = async (postId: string): Promise<FeedCommentType[]> => {
   const { data } = await apiCaller.get<object>(`${FEED_BASE}/${postId}/comments`)
   return parseResponse(data, feedCommentListSchema)
 }
 
 export const createComment = async (
   postId: string,
-  payload: CreateCommentRequest,
-): Promise<FeedComment> => {
+  payload: CreateCommentRequestType,
+): Promise<FeedCommentType> => {
   const body = createCommentRequestSchema.parse(payload)
   const { data } = await apiCaller.post<object>(`${FEED_BASE}/${postId}/comments`, body)
   return parseResponse(data, feedCommentSchema)
@@ -72,8 +72,8 @@ export const createComment = async (
 
 export const updateComment = async (
   id: string,
-  payload: UpdateCommentRequest,
-): Promise<FeedComment> => {
+  payload: UpdateCommentRequestType,
+): Promise<FeedCommentType> => {
   const body = updateCommentRequestSchema.parse(payload)
   const { data } = await apiCaller.put<object>(`${FEED_BASE}/comments/${id}`, body)
   return parseResponse(data, feedCommentSchema)

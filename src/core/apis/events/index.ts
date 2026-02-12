@@ -2,9 +2,9 @@ import apiCaller from 'core/endpoints/apiCaller'
 import { AnyValue, JsonLike, isJsonLike } from 'core/endpoints/caseTransform'
 
 import {
-  Event,
-  EventCreatePayload,
-  EventUpdatePayload,
+  EventType,
+  EventCreatePayloadType,
+  EventUpdatePayloadType,
   eventCreatePayloadSchema,
   eventSchema,
   eventUpdatePayloadSchema,
@@ -65,7 +65,7 @@ function getNestedData(value: AnyValue): JsonLike | undefined {
   return value['data']
 }
 
-function normalizeEvent(raw: Record<string, JsonLike>): Event {
+function normalizeEvent(raw: Record<string, JsonLike>): EventType {
   const dateSource =
     typeof raw.date === 'string' && raw.date.trim().length > 0 ? raw.date.trim().slice(0, 10) : ''
   const title = typeof raw.title === 'string' && raw.title.trim().length > 0 ? raw.title.trim() : ''
@@ -87,7 +87,7 @@ function normalizeEvent(raw: Record<string, JsonLike>): Event {
   }
 }
 
-export async function getEvents(params?: GetEventsParams): Promise<Event[]> {
+export async function getEvents(params?: GetEventsParams): Promise<EventType[]> {
   const search = new URLSearchParams()
   if (params?.from) search.set('from', params.from)
   if (params?.to) search.set('to', params.to)
@@ -97,7 +97,7 @@ export async function getEvents(params?: GetEventsParams): Promise<Event[]> {
   const { data } = await apiCaller.get<object>(url)
   const raw = getNestedData(data)
   const list = Array.isArray(raw) ? raw : []
-  const result: Event[] = []
+  const result: EventType[] = []
   for (const item of list) {
     if (!isRecord(item)) continue
     try {
@@ -109,12 +109,12 @@ export async function getEvents(params?: GetEventsParams): Promise<Event[]> {
   return result
 }
 
-export async function getEventById(id: string): Promise<Event> {
+export async function getEventById(id: string): Promise<EventType> {
   const { data } = await apiCaller.get<object>(`/events/${id}`)
   return eventSchema.parse(data)
 }
 
-export async function createEvent(payload: EventCreatePayload): Promise<Event> {
+export async function createEvent(payload: EventCreatePayloadType): Promise<EventType> {
   const body = eventCreatePayloadSchema.parse(payload)
   const { data } = await apiCaller.post<object>('/events', {
     date: body.date,
@@ -126,7 +126,7 @@ export async function createEvent(payload: EventCreatePayload): Promise<Event> {
   return eventSchema.parse(data)
 }
 
-export async function updateEvent(id: string, payload: EventUpdatePayload): Promise<Event> {
+export async function updateEvent(id: string, payload: EventUpdatePayloadType): Promise<EventType> {
   const body = eventUpdatePayloadSchema.parse(payload)
   const send: Record<string, string | number | boolean> = {}
   if (body.date != null) send.date = body.date
@@ -142,5 +142,5 @@ export async function deleteEvent(id: string): Promise<void> {
   await apiCaller.delete(`/events/${id}`)
 }
 
-export type { Event, EventCreatePayload, EventUpdatePayload }
+export type { EventType, EventCreatePayloadType, EventUpdatePayloadType }
 export { EVENT_TYPE_LABELS } from './schemas'

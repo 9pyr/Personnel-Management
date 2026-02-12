@@ -16,24 +16,24 @@ import {
   useUpdatePost,
 } from 'core/apis/feed/queries'
 import { feedPostListSchema } from 'core/apis/feed/schemas'
-import { FeedComment, FeedPost } from 'core/apis/feed/types'
+import { FeedCommentType, FeedPostType } from 'core/apis/feed/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import apiCaller from 'core/endpoints/apiCaller'
 import { AnyValue } from 'core/endpoints/caseTransform'
 import { FeedCard } from 'modules/feed/components/FeedCard'
-import { FEED_COMMENT_EVENT, FeedCommentEventDetail } from 'modules/feed/feedRealtime'
+import { FEED_COMMENT_EVENT, FeedCommentTypeEventDetail } from 'modules/feed/feedRealtime'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 const FEED_PAGE_SIZE = 20
 
 interface FeedCardWithCommentsProps {
-  post: FeedPost
+  post: FeedPostType
   isOwner: boolean
   isEditing: boolean
   editingContent: string
   currentUserId: string | undefined
-  onStartEdit: (post: FeedPost) => void
+  onStartEdit: (post: FeedPostType) => void
   onEditingContentChange: (value: string) => void
   onCancelEdit: () => void
   onSaveEdit: () => void
@@ -67,9 +67,9 @@ function isFeedHighlightState(state: object | null | undefined): state is FeedHi
   )
 }
 
-function isFeedCommentEventDetail(
+function isFeedCommentTypeEventDetail(
   detail: object | null | undefined,
-): detail is FeedCommentEventDetail {
+): detail is FeedCommentTypeEventDetail {
   if (detail == null || typeof detail !== 'object') return false
   return 'postId' in detail && 'comment' in detail
 }
@@ -130,7 +130,7 @@ const FeedPage = () => {
         return feedPostListSchema.parse(data)
       },
     })
-    queryClient.setQueryData(['/feed'], (old: FeedPost[] | undefined) => {
+    queryClient.setQueryData(['/feed'], (old: FeedPostType[] | undefined) => {
       if (!old) return nextData
       return [...old, ...nextData]
     })
@@ -146,11 +146,10 @@ const FeedPage = () => {
       if (!(event instanceof CustomEvent)) return
       const detailRaw = acceptEventDetail(event.detail)
       if (detailRaw == null || typeof detailRaw !== 'object') return
-      const detail: object = detailRaw
-      if (!isFeedCommentEventDetail(detail)) return
-      const { postId, comment } = detail
+      if (!isFeedCommentTypeEventDetail(detailRaw)) return
+      const { postId, comment } = detailRaw
       if (!postId || !comment) return
-      queryClient.setQueryData([`/feed/${postId}/comments`], (old: FeedComment[] | undefined) => {
+      queryClient.setQueryData([`/feed/${postId}/comments`], (old: FeedCommentType[] | undefined) => {
         if (!old) return [comment]
         if (
           old.some(
@@ -241,7 +240,7 @@ const FeedPage = () => {
     }
   }
 
-  const startEdit = (post: FeedPost) => {
+  const startEdit = (post: FeedPostType) => {
     setEditingPostId(post.id)
     setEditingContent(post.content)
   }

@@ -1,9 +1,9 @@
 import apiCaller from 'core/endpoints/apiCaller'
 
 import { notificationsListResponseSchema } from './schemas'
-import { NotificationsListResponse } from './types'
+import { NotificationsListResponseType } from './types'
 
-export async function getNotifications(): Promise<NotificationsListResponse> {
+export async function getNotifications(): Promise<NotificationsListResponseType> {
   const { data } = await apiCaller.get<object>('/notifications')
   return notificationsListResponseSchema.parse(data)
 }

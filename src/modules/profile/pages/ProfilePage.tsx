@@ -8,13 +8,13 @@ import Form from 'common/components/Form'
 import TextInput from 'common/components/Input/Text'
 import { useMe, useUpdateProfile, useUploadProfileImage } from 'core/apis/auth/queries'
 import { updateProfileRequestSchema } from 'core/apis/auth/schemas'
-import { User } from 'core/apis/auth/types'
+import { UserType } from 'core/apis/auth/types'
 import apiCaller from 'core/endpoints/apiCaller'
 import { useAuthActions } from 'core/stores/auth'
 import { Camera } from 'lucide-react'
 import { toast } from 'sonner'
 
-function profileImageSrc(user: User | null): string | undefined {
+function profileImageSrc(user: UserType | null): string | undefined {
   const url = user?.profileImageUrl
   if (!url) return undefined
   const base = apiCaller.defaults.baseURL ?? ''

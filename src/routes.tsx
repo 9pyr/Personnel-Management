@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 
-import { Role } from 'core/apis/auth/types'
+import { RoleType } from 'core/apis/auth/types'
 import {
   Calendar,
   ClipboardList,
@@ -21,7 +21,7 @@ import { RouteObject } from 'react-router-dom'
 
 const iconClass = 'h-5 w-5'
 
-export const menuItems: ({ name: string; icon: ReactElement; roles?: Role[] } & RouteObject)[] = [
+export const menuItems: ({ name: string; icon: ReactElement; roles?: RoleType[] } & RouteObject)[] = [
   {
     name: 'หน้าหลัก',
     icon: <LayoutDashboard className={iconClass} />,

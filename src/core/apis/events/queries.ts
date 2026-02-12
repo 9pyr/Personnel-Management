@@ -3,9 +3,9 @@ import { useClientMutation } from 'core/hooks/useClientMutation'
 import { useClientQuery } from 'core/hooks/useClientQuery'
 
 import {
-  Event,
-  EventCreatePayload,
-  EventUpdatePayload,
+  EventType,
+  EventCreatePayloadType,
+  EventUpdatePayloadType,
   eventCreatePayloadSchema,
   eventSchema,
   eventUpdatePayloadSchema,
@@ -66,7 +66,7 @@ function getNestedData(value: AnyValue): JsonLike | undefined {
   return value['data']
 }
 
-function normalizeEvent(raw: Record<string, JsonLike>): Event {
+function normalizeEvent(raw: Record<string, JsonLike>): EventType {
   const date = (typeof raw.date === 'string' && raw.date.trim().slice(0, 10)) || ''
   return {
     id: typeof raw.id === 'string' ? raw.id : undefined,
@@ -80,10 +80,10 @@ function normalizeEvent(raw: Record<string, JsonLike>): Event {
   }
 }
 
-function parseEventList(data: AnyValue): Event[] {
+function parseEventList(data: AnyValue): EventType[] {
   const raw = getNestedData(data)
   const list = Array.isArray(raw) ? raw : []
-  const result: Event[] = []
+  const result: EventType[] = []
   for (const item of list) {
     if (!isRecord(item)) continue
     try {
@@ -96,7 +96,7 @@ function parseEventList(data: AnyValue): Event[] {
 }
 
 export function useEvents(params?: GetEventsParams) {
-  return useClientQuery<Event[]>({
+  return useClientQuery<EventType[]>({
     url: '/events',
     params: params
       ? {
@@ -110,7 +110,7 @@ export function useEvents(params?: GetEventsParams) {
 }
 
 export function useEventById(id: string) {
-  return useClientQuery<Event>({
+  return useClientQuery<EventType>({
     url: `/events/${id}`,
     enabled: Boolean(id),
     select: data => {
@@ -124,7 +124,7 @@ export function useEventById(id: string) {
 }
 
 export function useCreateEvent() {
-  return useClientMutation<Event, EventCreatePayload>({
+  return useClientMutation<EventType, EventCreatePayloadType>({
     method: 'POST',
     url: '/events',
     invalidateQueries: ['/events'],
@@ -133,7 +133,7 @@ export function useCreateEvent() {
 }
 
 export function useUpdateEvent() {
-  return useClientMutation<Event, { id: string } & EventUpdatePayload>({
+  return useClientMutation<EventType, { id: string } & EventUpdatePayloadType>({
     method: 'PUT',
     url: variables => `/events/${variables.id}`,
     invalidateQueries: ['/events'],

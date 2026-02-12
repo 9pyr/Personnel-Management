@@ -42,7 +42,16 @@ export const leaveSchema = leaveSchemaBase.transform(obj => {
   }
 })
 
-export type Leave = z.infer<typeof leaveSchema>
+export const leaveTypeSchema = z.object({
+  id: z.string().min(1),
+  code: z.string(),
+  name: z.string(),
+  maxDaysPerYear: z.number().int().min(0).optional().default(0),
+})
+
+export const leaveTypeListSchema = z
+  .union([z.array(leaveTypeSchema), z.null(), z.undefined()])
+  .transform((val): z.infer<typeof leaveTypeSchema>[] => val ?? [])
 
 // Frontend uses camelCase for payload
 export const leaveCreatePayloadSchema = leaveSchemaBase
@@ -58,7 +67,6 @@ export const leaveCreatePayloadSchema = leaveSchemaBase
     endDate: z.string().min(1),
     durationType: z.enum(['FULL_DAY', 'HOURLY']).optional().default('FULL_DAY'),
   })
-export type LeaveCreatePayload = z.infer<typeof leaveCreatePayloadSchema>
 
 export const leaveUpdatePayloadSchema = leaveSchemaBase.extend({
   id: z.string().min(1),
@@ -66,4 +74,8 @@ export const leaveUpdatePayloadSchema = leaveSchemaBase.extend({
   endDate: z.string().optional(),
   durationType: z.enum(['FULL_DAY', 'HOURLY']).optional(),
 })
-export type LeaveUpdatePayload = z.infer<typeof leaveUpdatePayloadSchema>
+
+export type LeaveRecordType = z.infer<typeof leaveSchema>
+export type LeaveType = z.infer<typeof leaveTypeSchema>
+export type LeaveCreatePayloadType = z.infer<typeof leaveCreatePayloadSchema>
+export type LeaveUpdatePayloadType = z.infer<typeof leaveUpdatePayloadSchema>

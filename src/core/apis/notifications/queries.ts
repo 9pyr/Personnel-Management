@@ -2,10 +2,10 @@ import { useClientMutation } from 'core/hooks/useClientMutation'
 import { useClientQuery } from 'core/hooks/useClientQuery'
 
 import { notificationsListResponseSchema } from './schemas'
-import { NotificationsListResponse } from './types'
+import { NotificationsListResponseType } from './types'
 
 export function useNotifications() {
-  return useClientQuery<NotificationsListResponse>({
+  return useClientQuery<NotificationsListResponseType>({
     url: '/notifications',
     select: data => notificationsListResponseSchema.parse(data),
   })

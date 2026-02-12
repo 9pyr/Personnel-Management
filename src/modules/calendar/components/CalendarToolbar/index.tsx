@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useState } from 'react'
 
 import { SelectBase, SelectOption } from 'common/components/Input/Select'
-import { User } from 'core/apis/auth/types'
+import { UserType } from 'core/apis/auth/types'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { FILTER_ALL } from 'modules/calendar/constants'
 import { formatMonthTitle } from 'modules/calendar/utils/eventHelpers'
@@ -18,8 +18,8 @@ interface CalendarToolbarProps {
   onMonthSelect: (date: Date | undefined) => void
   filterValue: string
   onFilterChange: (value: string) => void
-  users: User[]
-  currentUser: User | null
+  users: UserType[]
+  currentUser: UserType | null
 }
 
 export function CalendarToolbar({

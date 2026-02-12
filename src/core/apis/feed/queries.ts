@@ -12,11 +12,11 @@ import {
   updateCommentRequestSchema,
 } from './schemas'
 import {
-  CreateCommentRequest,
-  CreatePostRequest,
-  FeedComment,
-  FeedPost,
-  UpdateCommentRequest,
+  CreateCommentRequestType,
+  CreatePostRequestType,
+  FeedCommentType,
+  FeedPostType,
+  UpdateCommentRequestType,
 } from './types'
 
 const FEED_BASE = '/feed'
@@ -31,7 +31,7 @@ export function useFeed(params?: GetFeedParams) {
   const limit = params?.limit ?? DEFAULT_FEED_LIMIT
   const offset = params?.offset ?? 0
 
-  return useClientQuery<FeedPost[]>({
+  return useClientQuery<FeedPostType[]>({
     url: FEED_BASE,
     params: { limit, offset },
     select: data => feedPostListSchema.parse(data),
@@ -56,7 +56,7 @@ export function useFeedInfinite() {
 }
 
 export function useComments(postId: string) {
-  return useClientQuery<FeedComment[]>({
+  return useClientQuery<FeedCommentType[]>({
     url: `${FEED_BASE}/${postId}/comments`,
     enabled: Boolean(postId),
     select: data => feedCommentListSchema.parse(data),
@@ -64,7 +64,7 @@ export function useComments(postId: string) {
 }
 
 export function useCreatePost() {
-  return useClientMutation<FeedPost, CreatePostRequest>({
+  return useClientMutation<FeedPostType, CreatePostRequestType>({
     method: 'POST',
     url: FEED_BASE,
     invalidateQueries: [FEED_BASE],
@@ -73,7 +73,7 @@ export function useCreatePost() {
 }
 
 export function useUpdatePost() {
-  return useClientMutation<FeedPost, { id: string } & CreatePostRequest>({
+  return useClientMutation<FeedPostType, { id: string } & CreatePostRequestType>({
     method: 'PUT',
     url: variables => `${FEED_BASE}/${variables.id}`,
     invalidateQueries: [FEED_BASE],
@@ -94,7 +94,7 @@ export function useDeletePost() {
 }
 
 export function useCreateComment() {
-  return useClientMutation<FeedComment, { postId: string } & CreateCommentRequest>({
+  return useClientMutation<FeedCommentType, { postId: string } & CreateCommentRequestType>({
     method: 'POST',
     url: variables => `${FEED_BASE}/${variables.postId}/comments`,
     invalidateQueries: [FEED_BASE],
@@ -106,7 +106,7 @@ export function useCreateComment() {
 }
 
 export function useUpdateComment() {
-  return useClientMutation<FeedComment, { id: string } & UpdateCommentRequest>({
+  return useClientMutation<FeedCommentType, { id: string } & UpdateCommentRequestType>({
     method: 'PUT',
     url: variables => `${FEED_BASE}/comments/${variables.id}`,
     invalidateQueries: [FEED_BASE],

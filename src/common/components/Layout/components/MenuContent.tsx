@@ -1,13 +1,13 @@
 import { useContext } from 'react'
 
-import { Role } from 'core/apis/auth/types'
+import { RoleType } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { NavLink } from 'react-router-dom'
 import { menuItems } from 'routes'
 
-function canSeeMenuItem(roles: Role[] | undefined, userRole: Role | undefined): boolean {
+function canSeeMenuItem(roles: RoleType[] | undefined, userRoleType: RoleType | undefined): boolean {
   if (!roles || roles.length === 0) return true
-  return Boolean(userRole && roles.includes(userRole))
+  return Boolean(userRoleType && roles.includes(userRoleType))
 }
 
 export default function MenuContent() {

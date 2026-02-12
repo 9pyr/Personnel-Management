@@ -3,8 +3,8 @@ import { useClientQuery } from 'core/hooks/useClientQuery'
 import { z } from 'zod'
 
 import {
-  CompanyHoliday,
-  CreateHolidayPayload,
+  CompanyHolidayType,
+  CreateHolidayPayloadType,
   companyHolidaySchema,
   createHolidayPayloadSchema,
 } from './schemas'
@@ -17,7 +17,7 @@ export interface GetHolidaysParams {
 const listSchema = z.array(companyHolidaySchema)
 
 export function useHolidays(params?: GetHolidaysParams) {
-  return useClientQuery<CompanyHoliday[]>({
+  return useClientQuery<CompanyHolidayType[]>({
     url: '/holidays',
     params: params
       ? {
@@ -30,7 +30,7 @@ export function useHolidays(params?: GetHolidaysParams) {
 }
 
 export function useCreateHoliday() {
-  return useClientMutation<CompanyHoliday, CreateHolidayPayload>({
+  return useClientMutation<CompanyHolidayType, CreateHolidayPayloadType>({
     method: 'POST',
     url: '/holidays',
     invalidateQueries: ['/holidays'],

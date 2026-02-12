@@ -1,10 +1,10 @@
-import { FeedComment } from 'core/apis/feed/types'
+import { FeedCommentType } from 'core/apis/feed/types'
 
-export interface CommentTreeNode extends FeedComment {
+export interface CommentTreeNode extends FeedCommentType {
   replies: CommentTreeNode[]
 }
 
-export function buildCommentTree(comments: FeedComment[]): CommentTreeNode[] {
+export function buildCommentTree(comments: FeedCommentType[]): CommentTreeNode[] {
   const byId = new Map<string, CommentTreeNode>()
   comments.forEach(comment => {
     byId.set(comment.id, { ...comment, replies: [] })

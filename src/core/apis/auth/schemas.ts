@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 export const roleSchema = z.enum(['ADMIN', 'PEOPLE', 'MANAGER', 'STAFF'])
-export type Role = z.infer<typeof roleSchema>
 
 const uuidLike = z.string().min(1)
 
@@ -18,21 +17,15 @@ export const userSchema = z.object({
   phone: z.string().optional(),
 })
 
-export type User = z.infer<typeof userSchema>
-
 export const loginRequestSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
 })
 
-export type LoginRequest = z.infer<typeof loginRequestSchema>
-
 export const loginResponseSchema = z.object({
   token: z.string().min(1),
   user: userSchema,
 })
-
-export type LoginResponse = z.infer<typeof loginResponseSchema>
 
 export const updateProfileRequestSchema = z.object({
   name: z.string().min(1),
@@ -41,8 +34,6 @@ export const updateProfileRequestSchema = z.object({
   position: z.string().optional(),
   phone: z.string().optional(),
 })
-
-export type UpdateProfileRequest = z.infer<typeof updateProfileRequestSchema>
 
 export const createUserRequestSchema = z.object({
   email: z.string().email(),
@@ -53,20 +44,24 @@ export const createUserRequestSchema = z.object({
   managerId: uuidLike.optional(),
 })
 
-export type CreateUserRequest = z.infer<typeof createUserRequestSchema>
-
 export const profileImageUrlResponseSchema = z.object({
   profileImageUrl: z.string(),
 })
 
-export type ProfileImageUrlResponse = z.infer<typeof profileImageUrlResponseSchema>
-
 export const userListResponseSchema = z.array(userSchema)
-export type UserListResponse = z.infer<typeof userListResponseSchema>
 
 export const updateUserRequestSchema = z.object({
   managerId: z.string().optional().nullable(),
   role: roleSchema.optional(),
   department: z.string().optional().nullable(),
 })
-export type UpdateUserRequest = z.infer<typeof updateUserRequestSchema>
+
+export type RoleType = z.infer<typeof roleSchema>
+export type UserType = z.infer<typeof userSchema>
+export type LoginRequestType = z.infer<typeof loginRequestSchema>
+export type LoginResponseType = z.infer<typeof loginResponseSchema>
+export type UpdateProfileRequestType = z.infer<typeof updateProfileRequestSchema>
+export type CreateUserRequestType = z.infer<typeof createUserRequestSchema>
+export type ProfileImageUrlResponseType = z.infer<typeof profileImageUrlResponseSchema>
+export type UserListResponseType = z.infer<typeof userListResponseSchema>
+export type UpdateUserRequestType = z.infer<typeof updateUserRequestSchema>

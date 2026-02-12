@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const uuidLike = z.string().min(1).optional()
+const uuidLike = z.string().optional()
 
 const eventSchemaRaw = z.object({
   id: uuidLike,
@@ -15,8 +15,6 @@ const eventSchemaRaw = z.object({
 
 export const eventSchema = eventSchemaRaw
 
-export type Event = z.infer<typeof eventSchema>
-
 export const eventCreatePayloadSchema = z.object({
   date: z.string().min(1, 'กรุณาเลือกวันที่'),
   startTime: z.string().min(1, 'กรุณากรอกเวลาเริ่ม'),
@@ -24,7 +22,6 @@ export const eventCreatePayloadSchema = z.object({
   title: z.string().min(1, 'กรุณากรอกหัวข้อ'),
   eventType: z.string().optional(),
 })
-export type EventCreatePayload = z.infer<typeof eventCreatePayloadSchema>
 
 export const eventUpdatePayloadSchema = z.object({
   date: z.string().optional(),
@@ -33,7 +30,6 @@ export const eventUpdatePayloadSchema = z.object({
   title: z.string().optional(),
   eventType: z.string().optional(),
 })
-export type EventUpdatePayload = z.infer<typeof eventUpdatePayloadSchema>
 
 export const EVENT_TYPE_LABELS: Record<string, string> = {
   PATIENT_VISIT: 'พบคนไข้',
@@ -42,3 +38,7 @@ export const EVENT_TYPE_LABELS: Record<string, string> = {
   MEETING: 'ประชุม',
   OTHER: 'อื่นๆ',
 }
+
+export type EventType = z.infer<typeof eventSchema>
+export type EventCreatePayloadType = z.infer<typeof eventCreatePayloadSchema>
+export type EventUpdatePayloadType = z.infer<typeof eventUpdatePayloadSchema>

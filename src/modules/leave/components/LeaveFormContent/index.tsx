@@ -23,7 +23,7 @@ import {
   useLeaveById,
   useUpdateLeave,
 } from 'core/apis/leave/queries'
-import { Leave, LeaveCreatePayload, LeaveUpdatePayload } from 'core/apis/leave/types'
+import { LeaveRecordType, LeaveCreatePayloadType, LeaveUpdatePayloadType } from 'core/apis/leave/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { LEAVE_STATUS, leaveFields } from 'modules/leave/constants'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
@@ -31,7 +31,7 @@ import { toast } from 'sonner'
 
 type LeaveDurationType = 'FULL_DAY' | 'HOURLY'
 
-type LeaveFormDefaults = Partial<Leave> & {
+type LeaveFormDefaults = Partial<LeaveRecordType> & {
   leaveTypeId: string
   description: string
   startDate: string
@@ -93,9 +93,9 @@ export default function LeaveFormContent({
   const currentUser = useContext(AuthContext)
   const leaveTypesQuery = useListLeaveTypes()
   const leaveQuery = useLeaveById(leaveId ?? '', { enabled: Boolean(leaveId) && !isNew })
-  const createLeaveMutation = useCreateLeave()
-  const updateLeaveMutation = useUpdateLeave()
-  const cancelLeaveMutation = useCancelLeave()
+  const createLeaveRecordTypeMutation = useCreateLeave()
+  const updateLeaveRecordTypeMutation = useUpdateLeave()
+  const cancelLeaveRecordTypeMutation = useCancelLeave()
 
   const leaveTypeOptions: LeaveTypeOption[] = (leaveTypesQuery.data ?? []).map(leaveType => ({
     label: leaveType.name,
@@ -145,7 +145,7 @@ export default function LeaveFormContent({
 
   const leaveStatus = leaveQuery.data?.status ?? null
   const leaveEndDate = leaveQuery.data?.endDate ?? null
-  const cancelling = cancelLeaveMutation.isPending
+  const cancelling = cancelLeaveRecordTypeMutation.isPending
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
 
   const handleSubmit = async (values: LeaveFormDefaults) => {
@@ -172,7 +172,7 @@ export default function LeaveFormContent({
         return
       }
 
-      const createPayload: LeaveCreatePayload = {
+      const createPayload: LeaveCreatePayloadType = {
         leaveTypeId: values.leaveTypeId ?? '',
         description: String(values.description ?? ''),
         startDate,
@@ -186,7 +186,7 @@ export default function LeaveFormContent({
       }
 
       try {
-        await createLeaveMutation.mutateAsync(createPayload)
+        await createLeaveRecordTypeMutation.mutateAsync(createPayload)
         toast.success('บันทึกคำขอลาสำเร็จ')
         onSuccess()
       } catch {
@@ -198,7 +198,7 @@ export default function LeaveFormContent({
         return
       }
 
-      const updatePayload: LeaveUpdatePayload = {
+      const updatePayload: LeaveUpdatePayloadType = {
         id: values.id,
         leaveTypeId: values.leaveTypeId ?? '',
         description: String(values.description ?? ''),
@@ -213,7 +213,7 @@ export default function LeaveFormContent({
       }
 
       try {
-        await updateLeaveMutation.mutateAsync(updatePayload)
+        await updateLeaveRecordTypeMutation.mutateAsync(updatePayload)
         toast.success('บันทึกสำเร็จ')
         onSuccess()
       } catch {
@@ -283,7 +283,7 @@ export default function LeaveFormContent({
     )
   }
 
-  const LeaveDateRangeFields = () => {
+  const LeaveRecordTypeDateRangeFields = () => {
     const { control } = useFormContext<LeaveFormDefaults>()
     const startDateIso = useWatch<LeaveFormDefaults, 'startDate'>({
       control,
@@ -357,7 +357,7 @@ export default function LeaveFormContent({
           />
         </div>
         <DurationTimeFields />
-        <LeaveDateRangeFields />
+        <LeaveRecordTypeDateRangeFields />
         <div className="flex flex-wrap gap-2 sm:col-span-2">
           {!isReadOnly && <Button type="submit">บันทึก</Button>}
           {(leaveStatus === LEAVE_STATUS.PENDING || leaveStatus === LEAVE_STATUS.APPROVED) &&
@@ -393,7 +393,7 @@ export default function LeaveFormContent({
                           if (!leaveId) return
                           void (async () => {
                             try {
-                              await cancelLeaveMutation.mutateAsync({ id: leaveId })
+                              await cancelLeaveRecordTypeMutation.mutateAsync({ id: leaveId })
                               toast.success('ยกเลิกคำขอลาแล้ว')
                               setConfirmCancelOpen(false)
                               onSuccess()

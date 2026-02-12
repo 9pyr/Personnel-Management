@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator'
 
 import { useContext } from 'react'
 
-import { Role } from 'core/apis/auth/types'
+import { RoleType } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import apiCaller from 'core/endpoints/apiCaller'
 
@@ -12,7 +12,7 @@ import MenuContent from './MenuContent'
 import NotificationButton from './NotificationButton'
 import OptionsMenu from './OptionsMenu'
 
-const ROLE_LABELS: Record<Role, string> = {
+const ROLE_LABELS: Record<RoleType, string> = {
   ADMIN: 'แอดมิน',
   PEOPLE: 'การบุคคล',
   MANAGER: 'หัวหน้า',

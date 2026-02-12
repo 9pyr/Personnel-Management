@@ -15,13 +15,13 @@ import TextInput from 'common/components/Input/Text'
 import Table, { TableRowData } from 'common/components/Table'
 import { useCreateUser, useListUsers, useUpdateUser } from 'core/apis/auth/queries'
 import { createUserRequestSchema, updateUserRequestSchema } from 'core/apis/auth/schemas'
-import { Role, User } from 'core/apis/auth/types'
+import { RoleType, UserType } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
 import { Pencil } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-const ROLE_OPTIONS: { label: string; value: Role }[] = [
+const ROLE_OPTIONS: { label: string; value: RoleType }[] = [
   { label: 'Admin', value: 'ADMIN' },
   { label: 'การบุคคล (HR)', value: 'PEOPLE' },
   { label: 'Manager', value: 'MANAGER' },
@@ -48,7 +48,7 @@ function toTextOrDash(
   return '-'
 }
 
-function buildApproverOptionGroups(users: User[], excludeUserId?: string): SelectOptionGroup[] {
+function buildApproverOptionGroups(users: UserType[], excludeUserId?: string): SelectOptionGroup[] {
   const filtered = excludeUserId ? users.filter(user => user.id !== excludeUserId) : users
   const noAssign = [{ groupLabel: 'ไม่ระบุ', options: [{ value: '', label: '-- ไม่ระบุ --' }] }]
   const byDept = DEPARTMENT_ORDER.map(department => ({
@@ -112,7 +112,7 @@ const UserListPage = () => {
   const navigate = useNavigate()
   const currentUser = useContext(AuthContext)
   const [open, setOpen] = useState(false)
-  const [editUser, setEditUser] = useState<User | null>(null)
+  const [editUser, setEditUser] = useState<UserType | null>(null)
   const usersQuery = useListUsers({
     enabled: currentUser?.role === 'ADMIN' || currentUser?.role === 'PEOPLE',
   })

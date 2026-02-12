@@ -1,1 +1,6 @@
-export type { Leave, LeaveCreatePayload, LeaveUpdatePayload } from './schemas'
+export type {
+  LeaveCreatePayloadType,
+  LeaveRecordType,
+  LeaveType,
+  LeaveUpdatePayloadType,
+} from './schemas'

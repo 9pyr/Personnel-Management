@@ -10,18 +10,18 @@ import {
   userSchema,
 } from './schemas'
 import {
-  CreateUserRequest,
-  LoginRequest,
-  LoginResponse,
-  UpdateProfileRequest,
-  UpdateUserRequest,
-  User,
+  CreateUserRequestType,
+  LoginRequestType,
+  LoginResponseType,
+  UpdateProfileRequestType,
+  UpdateUserRequestType,
+  UserType,
 } from './types'
 
 const AUTH_BASE = '/auth'
 
 export function useMe(options?: { enabled?: boolean }) {
-  return useClientQuery<User>({
+  return useClientQuery<UserType>({
     url: `${AUTH_BASE}/me`,
     enabled: options?.enabled !== undefined ? options.enabled : true,
     select: data => userSchema.parse(data),
@@ -29,7 +29,7 @@ export function useMe(options?: { enabled?: boolean }) {
 }
 
 export function useListUsers(options?: { enabled?: boolean }) {
-  return useClientQuery<User[]>({
+  return useClientQuery<UserType[]>({
     url: '/users',
     enabled: options?.enabled !== undefined ? options.enabled : true,
     select: data => userListResponseSchema.parse(data),
@@ -37,7 +37,7 @@ export function useListUsers(options?: { enabled?: boolean }) {
 }
 
 export function useLogin() {
-  return useClientMutation<LoginResponse, LoginRequest>({
+  return useClientMutation<LoginResponseType, LoginRequestType>({
     method: 'POST',
     url: `${AUTH_BASE}/login`,
     buildPayload: variables => loginRequestSchema.parse(variables),
@@ -45,7 +45,7 @@ export function useLogin() {
 }
 
 export function useUpdateProfile() {
-  return useClientMutation<User, UpdateProfileRequest>({
+  return useClientMutation<UserType, UpdateProfileRequestType>({
     method: 'PUT',
     url: `${AUTH_BASE}/profile`,
     invalidateQueries: [`${AUTH_BASE}/me`],
@@ -67,7 +67,7 @@ export function useUploadProfileImage() {
 }
 
 export function useCreateUser() {
-  return useClientMutation<User, CreateUserRequest>({
+  return useClientMutation<UserType, CreateUserRequestType>({
     method: 'POST',
     url: '/users',
     invalidateQueries: ['/users'],
@@ -76,7 +76,7 @@ export function useCreateUser() {
 }
 
 export function useUpdateUser() {
-  return useClientMutation<User, { id: string } & UpdateUserRequest>({
+  return useClientMutation<UserType, { id: string } & UpdateUserRequestType>({
     method: 'PUT',
     url: variables => `/users/${variables.id}`,
     invalidateQueries: ['/users'],

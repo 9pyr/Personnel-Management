@@ -5,20 +5,20 @@ import { Textarea } from '@/components/ui/textarea'
 
 import { useMemo, useState } from 'react'
 
-import { FeedComment, FeedPost } from 'core/apis/feed/types'
+import { FeedCommentType, FeedPostType } from 'core/apis/feed/types'
 import { Pencil, Trash2 } from 'lucide-react'
 import { CommentBlock } from 'modules/feed/components/CommentBlock'
 import { buildCommentTree } from 'modules/feed/utils/commentTree'
 import { formatPostTime } from 'modules/feed/utils/formatTime'
 
 interface FeedCardProps {
-  post: FeedPost
+  post: FeedPostType
   isOwner: boolean
   isEditing: boolean
   editingContent: string
-  comments: FeedComment[]
+  comments: FeedCommentType[]
   currentUserId: string | undefined
-  onStartEdit: (post: FeedPost) => void
+  onStartEdit: (post: FeedPostType) => void
   onEditingContentChange: (value: string) => void
   onCancelEdit: () => void
   onSaveEdit: () => void

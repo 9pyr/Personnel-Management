@@ -1,13 +1,13 @@
-import { FeedComment } from 'core/apis/feed/types'
+import { FeedCommentType } from 'core/apis/feed/types'
 
 export const FEED_COMMENT_EVENT = 'feed-comment'
 
-export interface FeedCommentEventDetail {
+export interface FeedCommentTypeEventDetail {
   postId: string
-  comment: FeedComment
+  comment: FeedCommentType
 }
 
-export function dispatchFeedComment(postId: string, comment: FeedComment): void {
+export function dispatchFeedCommentType(postId: string, comment: FeedCommentType): void {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(FEED_COMMENT_EVENT, { detail: { postId, comment } }))
   }

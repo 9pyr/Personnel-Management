@@ -1,1 +1,1 @@
-export type { Notification, NotificationsListResponse } from './schemas'
+export type { NotificationType, NotificationsListResponseType } from './schemas'
