@@ -21,15 +21,10 @@ interface EventRawShape {
   date?: unknown
   title?: unknown
   userId?: unknown
-  user_id?: unknown
   userName?: unknown
-  user_name?: unknown
   startTime?: unknown
-  start_time?: unknown
   endTime?: unknown
-  end_time?: unknown
   eventType?: unknown
-  event_type?: unknown
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -53,36 +48,11 @@ function normalizeEvent(raw: Record<string, unknown>): Event {
     id: typeof source.id === 'string' ? source.id : undefined,
     date,
     title: (typeof source.title === 'string' && source.title.trim()) || '',
-    userId:
-      typeof source.userId === 'string'
-        ? source.userId
-        : typeof source.user_id === 'string'
-          ? source.user_id
-          : undefined,
-    userName:
-      typeof source.userName === 'string'
-        ? source.userName
-        : typeof source.user_name === 'string'
-          ? source.user_name
-          : undefined,
-    startTime:
-      typeof source.startTime === 'string'
-        ? source.startTime
-        : typeof source.start_time === 'string'
-          ? source.start_time
-          : '',
-    endTime:
-      typeof source.endTime === 'string'
-        ? source.endTime
-        : typeof source.end_time === 'string'
-          ? source.end_time
-          : undefined,
-    eventType:
-      typeof source.eventType === 'string'
-        ? source.eventType
-        : typeof source.event_type === 'string'
-          ? source.event_type
-          : undefined,
+    userId: typeof source.userId === 'string' ? source.userId : undefined,
+    userName: typeof source.userName === 'string' ? source.userName : undefined,
+    startTime: typeof source.startTime === 'string' ? source.startTime : '',
+    endTime: typeof source.endTime === 'string' ? source.endTime : undefined,
+    eventType: typeof source.eventType === 'string' ? source.eventType : undefined,
   }
 }
 
@@ -108,7 +78,7 @@ export function useEvents(params?: GetEventsParams) {
       ? {
           from: params.from,
           to: params.to,
-          user_id: params.userId,
+          userId: params.userId,
         }
       : undefined,
     select: data => parseEventList(data),
@@ -147,10 +117,10 @@ export function useUpdateEvent() {
       const body = eventUpdatePayloadSchema.parse(variables)
       const send: Record<string, string | number | boolean> = {}
       if (body.date != null) send.date = body.date
-      if (body.startTime != null) send.start_time = body.startTime
-      if (body.endTime != null) send.end_time = body.endTime
+      if (body.startTime != null) send.startTime = body.startTime
+      if (body.endTime != null) send.endTime = body.endTime
       if (body.title != null) send.title = body.title
-      if (body.eventType != null) send.event_type = body.eventType
+      if (body.eventType != null) send.eventType = body.eventType
       return { id: variables.id, ...send }
     },
   })

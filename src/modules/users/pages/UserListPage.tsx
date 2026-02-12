@@ -84,7 +84,7 @@ const getColumns = (onEditApprover: (row: TableRowData) => void): TableColumnDef
   },
   {
     label: 'ผู้มีสิทธิอนุมัติ',
-    render: (row): ReactNode => toTextOrDash(row.manager_name ?? row.managerId),
+    render: (row): ReactNode => toTextOrDash(row.managerName ?? row.managerId),
   },
   {
     label: 'จัดการ',
@@ -138,7 +138,7 @@ const UserListPage = () => {
     role: user.role,
     department: user.department ?? '',
     managerId: user.managerId ?? '',
-    manager_name: users.find(manager => manager.id === user.managerId)?.name,
+    managerName: users.find(manager => manager.id === user.managerId)?.name,
   }))
 
   return (

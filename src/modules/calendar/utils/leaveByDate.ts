@@ -20,21 +20,8 @@ function extractDateValue(value: unknown): string | null {
 }
 
 function getLeaveDateRange(leave: Leave): { start: string; end: string } | null {
-  const leaveRecord: Record<string, unknown> = leave
-  const start =
-    extractDateValue(leave.startDate) ??
-    extractDateValue(
-      'start_date' in leaveRecord && typeof leaveRecord.start_date === 'string'
-        ? leaveRecord.start_date
-        : undefined,
-    )
-  const end =
-    extractDateValue(leave.endDate) ??
-    extractDateValue(
-      'end_date' in leaveRecord && typeof leaveRecord.end_date === 'string'
-        ? leaveRecord.end_date
-        : undefined,
-    )
+  const start = extractDateValue(leave.startDate)
+  const end = extractDateValue(leave.endDate)
 
   if ((start === null || start === undefined) && (end === null || end === undefined)) return null
 

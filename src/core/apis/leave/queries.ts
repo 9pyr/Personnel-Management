@@ -38,29 +38,16 @@ function toYYYYMMDD(v: unknown): string {
 }
 
 function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
-  const startRaw = raw.startDate ?? raw.start_date ?? ''
-  const endRaw = raw.endDate ?? raw.end_date ?? ''
+  const startRaw = raw.startDate ?? ''
+  const endRaw = raw.endDate ?? ''
   const start =
     toYYYYMMDD(startRaw) || (typeof startRaw === 'string' && startRaw.trim().slice(0, 10)) || ''
   const end = toYYYYMMDD(endRaw) || (typeof endRaw === 'string' && endRaw.trim().slice(0, 10)) || ''
   const createdByName =
-    (typeof raw.createdByName === 'string' && raw.createdByName.trim()) ||
-    (typeof raw.created_by_name === 'string' && raw.created_by_name.trim()) ||
-    ''
-  const durationRaw = raw.durationType ?? raw.duration_type
-  const durationType = durationRaw === 'HOURLY' ? 'HOURLY' : 'FULL_DAY'
-  const startTime =
-    typeof raw.startTime === 'string'
-      ? raw.startTime
-      : typeof raw.start_time === 'string'
-        ? raw.start_time
-        : undefined
-  const endTime =
-    typeof raw.endTime === 'string'
-      ? raw.endTime
-      : typeof raw.end_time === 'string'
-        ? raw.end_time
-        : undefined
+    (typeof raw.createdByName === 'string' && raw.createdByName.trim()) || ''
+  const durationType = raw.durationType === 'HOURLY' ? 'HOURLY' : 'FULL_DAY'
+  const startTime = typeof raw.startTime === 'string' ? raw.startTime : undefined
+  const endTime = typeof raw.endTime === 'string' ? raw.endTime : undefined
   return {
     id: typeof raw.id === 'string' ? raw.id : undefined,
     description: typeof raw.description === 'string' ? raw.description : '',
@@ -126,7 +113,7 @@ export function useListLeave(params?: GetListLeaveParams) {
       ? {
           from: params.from,
           to: params.to,
-          user_id: params.userId,
+          userId: params.userId,
         }
       : undefined,
     select: data => parseLeaveList(data),

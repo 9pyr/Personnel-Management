@@ -20,15 +20,10 @@ interface EventRawShape {
   date?: unknown
   title?: unknown
   userId?: unknown
-  user_id?: unknown
   userName?: unknown
-  user_name?: unknown
   startTime?: unknown
-  start_time?: unknown
   endTime?: unknown
-  end_time?: unknown
   eventType?: unknown
-  event_type?: unknown
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -51,40 +46,11 @@ function normalizeEvent(rawInput: Record<string, unknown>): Event {
     typeof raw.date === 'string' && raw.date.trim().length > 0 ? raw.date.trim().slice(0, 10) : ''
   const title = typeof raw.title === 'string' && raw.title.trim().length > 0 ? raw.title.trim() : ''
 
-  const userId =
-    typeof raw.userId === 'string'
-      ? raw.userId
-      : typeof raw.user_id === 'string'
-        ? raw.user_id
-        : undefined
-
-  const userName =
-    typeof raw.userName === 'string'
-      ? raw.userName
-      : typeof raw.user_name === 'string'
-        ? raw.user_name
-        : undefined
-
-  const startTimeSource =
-    typeof raw.startTime === 'string'
-      ? raw.startTime
-      : typeof raw.start_time === 'string'
-        ? raw.start_time
-        : ''
-
-  const endTimeSource =
-    typeof raw.endTime === 'string'
-      ? raw.endTime
-      : typeof raw.end_time === 'string'
-        ? raw.end_time
-        : undefined
-
-  const eventTypeSource =
-    typeof raw.eventType === 'string'
-      ? raw.eventType
-      : typeof raw.event_type === 'string'
-        ? raw.event_type
-        : undefined
+  const userId = typeof raw.userId === 'string' ? raw.userId : undefined
+  const userName = typeof raw.userName === 'string' ? raw.userName : undefined
+  const startTimeSource = typeof raw.startTime === 'string' ? raw.startTime : ''
+  const endTimeSource = typeof raw.endTime === 'string' ? raw.endTime : undefined
+  const eventTypeSource = typeof raw.eventType === 'string' ? raw.eventType : undefined
 
   return {
     id: typeof raw.id === 'string' ? raw.id : undefined,
@@ -102,7 +68,7 @@ export async function getEvents(params?: GetEventsParams): Promise<Event[]> {
   const search = new URLSearchParams()
   if (params?.from) search.set('from', params.from)
   if (params?.to) search.set('to', params.to)
-  if (params?.userId) search.set('user_id', params.userId)
+  if (params?.userId) search.set('userId', params.userId)
   const qs = search.toString()
   const url = qs ? `/events?${qs}` : '/events'
   const { data } = await apiCaller.get<object>(url)
@@ -129,10 +95,10 @@ export async function createEvent(payload: EventCreatePayload): Promise<Event> {
   const body = eventCreatePayloadSchema.parse(payload)
   const { data } = await apiCaller.post<object>('/events', {
     date: body.date,
-    start_time: body.startTime,
-    end_time: body.endTime,
+    startTime: body.startTime,
+    endTime: body.endTime,
     title: body.title,
-    event_type: body.eventType,
+    eventType: body.eventType,
   })
   return eventSchema.parse(data)
 }
@@ -141,10 +107,10 @@ export async function updateEvent(id: string, payload: EventUpdatePayload): Prom
   const body = eventUpdatePayloadSchema.parse(payload)
   const send: Record<string, string | number | boolean> = {}
   if (body.date != null) send.date = body.date
-  if (body.startTime != null) send.start_time = body.startTime
-  if (body.endTime != null) send.end_time = body.endTime
+  if (body.startTime != null) send.startTime = body.startTime
+  if (body.endTime != null) send.endTime = body.endTime
   if (body.title != null) send.title = body.title
-  if (body.eventType != null) send.event_type = body.eventType
+  if (body.eventType != null) send.eventType = body.eventType
   const { data } = await apiCaller.put<object>(`/events/${id}`, send)
   return eventSchema.parse(data)
 }

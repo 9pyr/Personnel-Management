@@ -2,32 +2,16 @@ import { z } from 'zod'
 
 const uuidLike = z.string().min(1).optional()
 
-const eventSchemaRaw = z
-  .object({
-    id: uuidLike,
-    user_id: z.string().optional(),
-    userId: z.string().optional(),
-    user_name: z.string().optional(),
-    userName: z.string().optional(),
-    date: z.string(),
-    start_time: z.string().optional(),
-    startTime: z.string().optional(),
-    end_time: z.string().optional(),
-    endTime: z.string().optional(),
-    title: z.string(),
-    event_type: z.string().optional(),
-    eventType: z.string().optional(),
-  })
-  .transform(object => {
-    return {
-      ...object,
-      userId: object.userId ?? object.user_id,
-      userName: object.userName ?? object.user_name,
-      startTime: object.startTime ?? object.start_time ?? '',
-      endTime: object.endTime ?? object.end_time,
-      eventType: object.eventType ?? object.event_type,
-    }
-  })
+const eventSchemaRaw = z.object({
+  id: uuidLike,
+  userId: z.string().optional(),
+  userName: z.string().optional(),
+  date: z.string(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  title: z.string(),
+  eventType: z.string().optional(),
+})
 
 export const eventSchema = eventSchemaRaw
 

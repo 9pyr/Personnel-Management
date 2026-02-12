@@ -12,20 +12,14 @@ const leaveSchemaBase = z.object({
   description: z.string().optional().default(''),
   startDate: dateField,
   endDate: dateField,
-  start_date: z.string().nullish(),
-  end_date: z.string().nullish(),
   reason: z.string().optional(),
   leaveTypeId: z.string().optional(),
   status: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByName: z.string().optional(),
-  created_by_name: z.string().optional(),
   durationType: z.enum(['FULL_DAY', 'HOURLY']).optional(),
-  duration_type: z.enum(['FULL_DAY', 'HOURLY']).nullish(),
   startTime: z.string().nullish(),
-  start_time: z.string().nullish(),
   endTime: z.string().nullish(),
-  end_time: z.string().nullish(),
 })
 
 function toYYYYMMDD(v: string | null | undefined): string {
@@ -35,22 +29,16 @@ function toYYYYMMDD(v: string | null | undefined): string {
 }
 
 export const leaveSchema = leaveSchemaBase.transform(obj => {
-  const startRaw =
-    (typeof obj.startDate === 'string' && obj.startDate.trim()) ||
-    (typeof obj.start_date === 'string' && obj.start_date.trim()) ||
-    ''
-  const endRaw =
-    (typeof obj.endDate === 'string' && obj.endDate.trim()) ||
-    (typeof obj.end_date === 'string' && obj.end_date.trim()) ||
-    ''
+  const startRaw = (typeof obj.startDate === 'string' && obj.startDate.trim()) || ''
+  const endRaw = (typeof obj.endDate === 'string' && obj.endDate.trim()) || ''
   return {
     ...obj,
     startDate: toYYYYMMDD(startRaw) || startRaw.slice(0, 10) || '',
     endDate: toYYYYMMDD(endRaw) || endRaw.slice(0, 10) || '',
-    createdByName: (obj.createdByName ?? obj.created_by_name ?? '').trim(),
-    durationType: obj.durationType ?? obj.duration_type ?? 'FULL_DAY',
-    startTime: obj.startTime ?? obj.start_time ?? undefined,
-    endTime: obj.endTime ?? obj.end_time ?? undefined,
+    createdByName: (obj.createdByName ?? '').trim(),
+    durationType: obj.durationType ?? 'FULL_DAY',
+    startTime: obj.startTime ?? undefined,
+    endTime: obj.endTime ?? undefined,
   }
 })
 
@@ -63,7 +51,6 @@ export const leaveCreatePayloadSchema = leaveSchemaBase
     status: true,
     createdByUserId: true,
     createdByName: true,
-    created_by_name: true,
   })
   .extend({
     leaveTypeId: z.string().min(1, 'กรุณาเลือกประเภทการลา'),
