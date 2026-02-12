@@ -35,30 +35,22 @@ function toYYYYMMDD(v: string | null | undefined): string {
 }
 
 export const leaveSchema = leaveSchemaBase.transform(obj => {
-  const raw = obj as {
-    start_date?: string | null
-    end_date?: string | null
-    created_by_name?: string
-    duration_type?: 'FULL_DAY' | 'HOURLY' | null
-    start_time?: string | null
-    end_time?: string | null
-  }
   const startRaw =
     (typeof obj.startDate === 'string' && obj.startDate.trim()) ||
-    (typeof raw.start_date === 'string' && raw.start_date.trim()) ||
+    (typeof obj.start_date === 'string' && obj.start_date.trim()) ||
     ''
   const endRaw =
     (typeof obj.endDate === 'string' && obj.endDate.trim()) ||
-    (typeof raw.end_date === 'string' && raw.end_date.trim()) ||
+    (typeof obj.end_date === 'string' && obj.end_date.trim()) ||
     ''
   return {
     ...obj,
     startDate: toYYYYMMDD(startRaw) || startRaw.slice(0, 10) || '',
     endDate: toYYYYMMDD(endRaw) || endRaw.slice(0, 10) || '',
-    createdByName: (obj.createdByName ?? raw.created_by_name ?? '').trim(),
-    durationType: (obj.durationType ?? raw.duration_type ?? 'FULL_DAY') as 'FULL_DAY' | 'HOURLY',
-    startTime: (obj.startTime ?? raw.start_time ?? undefined) as string | undefined,
-    endTime: (obj.endTime ?? raw.end_time ?? undefined) as string | undefined,
+    createdByName: (obj.createdByName ?? obj.created_by_name ?? '').trim(),
+    durationType: (obj.durationType ?? obj.duration_type ?? 'FULL_DAY'),
+    startTime: (obj.startTime ?? obj.start_time ?? undefined) ?? undefined,
+    endTime: (obj.endTime ?? obj.end_time ?? undefined) ?? undefined,
   }
 })
 

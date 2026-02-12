@@ -40,10 +40,7 @@ export function useLogin() {
   return useClientMutation<LoginResponse, LoginRequest>({
     method: 'POST',
     url: `${AUTH_BASE}/login`,
-    onMutate: async variables => {
-      const body = loginRequestSchema.parse(variables)
-      return body
-    },
+    buildPayload: variables => loginRequestSchema.parse(variables),
   })
 }
 
@@ -52,10 +49,7 @@ export function useUpdateProfile() {
     method: 'PUT',
     url: `${AUTH_BASE}/profile`,
     invalidateQueries: [`${AUTH_BASE}/me`],
-    onMutate: async variables => {
-      const body = updateProfileRequestSchema.parse(variables)
-      return body
-    },
+    buildPayload: variables => updateProfileRequestSchema.parse(variables),
   })
 }
 
@@ -64,7 +58,7 @@ export function useUploadProfileImage() {
     method: 'POST',
     url: `${AUTH_BASE}/profile/avatar`,
     invalidateQueries: [`${AUTH_BASE}/me`],
-    onMutate: async file => {
+    buildPayload: file => {
       const form = new FormData()
       form.append('avatar', file)
       return form
@@ -77,10 +71,7 @@ export function useCreateUser() {
     method: 'POST',
     url: '/users',
     invalidateQueries: ['/users'],
-    onMutate: async variables => {
-      const body = createUserRequestSchema.parse(variables)
-      return body
-    },
+    buildPayload: variables => createUserRequestSchema.parse(variables),
   })
 }
 
@@ -89,7 +80,7 @@ export function useUpdateUser() {
     method: 'PUT',
     url: variables => `/users/${variables.id}`,
     invalidateQueries: ['/users'],
-    onMutate: async variables => {
+    buildPayload: variables => {
       const body = updateUserRequestSchema.parse(variables)
       return { id: variables.id, ...body }
     },

@@ -65,7 +65,12 @@ export function CommentBlock({
                 <Button size="sm" variant="outline" onClick={() => setEditing(false)}>
                   ยกเลิก
                 </Button>
-                <Button size="sm" onClick={handleSaveEdit}>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    void handleSaveEdit()
+                  }}
+                >
                   บันทึก
                 </Button>
               </div>
@@ -100,7 +105,9 @@ export function CommentBlock({
                     size="sm"
                     variant="ghost"
                     className="h-auto px-2 py-1 text-sm text-destructive hover:text-destructive"
-                    onClick={() => onDelete(node.id)}
+                    onClick={() => {
+                      void onDelete(node.id)
+                    }}
                   >
                     ลบ
                   </Button>

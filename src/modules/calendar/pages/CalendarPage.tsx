@@ -28,6 +28,13 @@ dayjs.locale('th')
 
 const bigCalendarLocalizer = dayjsLocalizer(dayjs)
 
+function isCalendarItemEvent(event: object): event is CalendarItemEvent {
+  return (
+    'type' in event &&
+    (event.type === 'LEAVE' || event.type === 'HOLIDAY' || event.type === 'WORK_EVENT')
+  )
+}
+
 export default function CalendarPage() {
   const navigate = useNavigate()
   const user = useContext(AuthContext)
@@ -178,18 +185,14 @@ export default function CalendarPage() {
                   culture="th"
                   popup
                   onSelectEvent={event => {
-                    if ('type' in event && 'leave' in event) {
-                      setDetailEvent(event as CalendarItemEvent)
-                    } else if ('type' in event && 'holiday' in event) {
-                      setDetailEvent(event as CalendarItemEvent)
-                    } else if ('type' in event && 'workEvent' in event) {
-                      setDetailEvent(event as CalendarItemEvent)
+                    if (isCalendarItemEvent(event)) {
+                      setDetailEvent(event)
                     }
                   }}
                   components={{ event: CalendarEventCell }}
                   eventPropGetter={event => {
-                    if ('type' in event) {
-                      return getEventStyle(event as CalendarItemEvent, user?.id)
+                    if (isCalendarItemEvent(event)) {
+                      return getEventStyle(event, user?.id)
                     }
                     return {}
                   }}
@@ -215,7 +218,9 @@ export default function CalendarPage() {
         dateError={eventForm.dateError}
         titleError={eventForm.titleError}
         submitting={eventForm.submitting}
-        onSubmit={eventForm.handleSubmit}
+        onSubmit={() => {
+          void eventForm.handleSubmit()
+        }}
       />
 
       <HolidayDialog
@@ -224,7 +229,9 @@ export default function CalendarPage() {
         form={holidayForm.form}
         onFormChange={holidayForm.setForm}
         submitting={holidayForm.submitting}
-        onSubmit={holidayForm.handleSubmit}
+        onSubmit={() => {
+          void holidayForm.handleSubmit()
+        }}
       />
     </div>
   )

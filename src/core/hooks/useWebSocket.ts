@@ -55,7 +55,8 @@ export function useWebSocket(onMessage: (message: WSMessage) => void) {
     ws.onmessage = (event: MessageEvent) => {
       try {
         if (typeof event.data !== 'string') return
-        const parsed: object = JSON.parse(event.data)
+        const parsed: unknown = JSON.parse(event.data)
+        if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return
         if (isWSMessage(parsed)) onMessageRef.current(parsed)
       } catch (error) {
         logger.error('Error: useWebSocket', error)

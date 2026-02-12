@@ -116,7 +116,7 @@ const SelectInput = ({
               id={`select:${name}`}
               ariaLabel={label}
               placeholder={label}
-              value={field.value ?? ''}
+              value={typeof field.value === 'string' ? field.value : ''}
               onChange={field.onChange}
               options={options}
               optionGroups={optionGroups}

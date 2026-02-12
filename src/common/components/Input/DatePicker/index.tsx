@@ -14,6 +14,8 @@ interface DatePickerInputProps {
   maxDate?: Date
 }
 
+type DatePickerFormValues = Record<string, string | number | Date | null | undefined>
+
 const DatePickerInput = ({
   name,
   label,
@@ -23,16 +25,23 @@ const DatePickerInput = ({
   minDate,
   maxDate,
 }: DatePickerInputProps) => {
-  const { control } = useFormContext()
+  const { control } = useFormContext<DatePickerFormValues>()
 
   return (
-    <Controller
+    <Controller<DatePickerFormValues>
       control={control}
       name={name}
       rules={required ? { required: `${label} จำเป็นต้องเลือก` } : undefined}
       render={({ field, fieldState }) => {
-        const value = field.value
-        const dateValue = value && dayjs(value).isValid() ? dayjs(value).toDate() : undefined
+        const rawValue = field.value
+        const isSupportedType =
+          typeof rawValue === 'string' ||
+          typeof rawValue === 'number' ||
+          rawValue instanceof Date ||
+          rawValue == null
+        const safeValue = isSupportedType ? rawValue : undefined
+        const dateValue =
+          safeValue != null && dayjs(safeValue).isValid() ? dayjs(safeValue).toDate() : undefined
         const errorMessage = fieldState.error?.message
         return (
           <div className="grid w-full gap-2">
@@ -43,8 +52,9 @@ const DatePickerInput = ({
             <DatePickerSingle
               id={`datepicker:${name}`}
               value={dateValue}
-              onChange={d => {
-                field.onChange(d ? dayjs(d).toISOString() : null)
+              onChange={value => {
+                const iso = value != null ? dayjs(value).toISOString() : null
+                field.onChange(iso)
               }}
               disabled={disabled}
               placeholder={placeholder}

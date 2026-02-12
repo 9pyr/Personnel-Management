@@ -85,13 +85,16 @@ export default function NotificationButton() {
     [navigate, markReadMutation, notificationsQuery],
   )
 
-  const handleMarkAllRead = useCallback(async () => {
-    try {
-      await markAllReadMutation.mutateAsync(undefined as void)
-      await notificationsQuery.refetch()
-    } catch {
-      // ignore
+  const handleMarkAllRead = useCallback(() => {
+    const run = async () => {
+      try {
+        await markAllReadMutation.mutateAsync(undefined)
+        await notificationsQuery.refetch()
+      } catch {
+        // ignore
+      }
     }
+    void run()
   }, [markAllReadMutation, notificationsQuery])
 
   return (
@@ -131,7 +134,9 @@ export default function NotificationButton() {
                 <button
                   key={notification.id}
                   type="button"
-                  onClick={() => handleMarkRead(notification)}
+                  onClick={() => {
+                    void handleMarkRead(notification)
+                  }}
                   className={`flex w-full flex-col gap-0.5 border-b border-border px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent ${
                     !notification.readAt ? 'border-l-4 border-l-primary bg-accent/50' : ''
                   }`}

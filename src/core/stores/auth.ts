@@ -35,7 +35,8 @@ function getInitialUser(): User | null {
   const raw = localStorage.getItem(USER_KEY)
   if (!raw) return null
   try {
-    const data: object = JSON.parse(raw)
+    const data: unknown = JSON.parse(raw)
+    if (data == null || typeof data !== 'object' || Array.isArray(data)) return null
     const result = userSchema.safeParse(data)
     return result.success ? result.data : null
   } catch {

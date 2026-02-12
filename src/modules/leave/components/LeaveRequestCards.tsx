@@ -67,10 +67,24 @@ function LeaveRequestCards({ leaves, onActionDone }: LeaveRequestCardsProps) {
               </p>
             </CardContent>
             <CardFooter className="flex gap-2">
-              <Button size="sm" variant="default" onClick={() => handleApprove(leave.id!)}>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => {
+                  if (!leave.id) return
+                  void handleApprove(leave.id)
+                }}
+              >
                 อนุมัติ
               </Button>
-              <Button size="sm" variant="destructive" onClick={() => handleReject(leave.id!)}>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  if (!leave.id) return
+                  void handleReject(leave.id)
+                }}
+              >
                 ปฏิเสธ
               </Button>
             </CardFooter>

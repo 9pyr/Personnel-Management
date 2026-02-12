@@ -12,7 +12,7 @@ export function useNotifications() {
 }
 
 export function useMarkNotificationRead() {
-  return useClientMutation<unknown, { id: string }>({
+  return useClientMutation<void, { id: string }>({
     method: 'PATCH',
     url: variables => `/notifications/${variables.id}/read`,
     invalidateQueries: ['/notifications'],
@@ -20,7 +20,7 @@ export function useMarkNotificationRead() {
 }
 
 export function useMarkAllNotificationsRead() {
-  return useClientMutation<unknown, void>({
+  return useClientMutation<void, void>({
     method: 'PATCH',
     url: '/notifications/read-all',
     invalidateQueries: ['/notifications'],

@@ -16,30 +16,86 @@ export interface GetEventsParams {
   userId?: string
 }
 
+interface EventRawShape {
+  id?: unknown
+  date?: unknown
+  title?: unknown
+  userId?: unknown
+  user_id?: unknown
+  userName?: unknown
+  user_name?: unknown
+  startTime?: unknown
+  start_time?: unknown
+  endTime?: unknown
+  end_time?: unknown
+  eventType?: unknown
+  event_type?: unknown
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function toEventRawShape(rawInput: Record<string, unknown>): EventRawShape {
+  return rawInput
+}
+
+function getNestedData(value: unknown): unknown {
+  if (Array.isArray(value)) return value
+  if (!isRecord(value)) return undefined
+  return value['data']
+}
+
 function normalizeEvent(raw: Record<string, unknown>): Event {
+  const source = toEventRawShape(raw)
   const date = (typeof raw.date === 'string' && raw.date.trim().slice(0, 10)) || ''
   return {
-    id: typeof raw.id === 'string' ? raw.id : undefined,
+    id: typeof source.id === 'string' ? source.id : undefined,
     date,
-    title: (typeof raw.title === 'string' && raw.title.trim()) || '',
-    userId: (raw.userId as string) ?? (raw.user_id as string),
-    userName: (raw.userName as string) ?? (raw.user_name as string),
-    startTime: (raw.startTime as string) ?? (raw.start_time as string) ?? '',
-    endTime: (raw.endTime as string) ?? (raw.end_time as string),
-    eventType: (raw.eventType as string) ?? (raw.event_type as string),
+    title: (typeof source.title === 'string' && source.title.trim()) || '',
+    userId:
+      typeof source.userId === 'string'
+        ? source.userId
+        : typeof source.user_id === 'string'
+          ? source.user_id
+          : undefined,
+    userName:
+      typeof source.userName === 'string'
+        ? source.userName
+        : typeof source.user_name === 'string'
+          ? source.user_name
+          : undefined,
+    startTime:
+      typeof source.startTime === 'string'
+        ? source.startTime
+        : typeof source.start_time === 'string'
+          ? source.start_time
+          : '',
+    endTime:
+      typeof source.endTime === 'string'
+        ? source.endTime
+        : typeof source.end_time === 'string'
+          ? source.end_time
+          : undefined,
+    eventType:
+      typeof source.eventType === 'string'
+        ? source.eventType
+        : typeof source.event_type === 'string'
+          ? source.event_type
+          : undefined,
   }
 }
 
 function parseEventList(data: unknown): Event[] {
-  const raw = Array.isArray(data) ? data : (data as { data?: unknown })?.data
+  const raw = getNestedData(data)
   const list = Array.isArray(raw) ? raw : []
   const result: Event[] = []
   for (const item of list) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
+    if (!isRecord(item)) continue
     try {
       result.push(eventSchema.parse(item))
     } catch {
-      result.push(normalizeEvent(item as Record<string, unknown>))
+      result.push(normalizeEvent(item))
     }
   }
   return result
@@ -67,7 +123,7 @@ export function useEventById(id: string) {
       try {
         return eventSchema.parse(data)
       } catch {
-        return normalizeEvent(data as Record<string, unknown>)
+        return normalizeEvent(isRecord(data) ? data : {})
       }
     },
   })
@@ -78,9 +134,7 @@ export function useCreateEvent() {
     method: 'POST',
     url: '/events',
     invalidateQueries: ['/events'],
-    onMutate: async variables => {
-      return eventCreatePayloadSchema.parse(variables)
-    },
+    buildPayload: variables => eventCreatePayloadSchema.parse(variables),
   })
 }
 
@@ -89,7 +143,7 @@ export function useUpdateEvent() {
     method: 'PUT',
     url: variables => `/events/${variables.id}`,
     invalidateQueries: ['/events'],
-    onMutate: async variables => {
+    buildPayload: variables => {
       const body = eventUpdatePayloadSchema.parse(variables)
       const send: Record<string, string | number | boolean> = {}
       if (body.date != null) send.date = body.date
@@ -97,15 +151,16 @@ export function useUpdateEvent() {
       if (body.endTime != null) send.end_time = body.endTime
       if (body.title != null) send.title = body.title
       if (body.eventType != null) send.event_type = body.eventType
-      return { id: variables.id, ...send } as { id: string } & EventUpdatePayload
+      return { id: variables.id, ...send }
     },
   })
 }
 
 export function useDeleteEvent() {
-  return useClientMutation<unknown, { id: string }>({
+  return useClientMutation<void, { id: string }>({
     method: 'DELETE',
     url: variables => `/events/${variables.id}`,
     invalidateQueries: ['/events'],
+    buildPayload: () => ({}),
   })
 }

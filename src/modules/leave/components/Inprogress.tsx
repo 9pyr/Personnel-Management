@@ -97,7 +97,9 @@ const Inprogress = ({ onEditLeave }: InprogressProps) => {
             ) : (
               <LeaveRequestCards
                 leaves={othersPending}
-                onActionDone={() => leavesQuery.refetch()}
+                onActionDone={() => {
+                  void leavesQuery.refetch()
+                }}
               />
             )}
           </TabsContent>

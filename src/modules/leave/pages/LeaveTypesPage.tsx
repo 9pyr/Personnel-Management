@@ -25,11 +25,19 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 interface ErrWithResponse {
-  response?: { data?: object }
+  response?: { data?: unknown }
 }
 
-function isErrWithResponse(x: object): x is ErrWithResponse {
-  return 'response' in x
+function isErrWithResponse(x: unknown): x is ErrWithResponse {
+  return x != null && typeof x === 'object' && 'response' in x
+}
+
+function errorToMessage(errorData: unknown): string {
+  if (typeof errorData === 'string') return errorData
+  if (errorData != null && typeof errorData === 'object') {
+    return JSON.stringify(errorData)
+  }
+  return 'ดำเนินการไม่สำเร็จ'
 }
 
 const getColumns = (handleDelete: (id: string) => void) => [
@@ -127,11 +135,8 @@ const LeaveTypesPage = () => {
       setOpen(false)
       void loadTypes()
     } catch (error) {
-      let errorData: object | null = null
-      if (error != null && typeof error === 'object' && isErrWithResponse(error)) {
-        errorData = error.response?.data ?? null
-      }
-      toast.error(errorData != null ? String(errorData) : 'ดำเนินการไม่สำเร็จ')
+      const errorData = isErrWithResponse(error) ? error.response?.data : undefined
+      toast.error(errorToMessage(errorData))
     }
   }
 
@@ -168,7 +173,9 @@ const LeaveTypesPage = () => {
       </header>
       {!loading && (
         <Table
-          columns={getColumns(handleDelete)}
+          columns={getColumns(leaveTypeId => {
+            void handleDelete(leaveTypeId)
+          })}
           data={tableData}
           rowClick={rowId => {
             const foundType = rowId ? types.find(typeItem => typeItem.id === rowId) : undefined
@@ -205,7 +212,13 @@ const LeaveTypesPage = () => {
             <Button variant="outline" onClick={() => setOpen(false)}>
               ยกเลิก
             </Button>
-            <Button onClick={handleSave}>บันทึก</Button>
+            <Button
+              onClick={() => {
+                void handleSave()
+              }}
+            >
+              บันทึก
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

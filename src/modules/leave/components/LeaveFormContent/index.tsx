@@ -228,17 +228,17 @@ export default function LeaveFormContent({
 
   const DurationTimeFields = () => {
     const { control } = useFormContext<LeaveFormDefaults>()
-    const durationType = useWatch({
+    const durationType = useWatch<LeaveFormDefaults, 'durationType'>({
       control,
       name: 'durationType',
-    }) as LeaveDurationType | undefined
-    const startTimeValue = useWatch({
+    })
+    const startTimeValue = useWatch<LeaveFormDefaults, 'startTime'>({
       control,
       name: 'startTime',
-    }) as string | undefined
+    })
 
     const startHour = Number((startTimeValue ?? '09:00').split(':')[0] ?? '9')
-    const minEndHour = Number.isFinite(startHour) ? (startHour as number) + 1 : 10
+    const minEndHour = Number.isFinite(startHour) ? startHour + 1 : 10
 
     if (isReadOnly || durationType !== 'HOURLY') {
       return null
@@ -285,14 +285,14 @@ export default function LeaveFormContent({
 
   const LeaveDateRangeFields = () => {
     const { control } = useFormContext<LeaveFormDefaults>()
-    const startDateIso = useWatch({
+    const startDateIso = useWatch<LeaveFormDefaults, 'startDate'>({
       control,
       name: leaveFields.startDate,
-    }) as string | undefined
-    const endDateIso = useWatch({
+    })
+    const endDateIso = useWatch<LeaveFormDefaults, 'endDate'>({
       control,
       name: leaveFields.endDate,
-    }) as string | undefined
+    })
 
     const startDate = startDateIso ? new Date(startDateIso) : undefined
     const endDate = endDateIso ? new Date(endDateIso) : undefined
@@ -389,16 +389,18 @@ export default function LeaveFormContent({
                         type="button"
                         variant="destructive"
                         disabled={cancelling}
-                        onClick={async () => {
+                        onClick={() => {
                           if (!leaveId) return
-                          try {
-                            await cancelLeaveMutation.mutateAsync({ id: leaveId })
-                            toast.success('ยกเลิกคำขอลาแล้ว')
-                            setConfirmCancelOpen(false)
-                            onSuccess()
-                          } catch {
-                            toast.error('ยกเลิกไม่สำเร็จ')
-                          }
+                          void (async () => {
+                            try {
+                              await cancelLeaveMutation.mutateAsync({ id: leaveId })
+                              toast.success('ยกเลิกคำขอลาแล้ว')
+                              setConfirmCancelOpen(false)
+                              onSuccess()
+                            } catch {
+                              toast.error('ยกเลิกไม่สำเร็จ')
+                            }
+                          })()
                         }}
                       >
                         {cancelling ? 'กำลังดำเนินการ...' : 'ยืนยันยกเลิก'}

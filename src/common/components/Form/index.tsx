@@ -20,7 +20,12 @@ function Form<TFieldValues extends FieldValues = FieldValues>({
 
   return (
     <FormProvider {...methods}>
-      <form className="w-full" onSubmit={methods.handleSubmit(onSubmit)}>
+      <form
+        className="w-full"
+        onSubmit={event => {
+          void methods.handleSubmit(onSubmit)(event)
+        }}
+      >
         {children}
       </form>
     </FormProvider>

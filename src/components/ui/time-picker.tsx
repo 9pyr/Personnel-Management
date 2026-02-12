@@ -76,8 +76,10 @@ export function TimePicker({
   const hourOptions = React.useMemo(
     () =>
       HOUR_OPTIONS.filter(hourOption => {
-        if (Number.isFinite(minHour) && hourOption < (minHour as number)) return false
-        if (Number.isFinite(maxHour) && hourOption > (maxHour as number)) return false
+        const hasMin = typeof minHour === 'number' && Number.isFinite(minHour)
+        const hasMax = typeof maxHour === 'number' && Number.isFinite(maxHour)
+        if (hasMin && minHour !== undefined && hourOption < minHour) return false
+        if (hasMax && maxHour !== undefined && hourOption > maxHour) return false
         return true
       }),
     [minHour, maxHour],

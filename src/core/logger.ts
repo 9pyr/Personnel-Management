@@ -6,12 +6,15 @@
 const LOG_LEVELS = ['debug', 'info', 'warn', 'error'] as const
 type LogLevel = (typeof LOG_LEVELS)[number]
 
+function isLogLevel(value: string): value is LogLevel {
+  return value === 'debug' || value === 'info' || value === 'warn' || value === 'error'
+}
+
 function shouldLog(level: LogLevel): boolean {
   const raw =
     typeof import.meta.env?.VITE_LOG_LEVEL === 'string' ? import.meta.env.VITE_LOG_LEVEL : 'info'
-  const envLevel: LogLevel = LOG_LEVELS.includes(raw.toLowerCase() as LogLevel)
-    ? (raw.toLowerCase() as LogLevel)
-    : 'info'
+  const normalized = raw.toLowerCase()
+  const envLevel: LogLevel = isLogLevel(normalized) ? normalized : 'info'
   const idx = LOG_LEVELS.indexOf(level)
   const threshold = LOG_LEVELS.indexOf(envLevel)
   return idx >= 0 && threshold >= 0 && idx >= threshold

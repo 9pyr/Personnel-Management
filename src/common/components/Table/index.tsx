@@ -14,7 +14,7 @@ import 'dayjs/locale/th'
 
 dayjs.locale('th')
 
-type TableCellValue = string | number | boolean | null | Date | React.ReactNode
+type TableCellValue = string | number | null | Date | React.ReactNode
 
 export interface TableRowData {
   id?: string | number | null | boolean
@@ -50,8 +50,7 @@ function toReactNode(val: TableCellValue): React.ReactNode {
     return formatDateDayMonthYear(val)
   }
 
-  // ที่เหลือจะเป็น string | number | ReactNode (ไม่ใช่ Date แล้ว)
-  return typeof val === 'string' || typeof val === 'number' ? val : String(val)
+  return typeof val === 'string' || typeof val === 'number' ? val : null
 }
 
 interface TableColumn {

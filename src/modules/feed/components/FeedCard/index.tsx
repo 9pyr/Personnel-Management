@@ -177,7 +177,9 @@ export function FeedCard({
             />
             <Button
               size="sm"
-              onClick={handleSubmitComment}
+              onClick={() => {
+                void handleSubmitComment()
+              }}
               disabled={submitting || !newCommentContent.trim()}
             >
               ส่ง

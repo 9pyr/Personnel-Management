@@ -28,6 +28,11 @@ export function useCreateLeaveType() {
     method: 'POST',
     url: TYPES_BASE,
     invalidateQueries: [TYPES_BASE],
+    buildPayload: variables => ({
+      code: variables.code,
+      name: variables.name,
+      maxDaysPerYear: variables.maxDaysPerYear ?? 0,
+    }),
   })
 }
 
@@ -39,13 +44,19 @@ export function useUpdateLeaveType() {
     method: 'PUT',
     url: variables => `${TYPES_BASE}/${variables.id}`,
     invalidateQueries: [TYPES_BASE],
+    buildPayload: variables => ({
+      code: variables.code ?? undefined,
+      name: variables.name ?? undefined,
+      maxDaysPerYear: variables.maxDaysPerYear ?? undefined,
+    }),
   })
 }
 
 export function useDeleteLeaveType() {
-  return useClientMutation<unknown, { id: string }>({
+  return useClientMutation<void, { id: string }>({
     method: 'DELETE',
     url: variables => `${TYPES_BASE}/${variables.id}`,
     invalidateQueries: [TYPES_BASE],
+    buildPayload: () => ({}),
   })
 }

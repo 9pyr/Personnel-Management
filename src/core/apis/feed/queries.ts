@@ -68,10 +68,7 @@ export function useCreatePost() {
     method: 'POST',
     url: FEED_BASE,
     invalidateQueries: [FEED_BASE],
-    onMutate: async variables => {
-      const body = createPostRequestSchema.parse(variables)
-      return body
-    },
+    buildPayload: variables => createPostRequestSchema.parse(variables),
   })
 }
 
@@ -80,7 +77,7 @@ export function useUpdatePost() {
     method: 'PUT',
     url: variables => `${FEED_BASE}/${variables.id}`,
     invalidateQueries: [FEED_BASE],
-    onMutate: async variables => {
+    buildPayload: variables => {
       const body = createPostRequestSchema.parse(variables)
       return { id: variables.id, ...body }
     },
@@ -88,10 +85,11 @@ export function useUpdatePost() {
 }
 
 export function useDeletePost() {
-  return useClientMutation<unknown, { id: string }>({
+  return useClientMutation<void, { id: string }>({
     method: 'DELETE',
     url: variables => `${FEED_BASE}/${variables.id}`,
     invalidateQueries: [FEED_BASE],
+    buildPayload: () => ({}),
   })
 }
 
@@ -100,7 +98,7 @@ export function useCreateComment() {
     method: 'POST',
     url: variables => `${FEED_BASE}/${variables.postId}/comments`,
     invalidateQueries: [FEED_BASE],
-    onMutate: async variables => {
+    buildPayload: variables => {
       const body = createCommentRequestSchema.parse(variables)
       return { postId: variables.postId, ...body }
     },
@@ -112,7 +110,7 @@ export function useUpdateComment() {
     method: 'PUT',
     url: variables => `${FEED_BASE}/comments/${variables.id}`,
     invalidateQueries: [FEED_BASE],
-    onMutate: async variables => {
+    buildPayload: variables => {
       const body = updateCommentRequestSchema.parse(variables)
       return { id: variables.id, ...body }
     },
@@ -120,9 +118,10 @@ export function useUpdateComment() {
 }
 
 export function useDeleteComment() {
-  return useClientMutation<unknown, { id: string }>({
+  return useClientMutation<void, { id: string }>({
     method: 'DELETE',
     url: variables => `${FEED_BASE}/comments/${variables.id}`,
     invalidateQueries: [FEED_BASE],
+    buildPayload: () => ({}),
   })
 }

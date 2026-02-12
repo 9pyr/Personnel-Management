@@ -5,6 +5,10 @@ import dayjs from 'dayjs'
 import { EVENT_STYLES } from 'modules/calendar/constants'
 import type { CalendarItemEvent } from 'modules/calendar/types'
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
 export function formatEventDateRange(start: Date, end: Date): string {
   const startLabel = dayjs(start).format('D MMM YYYY')
   const endLabel = dayjs(end).format('D MMM YYYY')
@@ -46,9 +50,7 @@ export function formatEventTooltip(event: CalendarItemEvent): string {
       if (!workEvent) return joinTooltipLines([`งาน`, `วันที่: ${dateRange}`])
 
       const title = (workEvent.title ?? '').trim() || 'งาน'
-      const timeLabel = joinTooltipLines(
-        [workEvent.startTime, workEvent.endTime].filter(Boolean) as string[],
-      ).replace('\n', '–')
+      const timeLabel = joinTooltipLines([workEvent.startTime, workEvent.endTime].filter(isNonEmptyString)).replace('\n', '–')
 
       return joinTooltipLines([
         `งาน: ${title}`,

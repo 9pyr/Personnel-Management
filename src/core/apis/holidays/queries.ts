@@ -34,9 +34,9 @@ export function useCreateHoliday() {
     method: 'POST',
     url: '/holidays',
     invalidateQueries: ['/holidays'],
-    onMutate: async variables => {
+    buildPayload: variables => {
       const body = createHolidayPayloadSchema.parse(variables)
-      return { date: body.date, name: body.name } as CreateHolidayPayload
+      return { date: body.date, name: body.name }
     },
   })
 }

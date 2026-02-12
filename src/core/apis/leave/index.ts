@@ -14,6 +14,10 @@ export interface GetListLeaveParams {
   userId?: string
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value)
+}
+
 function toYYYYMMDD(v: unknown): string {
   if (v == null) return ''
   if (typeof v === 'string') {
@@ -34,14 +38,23 @@ function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
     toYYYYMMDD(startRaw) || (typeof startRaw === 'string' && startRaw.trim().slice(0, 10)) || ''
   const end = toYYYYMMDD(endRaw) || (typeof endRaw === 'string' && endRaw.trim().slice(0, 10)) || ''
   const createdByName =
-    (typeof raw.createdByName === 'string' && (raw.createdByName as string).trim()) ||
-    (typeof raw.created_by_name === 'string' && (raw.created_by_name as string).trim()) ||
+    (typeof raw.createdByName === 'string' && raw.createdByName.trim()) ||
+    (typeof raw.created_by_name === 'string' && raw.created_by_name.trim()) ||
     ''
-  const durationType = (raw.durationType ?? raw.duration_type ?? 'FULL_DAY') as
-    | 'FULL_DAY'
-    | 'HOURLY'
-  const startTime = (raw.startTime ?? raw.start_time) as string | undefined
-  const endTime = (raw.endTime ?? raw.end_time) as string | undefined
+  const durationRaw = raw.durationType ?? raw.duration_type
+  const durationType = durationRaw === 'HOURLY' ? 'HOURLY' : 'FULL_DAY'
+  const startTime =
+    typeof raw.startTime === 'string'
+      ? raw.startTime
+      : typeof raw.start_time === 'string'
+        ? raw.start_time
+        : undefined
+  const endTime =
+    typeof raw.endTime === 'string'
+      ? raw.endTime
+      : typeof raw.end_time === 'string'
+        ? raw.end_time
+        : undefined
   return {
     id: typeof raw.id === 'string' ? raw.id : undefined,
     description: typeof raw.description === 'string' ? raw.description : '',
@@ -66,7 +79,7 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
   const qs = search.toString()
   const url = qs ? `/leaves?${qs}` : '/leaves'
   const { data } = await apiCaller.get<object>(url)
-  const obj = data as Record<string, unknown> | null | undefined
+  const obj = isRecord(data) ? data : undefined
   const raw = Array.isArray(data)
     ? data
     : Array.isArray(obj?.data)
@@ -83,12 +96,11 @@ export const getListLeave = async (params?: GetListLeaveParams): Promise<Leave[]
   const list = Array.isArray(raw) ? raw : []
   const result: Leave[] = []
   for (const item of list) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) continue
-    const obj = item as Record<string, unknown>
+    if (!isRecord(item)) continue
     try {
-      result.push(leaveSchema.parse(obj))
+      result.push(leaveSchema.parse(item))
     } catch {
-      result.push(normalizeLeaveItem(obj))
+      result.push(normalizeLeaveItem(item))
     }
   }
   return result

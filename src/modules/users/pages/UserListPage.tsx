@@ -39,6 +39,12 @@ const DEPARTMENT_OPTIONS = [
 
 const DEPARTMENT_ORDER = ['ฝ่ายบริหาร', 'ฝ่ายบุคคล', 'ฝ่ายการพยาบาล', 'ฝ่ายการแพทย์', 'ฝ่ายบัญชี']
 
+function toTextOrDash(value: unknown): string {
+  if (typeof value === 'string' && value.trim().length > 0) return value
+  if (typeof value === 'number') return String(value)
+  return '-'
+}
+
 function buildApproverOptionGroups(users: User[], excludeUserId?: string): SelectOptionGroup[] {
   const filtered = excludeUserId ? users.filter(user => user.id !== excludeUserId) : users
   const noAssign = [{ groupLabel: 'ไม่ระบุ', options: [{ value: '', label: '-- ไม่ระบุ --' }] }]
@@ -74,11 +80,11 @@ const getColumns = (onEditApprover: (row: TableRowData) => void): TableColumnDef
   { label: 'บทบาท', source: 'role' },
   {
     label: 'แผนก/ฝ่าย',
-    render: (row): ReactNode => (row.department != null ? String(row.department) : '-'),
+    render: (row): ReactNode => toTextOrDash(row.department),
   },
   {
     label: 'ผู้มีสิทธิอนุมัติ',
-    render: (row): ReactNode => (row.managerId ? String(row.manager_name ?? row.managerId) : '-'),
+    render: (row): ReactNode => toTextOrDash(row.manager_name ?? row.managerId),
   },
   {
     label: 'จัดการ',

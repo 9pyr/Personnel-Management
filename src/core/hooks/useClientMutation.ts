@@ -1,5 +1,4 @@
 import {
-  type MutationFunctionContext,
   type UseMutationOptions,
   type UseMutationResult,
   useMutation,
@@ -8,36 +7,35 @@ import {
 
 import apiCaller from 'core/endpoints/apiCaller'
 
-interface UseClientMutationOptions<
-  TData = unknown,
-  TVariables = unknown,
-  TError = Error,
-> extends Omit<UseMutationOptions<TData, TError, TVariables>, 'mutationFn' | 'onMutate'> {
+type ApiPrimitive = string | number | boolean | null
+type ApiPayload =
+  | ApiPrimitive
+  | FormData
+  | Record<string, ApiPrimitive | ApiPrimitive[] | Record<string, ApiPrimitive> | undefined>
+
+interface UseClientMutationOptions<TData, TVariables, TError extends Error = Error> extends Omit<
+  UseMutationOptions<TData, TError, TVariables>,
+  'mutationFn' | 'onMutate'
+> {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   url: string | ((variables: TVariables) => string)
   invalidateQueries?: string[]
-  onMutate?: (variables: TVariables) => Promise<unknown> | unknown
+  buildPayload?: (variables: TVariables) => Promise<ApiPayload> | ApiPayload
 }
 
-export function useClientMutation<TData = unknown, TVariables = unknown, TError = Error>(
+export function useClientMutation<TData, TVariables, TError extends Error = Error>(
   options: UseClientMutationOptions<TData, TVariables, TError>,
 ): UseMutationResult<TData, TError, TVariables> {
-  const { method, url, invalidateQueries, onMutate, onSuccess, ...mutationOptions } = options
+  const { method, url, invalidateQueries, buildPayload, onSuccess, ...mutationOptions } = options
   const queryClient = useQueryClient()
 
-  return useMutation<TData, TError, TVariables, unknown>({
+  return useMutation<TData, TError, TVariables, void>({
     ...mutationOptions,
-    onMutate: onMutate
-      ? async (variables: TVariables) => {
-          const result = await onMutate(variables)
-          return result
-        }
-      : undefined,
-    mutationFn: async (variables: TVariables, context?: unknown) => {
+    mutationFn: async (variables: TVariables) => {
       const finalUrl = typeof url === 'function' ? url(variables) : url
       let response
 
-      const payload: unknown = context !== undefined ? context : variables
+      const payload = buildPayload ? await buildPayload(variables) : variables
 
       switch (method) {
         case 'POST':
@@ -53,20 +51,15 @@ export function useClientMutation<TData = unknown, TVariables = unknown, TError 
           response = await apiCaller.delete<TData>(finalUrl)
           break
         default:
-          throw new Error(`Unsupported method: ${method}`)
+          throw new Error('Unsupported method: ' + String(method))
       }
 
       return response.data
     },
-    onSuccess: (
-      data: TData,
-      variables: TVariables,
-      context?: unknown,
-      mutation?: MutationFunctionContext,
-    ) => {
+    onSuccess: (data, variables, context, mutation) => {
       if (invalidateQueries) {
         invalidateQueries.forEach(queryKey => {
-          queryClient.invalidateQueries({ queryKey: [queryKey] })
+          void queryClient.invalidateQueries({ queryKey: [queryKey] })
         })
       }
       if (onSuccess && mutation) {

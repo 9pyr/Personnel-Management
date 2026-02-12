@@ -92,7 +92,9 @@ const ProfilePage = () => {
                   className="hidden"
                   aria-label="เลือกไฟล์รูปโปรไฟล์"
                   title="เลือกไฟล์รูปโปรไฟล์"
-                  onChange={handleAvatarChange}
+                  onChange={event => {
+                    void handleAvatarChange(event)
+                  }}
                 />
               </div>
               <div className="flex-1">

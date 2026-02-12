@@ -15,14 +15,18 @@ export interface GetHolidaysParams {
   to?: string
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === 'object' && !Array.isArray(value)
+}
+
 export async function getHolidays(params?: GetHolidaysParams): Promise<CompanyHoliday[]> {
   const search = new URLSearchParams()
   if (params?.from) search.set('from', params.from)
   if (params?.to) search.set('to', params.to)
   const qs = search.toString()
   const url = qs ? `/holidays?${qs}` : '/holidays'
-  const { data } = await apiCaller.get<object>(url)
-  const raw = Array.isArray(data) ? data : (data as { data?: unknown })?.data
+  const { data } = await apiCaller.get<unknown>(url)
+  const raw = Array.isArray(data) ? data : isRecord(data) ? data['data'] : undefined
   const list = Array.isArray(raw) ? raw : []
   return listSchema.parse(list)
 }

@@ -58,15 +58,14 @@ export interface FeedHighlightState {
   highlightCommentId?: string
 }
 
-function isFeedHighlightState(state: object | null | undefined): state is FeedHighlightState {
+function isFeedHighlightState(state: unknown): state is FeedHighlightState {
   return (
-    state != null &&
-    typeof state === 'object' &&
-    ('highlightPostId' in state || 'highlightCommentId' in state)
+    state != null && typeof state === 'object' && ('highlightPostId' in state || 'highlightCommentId' in state)
   )
 }
 
-function isFeedCommentEventDetail(detail: object): detail is FeedCommentEventDetail {
+function isFeedCommentEventDetail(detail: unknown): detail is FeedCommentEventDetail {
+  if (detail == null || typeof detail !== 'object') return false
   return 'postId' in detail && 'comment' in detail
 }
 
@@ -126,7 +125,7 @@ const FeedPage = () => {
     const handler = (event: Event) => {
       if (!(event instanceof CustomEvent) || !event.detail || typeof event.detail !== 'object')
         return
-      const detail = event.detail
+      const detail: unknown = event.detail
       if (!isFeedCommentEventDetail(detail)) return
       const { postId, comment } = detail
       if (!postId || !comment) return
@@ -166,7 +165,7 @@ const FeedPage = () => {
   useEffect(() => {
     const postId = highlightState?.highlightPostId
     if (!postId || !posts.some(post => post.id === postId)) return
-    queryClient.invalidateQueries({ queryKey: [`/feed/${postId}/comments`] })
+    void queryClient.invalidateQueries({ queryKey: [`/feed/${postId}/comments`] })
   }, [highlightState?.highlightPostId, posts, queryClient])
 
   useEffect(() => {
@@ -312,7 +311,9 @@ const FeedPage = () => {
               />
               <div className="flex justify-end">
                 <Button
-                  onClick={handleSubmit}
+                  onClick={() => {
+                    void handleSubmit()
+                  }}
                   disabled={createPostMutation.isPending || !content.trim()}
                 >
                   โพสต์
@@ -344,8 +345,12 @@ const FeedPage = () => {
                     onStartEdit={startEdit}
                     onEditingContentChange={setEditingContent}
                     onCancelEdit={cancelEdit}
-                    onSaveEdit={handleUpdatePost}
-                    onDelete={handleDelete}
+                    onSaveEdit={() => {
+                      void handleUpdatePost()
+                    }}
+                    onDelete={postId => {
+                      void handleDelete(postId)
+                    }}
                     onAddComment={payload => handleAddComment(post.id, payload)}
                     onUpdateComment={(commentId, content) =>
                       handleUpdateComment(post.id, commentId, content)
