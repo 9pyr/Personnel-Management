@@ -37,8 +37,7 @@ function normalizeLeaveItem(raw: Record<string, unknown>): Leave {
   const start =
     toYYYYMMDD(startRaw) || (typeof startRaw === 'string' && startRaw.trim().slice(0, 10)) || ''
   const end = toYYYYMMDD(endRaw) || (typeof endRaw === 'string' && endRaw.trim().slice(0, 10)) || ''
-  const createdByName =
-    (typeof raw.createdByName === 'string' && raw.createdByName.trim()) || ''
+  const createdByName = (typeof raw.createdByName === 'string' && raw.createdByName.trim()) || ''
   const durationType = raw.durationType === 'HOURLY' ? 'HOURLY' : 'FULL_DAY'
   const startTime = typeof raw.startTime === 'string' ? raw.startTime : undefined
   const endTime = typeof raw.endTime === 'string' ? raw.endTime : undefined
