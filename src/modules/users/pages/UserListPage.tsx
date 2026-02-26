@@ -17,6 +17,7 @@ import { useCreateUser, useListUsers, useUpdateUser } from 'core/apis/auth/queri
 import { createUserRequestSchema, updateUserRequestSchema } from 'core/apis/auth/schemas'
 import { RoleType, UserType } from 'core/apis/auth/types'
 import { AuthContext } from 'core/contexts/AuthContext'
+import { isBoolean, isNumber, isString, trim } from 'lodash'
 import { Pencil } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -28,37 +29,37 @@ const ROLE_OPTIONS: { label: string; value: RoleType }[] = [
   { label: 'Staff', value: 'STAFF' },
 ]
 
+const DEPARTMENT_VALUES = ['ฝ่ายบริหาร', 'ฝ่ายบุคคล', 'ฝ่ายการพยาบาล', 'ฝ่ายการแพทย์', 'ฝ่ายบัญชี']
+
 const DEPARTMENT_OPTIONS = [
   { label: '-- ไม่ระบุ --', value: '' },
-  { label: 'ฝ่ายบริหาร', value: 'ฝ่ายบริหาร' },
-  { label: 'ฝ่ายบุคคล', value: 'ฝ่ายบุคคล' },
-  { label: 'ฝ่ายการพยาบาล', value: 'ฝ่ายการพยาบาล' },
-  { label: 'ฝ่ายการแพทย์', value: 'ฝ่ายการแพทย์' },
-  { label: 'ฝ่ายบัญชี', value: 'ฝ่ายบัญชี' },
+  ...DEPARTMENT_VALUES.map(department => ({ label: department, value: department })),
 ]
-
-const DEPARTMENT_ORDER = ['ฝ่ายบริหาร', 'ฝ่ายบุคคล', 'ฝ่ายการพยาบาล', 'ฝ่ายการแพทย์', 'ฝ่ายบัญชี']
 
 function toTextOrDash(
   value: string | number | boolean | bigint | object | null | undefined,
 ): string {
-  if (typeof value === 'string' && value.trim().length > 0) return value
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint')
-    return String(value)
+  if (isString(value) && trim(value).length > 0) return value
+  if (isNumber(value) || isBoolean(value)) return String(value)
   return '-'
 }
 
 function buildApproverOptionGroups(users: UserType[], excludeUserId?: string): SelectOptionGroup[] {
   const filtered = excludeUserId ? users.filter(user => user.id !== excludeUserId) : users
-  const noAssign = [{ groupLabel: 'ไม่ระบุ', options: [{ value: '', label: '-- ไม่ระบุ --' }] }]
-  const byDept = DEPARTMENT_ORDER.map(department => ({
+  const noAssign = [
+    {
+      groupLabel: 'ไม่ระบุ',
+      options: [{ value: '', label: '-- ไม่ระบุ --' }],
+    },
+  ]
+  const byDept = DEPARTMENT_VALUES.map(department => ({
     groupLabel: department,
     options: filtered
       .filter(user => (user.department ?? '') === department)
       .map(user => ({ value: user.id, label: `${user.name} (${user.email}) — ${user.role}` })),
   })).filter(group => group.options.length > 0)
   const others = filtered.filter(
-    user => !user.department || !DEPARTMENT_ORDER.includes(user.department),
+    user => !user.department || !DEPARTMENT_VALUES.includes(user.department),
   )
   const otherGroup =
     others.length > 0
