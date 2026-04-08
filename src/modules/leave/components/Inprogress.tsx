@@ -74,7 +74,7 @@ const Inprogress = ({ onEditLeave }: InprogressProps) => {
           {loading ? (
             <p className="text-muted-foreground">กำลังโหลด...</p>
           ) : tableData.length === 0 ? (
-            <p className="text-muted-foreground">ไม่มีรายการลาของคุณ</p>
+            <p className="text-center text-muted-foreground">ไม่มีรายการลาของคุณ</p>
           ) : (
             <Table
               columns={BASE_COLUMNS}

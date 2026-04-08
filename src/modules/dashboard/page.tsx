@@ -114,9 +114,9 @@ const DashboardPage = () => {
           </Link>
         </div>
         {loadingFeed ? (
-          <p className="text-muted-foreground">กำลังโหลด...</p>
+          <p className="text-center text-muted-foreground">กำลังโหลด...</p>
         ) : feedPosts.length === 0 ? (
-          <p className="text-muted-foreground">ยังไม่มีโพสต์</p>
+          <p className="text-center text-muted-foreground">ยังไม่มีโพสต์</p>
         ) : (
           <div className="flex flex-col gap-3">
             {feedPosts.map(post => (

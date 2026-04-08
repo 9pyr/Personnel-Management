@@ -313,7 +313,7 @@ const FeedPage = () => {
   )
 
   return (
-    <div className="w-full max-w-[680px] mx-auto px-0 sm:px-0">
+    <div className="mx-auto w-full max-w-[680px] px-0 sm:px-0">
       <div className="flex flex-col gap-4">
         <header className="page-header">
           <div>
@@ -346,15 +346,11 @@ const FeedPage = () => {
           </Card>
 
           {loading ? (
-            <p className="text-muted-foreground">กำลังโหลด...</p>
+            <p className="text-center text-muted-foreground">กำลังโหลด...</p>
           ) : posts.length === 0 ? (
-            <Card className="border">
-              <CardContent>
-                <p className="text-center text-muted-foreground">
-                  ยังไม่มีโพสต์ — เป็นคนแรกที่โพสต์เลย
-                </p>
-              </CardContent>
-            </Card>
+            <p className="text-center text-muted-foreground">
+              ยังไม่มีโพสต์ — เป็นคนแรกที่โพสต์เลย
+            </p>
           ) : (
             <div className="flex flex-col gap-4">
               {posts.map(post => (
