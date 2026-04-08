@@ -243,7 +243,7 @@ const LeavePageForm = () => {
     }
 
     return (
-      <div className="sm:col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:col-span-2 md:grid-cols-2">
         <Controller
           control={control}
           name="startTime"

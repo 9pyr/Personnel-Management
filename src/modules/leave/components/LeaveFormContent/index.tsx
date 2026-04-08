@@ -227,7 +227,7 @@ export default function LeaveFormContent({
   }
 
   if (formDefaults === null) {
-    return <p className="text-muted-foreground py-4">กำลังโหลด...</p>
+    return <p className="py-4 text-muted-foreground">กำลังโหลด...</p>
   }
 
   const DurationTimeFields = () => {
@@ -249,7 +249,7 @@ export default function LeaveFormContent({
     }
 
     return (
-      <div className="sm:col-span-2 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:col-span-2 md:grid-cols-2">
         <Controller
           control={control}
           name="startTime"

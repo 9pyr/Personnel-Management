@@ -36,7 +36,7 @@ export function CommentBlock({
   }
 
   return (
-    <div data-comment-id={node.id} className={depth > 0 ? 'ml-6 mb-1.5' : 'mb-1.5'}>
+    <div data-comment-id={node.id} className={depth > 0 ? 'mb-1.5 ml-6' : 'mb-1.5'}>
       <div className="flex flex-row items-start gap-2">
         <Avatar className="h-7 w-7 text-sm">
           <AvatarFallback>{node.authorName?.charAt(0) ?? '?'}</AvatarFallback>

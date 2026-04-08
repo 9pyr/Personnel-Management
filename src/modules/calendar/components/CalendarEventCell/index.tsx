@@ -14,7 +14,7 @@ export function CalendarEventCell({ event }: CalendarEventCellProps) {
         <TooltipTrigger asChild>
           <div className="rbc-event-content cursor-pointer">{event.title}</div>
         </TooltipTrigger>
-        <TooltipContent className="whitespace-pre-wrap text-xs leading-snug max-w-xs">
+        <TooltipContent className="max-w-xs whitespace-pre-wrap text-xs leading-snug">
           {formatEventTooltip(event)}
         </TooltipContent>
       </Tooltip>

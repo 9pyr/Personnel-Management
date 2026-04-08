@@ -114,7 +114,7 @@ export default function CalendarPage() {
 
       {pendingInList.length > 0 && (
         <p
-          className="cursor-pointer text-sm text-primary w-fit hover:underline"
+          className="w-fit cursor-pointer text-sm text-primary hover:underline"
           onClick={() => navigate('/leave')}
         >
           คำขอลารอการดำเนินการ {pendingInList.length} รายการ →

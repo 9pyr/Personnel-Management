@@ -148,7 +148,7 @@ export function TimePicker({
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+        <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
           <div className="flex justify-between border-b border-border bg-muted/30 px-3 py-2">
             <div className="text-center">
               <span className="text-xs font-medium text-muted-foreground">ชม.</span>

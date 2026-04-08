@@ -163,7 +163,7 @@ export function FeedCard({
               </Button>
             </div>
           )}
-          <div className="flex gap-2 items-start">
+          <div className="flex items-start gap-2">
             <Textarea
               className="min-h-[60px] flex-1"
               placeholder={
